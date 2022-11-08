@@ -1,9 +1,9 @@
 using DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames, Plots #, PlotlyJS
 
-include("/home/holliehindley/Oct22_model/rtc_model.jl")
+include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 
 
-prob = ODEProblem(rtc_model_new, init, tspan, params)
+prob = ODEProblem(rtc_model, init, tspan, params)
 solu = solve(prob, Rodas4())
 
 Plots.plot(solu[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r" "rtcr" "rh" "rd" "rt"], yaxis=(:log10, (1,Inf)), xaxis=(:log10, (1,Inf)))
