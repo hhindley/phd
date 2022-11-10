@@ -1,7 +1,0 @@
-Name,Effect (fold induction),SD,Replicates,RtcR,RtcB,RtcA,Details
-?ahpC,5,0.5,5,yes,yes,yes,Peroxidase - knockout means cells can't detoxify H2O2
-?mazF,2.43,0.52,27,yes,yes,yes,Ribonuclease
-?ybaK,1.83,0.35,24,yes,yes,yes,tRNA deacetylase
-?gor,2.37,0.28,15,yes,yes,no,"GSH oxidoreductase, similar to ahpC"
-?yobF,1.7,0.34,21,yes,yes,no,Stress-induced peptide
-?srmB,1.46,0.12,6,-,-,-,RNA helicase

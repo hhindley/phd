@@ -1,5 +1,5 @@
 using Plots, PyCall, DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames
-include("/home/holliehindley/Oct22_model/rtc_model.jl")
+include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 
 # set time span and how many time points to solve at 
 tspan = (0, 100)
@@ -14,17 +14,6 @@ function get_curve(sol, species)
     return species
 end
 
-function get_rdrtca_rtrtcb(sol)
-    df = DataFrame(sol)
-    rename!(df, [:time, :rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt])
-    rtca = df[:, :rtca]
-    rtcb = df[:, :rtcb]
-    rd = df[:, :rd]
-    rt = df[:, :rt]
-    rdrtca = rtca.*rd./(K1_tag.+rd.+K2_tag.*atp)
-    rtrtcb = rtcb.*rt./(K1_rep.+rt.+K2_rep.*atp)
-    return rdrtca, rtrtcb
-end
 
 # solving function
 function sol(model, init, tspan, params, t)
@@ -43,11 +32,10 @@ rt_syn = get_curve(sol_syn, :rt)
 rd_syn = get_curve(sol_syn, :rd)
 rh_syn = get_curve(sol_syn, :rh)
 
-rdrtca_syn, rtrtcb_syn = get_rdrtca_rtrtcb(sol_syn)
 
 # objective function
 function rtc_bo(;ω_ab,)#K1_tag, K2_tag, K1_rep, K2_rep, ω_ab)
-    solu = sol(rtc_model, init, tspan, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θ, max, thr, K1_tag, K2_tag, K1_rep, K2_rep, gr_c, d, krep, kdam, ktag, kdeg, kin, atp]), t)
+    solu = sol(rtc_model, init, tspan, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θ, max, thr, km, k_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp]), t)
     rtca = get_curve(solu, :rtca)
     # rm_a = get_curve(solu, :rm_a)
     obj = []
@@ -59,7 +47,7 @@ end
 
 # in python writing the ranges to search for parameter value
 py"""
-param_range = {'ω_ab': (0, 50)}#,'K1_tag': (0.9, 1.1), 'K2_tag': (9.9, 10.1), 'K1_rep': (0.9, 1.1), 'K2_rep': (9.9, 10.1)}
+param_range = {'ω_ab': (0, 50)}
 """
 
 # import bayes_opt package from python
@@ -74,7 +62,7 @@ function timer()
 end
 
 @time timer()
-print(optimizer_all.max)
+print(optimizer.max)
 
 # creating lists of values of parameters tried and errors for each one  
 function results(optimizer)
@@ -119,6 +107,9 @@ scatter!(best_param, best_error, color = "red", label = "", markershape=[:circle
 Plots.scatter(vals, errors_ori, ylabel=("Adjusted error"), xlabel=("Parameter"), legend = false)#,  yaxis=(:log10, (1,Inf)))
 scatter!(best_param, best_error_ori, color = "red", label = "")
 # png("adjusted_error_vs_param")
+
+
+
 
 # trying different values of kappa
 vals1, errors1, errors_ori1, best_param1, best_error1, best_error_ori1 = [], [], [], [], [], []
