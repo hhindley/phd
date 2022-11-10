@@ -9,3 +9,4 @@ a_SF = 22000
 θtlr = thr*SF*a_SF
 
 
+g_max = max*SF
