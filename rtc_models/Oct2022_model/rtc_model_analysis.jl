@@ -26,6 +26,9 @@ rh = get_curve(solu, :rh)
 rd = get_curve(solu, :rd)
 rt = get_curve(solu, :rt)
 
+tlr_el = max*atp/(thr+atp)
+tlr = rh[end]*rm_a[end]*tlr_el
+
 Plots.plot(solu.t, rtca, xaxis=(:log10, (0.01,Inf)), labels="RtcA")
 Plots.plot(solu.t, rtcb, xaxis=(:log10, (0.01,Inf)), labels="RtcB")
 Plots.plot(solu.t, rtcr, xaxis=(:log10, (0.01,Inf)), labels="RtcR")
@@ -42,13 +45,13 @@ Plots.plot(solu.t, (@.rh/r_tot *100), xaxis=(:log10, (0.01,Inf)), labels="Rh")
 Plots.plot!(solu.t, (@.rt/r_tot *100), xaxis=(:log10, (0.01,Inf)), labels="Rt")
 Plots.plot!(solu.t, (@.rd/r_tot *100), xaxis=(:log10, (0.01,Inf)), labels="Rd")
 
-v = collect(1:1:100)
+v = collect(0:1:1000)
 
 rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rt, rd, rtca1 = [], [], [], [], [], [], [], [], [], []
 for i in v
-    k_a = i
+    kdeg = i
     params = @SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θ, max, thr, k_a, k_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp]
-    prob = ODEProblem(rtc_model_new, init, tspan, params)
+    prob = ODEProblem(rtc_model, init, tspan, params)
     solu = solve(prob, Rodas4())
     solDF = DataFrame([[j[i] for j in solu.u] for i=1:length(solu.u[1])], species)
     push!(rm_a, solDF[end, :rm_a])
@@ -63,7 +66,7 @@ for i in v
     push!(rtca1, (atp*solDF[end, :rtca])/(atp+(ktag*solDF[end, :rd])/k_a))
 end
 
-plot(v, rt, markershapes=[:circle])
+plot(v, rtca, markershapes=[:circle])
 
 rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rt, rd, rtca1, rtcb1 = [], [], [], [], [], [], [], [], [], [], []
 for i in v1

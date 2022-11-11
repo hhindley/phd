@@ -54,17 +54,22 @@ end
 
 species = [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt]
 
-L = 100; c = 0.01; kr = 10; Vmax_init = 5; Km_init = 55.829; ω_ab = 4.14; ω_r = 4.14; 
-θ = 20; max = 4; thr = 20; gr_c = 0.01; k_a = 10; k_b = 10;
-d = 0.01; krep = 10;  kdam = 0.05; ktag = 10; kdeg = 0.001; kin = 0.4; atp = 10;
-km = 5;
-# L = 1000; c = 0.001; kr = 125; Vmax_init = 39.51; Km_init = 250; ω_ab = 4.14; ω_r = 4.14; 
-# θ = 4.38; max = 1260; thr = 7; gr_c = 0.01; k_a = 0.18; k_b = 17.7;
-# d = 5; krep = 137;  kdam = 0.05; ktag = 9680; kdeg = 0.001; kin = 0.4; atp = 2500;
-# KM = 5;
+# L = 100; c = 0.01; kr = 10; Vmax_init = 5; Km_init = 55.829; ω_ab = 4.14; ω_r = 4.14; 
+# θ = 20; max = 4; thr = 20; gr_c = 0.01; k_a = 10; k_b = 10;
+# d = 0.01; krep = 10;  kdam = 0.05; ktag = 10; kdeg = 0.001; kin = 0.4; atp = 10;
+# km = 5;
 
+L = 1000; c = 0.001; kr = 0.125; Vmax_init = 39.51; Km_init = 250; 
+θ = 160.01;  thr = 255.73; k_b = 17.7;
+d = 0.2; krep = 137; ktag = 0.1; atp = 2500; KM = 20;
+max = 7.58772e20;
+# max = 2.0923;
+gr_c = 0.01; kdeg = 0.001; kin = 0.4; 
+ω_ab = 4; ω_r = 4; kdam = 0.05; 
 
-rm_a_0 = 0; rtca_0 = 1; rm_b_0 = 0; rtcb_0 = 1; rm_r_0 = 0; rtcr_0 = 0;
+# rtca_0 = 0.0122; rtcb_0 = 0.0222;
+rtca_0 = 1; rtcb_0 = 1;
+rm_a_0 = 0; rm_b_0 = 0; rm_r_0 = 0; rtcr_0 = 0;
 rh_0 = 10; rd_0 = 0; rt_0 = 0;
 
 
