@@ -26,7 +26,7 @@ rh = get_curve(solu, :rh)
 rd = get_curve(solu, :rd)
 rt = get_curve(solu, :rt)
 
-tlr_el = max*atp/(thr+atp)
+tlr_el = g_max*atp/(θtlr+atp)
 tlr = rh[end]*rm_a[end]*tlr_el
 
 Plots.plot(solu.t, rtca, xaxis=(:log10, (0.01,Inf)), labels="RtcA")
