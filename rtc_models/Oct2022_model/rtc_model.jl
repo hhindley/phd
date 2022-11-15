@@ -49,20 +49,20 @@ function rtc_model(initial, params, t) # change KM in params back to k_a
     @SVector [drm_a, drtca, drm_b, drtcb, drm_r, drtcr, drh, drd, drt]
 end
 
-species = [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt]
 
-# L = 100; c = 0.01; kr = 10; Vmax_init = 5; Km_init = 55.829; ω_ab = 4.14; ω_r = 4.14; 
-# θ = 20; max = 4; thr = 20; gr_c = 0.01; k_a = 10; k_b = 10;
-# d = 0.01; krep = 10;  kdam = 0.05; ktag = 10; kdeg = 0.001; kin = 0.4; atp = 10;
-# km = 5;
+L = 100; c = 0.01; kr = 10; Vmax_init = 5; Km_init = 55.829; ω_r = 4.14; 
+θtscr = 20; g_max = 4; θtlr = 20; gr_c = 0.01; k_a = 10; k_b = 10;
+d = 0.01; krep = 10;  kdam = 0.05; ktag = 10; kdeg = 0.001; kin = 0.4; atp = 10;
+km = 5;
+ω_ab = 4.14; 
 
-L = 1000; c = 0.001; kr = 0.125; Vmax_init = 39.51; Km_init = 250; 
-θtscr = 160.01;  θtlr = 255.73; k_b = 17.7;
-d = 0.2; krep = 137; ktag = 0.1; atp = 2500; km = 20;
-g_max = 100#7.58772e20;
-# max = 2.0923;
-gr_c = 0.023; kdeg = 0.001; kin = 4.36e-19; 
-ω_ab = 4; ω_r = 4; kdam = 0.05; 
+# L = 1000; c = 0.001; kr = 0.125; Vmax_init = 39.51; Km_init = 250; 
+# θtscr = 160.01;  θtlr = 255.73; k_b = 17.7;
+# d = 0.2; krep = 137; ktag = 0.1; atp = 2500; km = 20;
+# g_max = 100#7.58772e20;
+# # max = 2.0923;
+# gr_c = 0.023; kdeg = 0.001; kin = 4.36e-19; 
+# ω_ab = 4; ω_r = 4; kdam = 0.05; 
 
 rtca_0 = 0.00894; rtcb_0 = 0.0216;
 # rtca_0 = 1; rtcb_0 = 1;
