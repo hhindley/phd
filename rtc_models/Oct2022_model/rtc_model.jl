@@ -1,5 +1,5 @@
 
-function rtc_model(initial, params, t) # change KM in params back to k_a
+function rtc_model(initial, params, t) 
     L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km, k_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp = params
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt = initial
 
@@ -51,7 +51,7 @@ end
 
 
 L = 100; c = 0.01; kr = 10; Vmax_init = 5; Km_init = 55.829; ω_r = 4.14; 
-θtscr = 20; g_max = 4; θtlr = 20; gr_c = 0.01; k_a = 10; k_b = 10;
+θtscr = 20; g_max = 4; θtlr = 20; gr_c = 0.01; k_b = 10;
 d = 0.01; krep = 10;  kdam = 0.05; ktag = 10; kdeg = 0.001; kin = 0.4; atp = 10;
 km = 5;
 ω_ab = 4.14; 

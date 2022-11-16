@@ -7,7 +7,7 @@ tspan = (0, 100)
 t = exp10.(range(-3,2,15))
 pushfirst!(t, 0)
 
-sol_syn = sol(rtc_model, init, tspan, params, t)
+sol_syn = sol_with_t(rtc_model, init, tspan, params, t)
 
 # plot solution 
 Plots.plot(sol_syn[2:end], xaxis=(:log10, (1,Inf)), yaxis=(:log10, (1,Inf)))
@@ -22,7 +22,7 @@ rh_syn = get_curve(sol_syn, :rh)
 
 # objective function
 function rtc_bo(;ω_ab, ω_r, kdam)
-    solu = sol(rtc_model, init, tspan, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km, k_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp]), t)
+    solu = sol_with_t(rtc_model, init, tspan, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km, k_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp]), t)
     rtca = get_curve(solu, :rtca)
     rtcr = get_curve(solu, :rtcr)
     rh = get_curve(solu, :rh)

@@ -1,58 +1,68 @@
-using Plots, PyCall, DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames
+using Plots, PyCall, DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames, CSV
 include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 
+# data
+dfc = DataFrame(CSV.File("/home/holliehindley/phd/data/fig4c_bo.csv"))
+dfc[!,2]
+dfe = DataFrame(CSV.File("/home/holliehindley/phd/data/fig4e_rtcoff_bo.csv"))
+dfe[!,2]
+dff = DataFrame(CSV.File("/home/holliehindley/phd/data/fig4f_rtcon_bo.csv"))
+dff[!,2]
+df2 = DataFrame(CSV.File("/home/holliehindley/phd/data/colD_supf2_bo.csv"))
+df2[!,2]
 # set time span and how many time points to solve at 
-tspan = (0, 100)
-t = exp10.(range(-3,2,15))
-pushfirst!(t, 0)
-
-sol_syn = sol(rtc_model, init, tspan, params, t)
-
-# plot solution 
-Plots.plot(sol_syn[2:end], xaxis=(:log10, (1,Inf)), yaxis=(:log10, (1,Inf)))
-
-rtca_syn = get_curve(sol_syn, :rtca)
-rtcr_syn = get_curve(sol_syn, :rtcr)
-
-# rt_syn = get_curve(sol_syn, :rt)
-rd_syn = get_curve(sol_syn, :rd)
-rh_syn = get_curve(sol_syn, :rh)
-
+tspan = (0, 2880)
+t_2 = dfc[!,1]*60
+t_4 = df2[!,1]
 
 # objective function
-function rtc_bo(;ω_ab, ω_r, kdam)#K1_tag, K2_tag, K1_rep, K2_rep, ω_ab)
-    solu = sol(rtc_model, init, tspan, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km, k_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp]), t)
-    rtca = get_curve(solu, :rtca)
-    rtcr = get_curve(solu, :rtcr)
-    rh = get_curve(solu, :rh)
-    rd = get_curve(solu, :rd)
+function rtc_bo(;ω_ab)#, ω_r, kdam)
+    solu_wt = sol_with_t(rtc_model, init, tspan, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km, k_b, gr_c, d, krep, 0, ktag, kdeg, kin, atp]), t_2)
+    rtca_wt = get_curve(solu_wt, :rtca)
+    rtcb_wt = get_curve(solu_wt, :rtcb)
+    # rh = get_curve(solu, :rh)
+    # rd = get_curve(solu, :rd)
 
-    obj = []
+    obj_wt = []
     # ω_ab
-    for (i,j) in zip(rtca, rtca_syn)
-        append!(obj, abs2(i-j))
-    end
+    append!(obj_wt, [abs2(i-j) for (i,j) in zip(rtca_wt, dfc[!,2])])
+    append!(obj_wt, [abs2(i-j) for (i,j) in zip(rtcb_wt, dfc[!,2])])
+
+    append!(obj_wt, [abs2(i-j) for (i,j) in zip(rtca_wt, dfe[!,2])])
+    append!(obj_wt, [abs2(i-j) for (i,j) in zip(rtcb_wt, dfe[!,2])])
     
-    # ω_r
-    for (i,j) in zip(rtcr, rtcr_syn)
-        append!(obj, abs2(i-j))
-    end
+    append!(obj_wt, [abs2(i-j) for (i,j) in zip(rtca_wt, dff[!,2])])
+    append!(obj_wt, [abs2(i-j) for (i,j) in zip(rtcb_wt, dff[!,2])])
 
-    # kdam 
-    for (i,j) in zip(rh, rh_syn)
-        append!(obj, abs2(i-j))
-    end
-    for (i,j) in zip(rd, rd_syn)
-        append!(obj, abs2(i-j))
-    end
+    obj_hpx = []
+    solu_hpx = sol_with_t(rtc_model, init, tspan, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km, k_b, gr_c, d, krep, 1, ktag, kdeg, kin, atp]), t_2)
+    rtca_hpx = get_curve(solu_hpx, :rtca)
+    rtcb_hpx = get_curve(solu_hpx, :rtcb)
+    append!(obj_hpx, [abs2(i-j) for (i,j) in zip(rtca_hpx, dfc[!,3])])
+    append!(obj_hpx, [abs2(i-j) for (i,j) in zip(rtcb_hpx, dfc[!,3])])
+    
+    # wt colD
+    obj_colD = []
+    solu_colD = sol_with_t(rtc_model, init, tspan, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km, k_b, gr_c, d, krep, 0, ktag, kdeg, kin, atp]), t_4)
+    rtca_colD = get_curve(solu_colD, :rtca)
+    rtcb_colD = get_curve(solu_colD, :rtcb)
+    append!(obj_colD, [abs2(i-j) for (i,j) in zip(rtca_colD, df2[!,2])])
+    append!(obj_colD, [abs2(i-j) for (i,j) in zip(rtcb_colD, df2[!,2])])
 
-    return -sum(obj)
+    # colD
+    solu_colD = sol_with_t(rtc_model, init, tspan, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km, k_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp]), t_4)
+    rtca_colD = get_curve(solu_colD, :rtca)
+    rtcb_colD = get_curve(solu_colD, :rtcb)
+    append!(obj_colD, [abs2(i-j) for (i,j) in zip(rtca_colD, df2[!,3])])
+    append!(obj_colD, [abs2(i-j) for (i,j) in zip(rtcb_colD, df2[!,3])])
+
+    return -(sum(obj_wt)+sum(obj_hpx))
 end
 
 # in python writing the ranges to search for parameter value
 py"""
-param_range = {'ω_ab': (0, 10), 'ω_r': (0, 10)}#, 'kdam': (0, 1)}
+param_range = {'ω_ab': (0, 10)}#, 'ω_r': (0, 10)}#, 'kdam': (0, 1)}
 """
 
 # import bayes_opt package from python
@@ -63,7 +73,7 @@ optimizer = bayes_opt.BayesianOptimization(f=rtc_bo, pbounds=py"param_range", ra
 
 # timing the process and maximising the optimizer 
 function timer()
-    optimizer.maximize(init_points=2, n_iter=150, acq="ucb", kappa=2)
+    optimizer.maximize(init_points=2, n_iter=50, acq="ucb", kappa=2)
 end
 
 @time timer()
