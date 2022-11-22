@@ -39,6 +39,10 @@ lam = 2.77/60 # taken from colD data in google colab notebook - need more WT dat
 rh = ribo_conc[end] # taken from ribosome table at the highest growth rate 
 gr_c = lam/rh
 
+#initial value of rh 
+growth_rate = 2.5/60 # /60 to get from per hour to per minute
+rh_0 = growth_rate/growth_rate_constant
+
 # influx of healthy ribosomes
 kin = lam*rh/g_max
 

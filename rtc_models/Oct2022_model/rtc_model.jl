@@ -16,10 +16,12 @@ function rtc_model(initial, params, t)
     fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
     ra = fa*rtcr
     
-    # transcription 
+    # transcription
     Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_ab = ω_ab*atp/(θtscr+atp)
-    tscr_ab = Vinit*tscr_el_ab
+    tscr_el_a = ω_ab*atp/(θtscr+atp)
+    tscr_a = Vinit*tscr_el_a
+    tscr_el_b = ω_ab*atp/(θtscr+atp)
+    tscr_b = Vinit*tscr_el_b
     tscr_r = ω_r*atp/(θtscr+atp)
 
     # translation
@@ -37,9 +39,9 @@ function rtc_model(initial, params, t)
 
 
     # ODEs
-    drm_a = tscr_ab - dil(rm_a) - deg(rm_a)
+    drm_a = tscr_a - dil(rm_a) - deg(rm_a)
     drtca = tlr(rm_a, na) - dil(rtca)    
-    drm_b = tscr_ab - dil(rm_b) - deg(rm_b)
+    drm_b = tscr_b - dil(rm_b) - deg(rm_b)
     drtcb = tlr(rm_b, nb) - dil(rtcb)
     drm_r = tscr_r - dil(rm_r) - deg(rm_r)
     drtcr = tlr(rm_r, nr) - dil(rtcr)
@@ -76,5 +78,5 @@ init = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_
 
 
 
-tspan = (0, 100)
+tspan = (0, 10000)
 
