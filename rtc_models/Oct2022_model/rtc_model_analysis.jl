@@ -14,6 +14,13 @@ plot(solu[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r"
 
 dict_res = get_all_curves(solu, all_species)
 
+# transcription+translation of rtcb
+# alpha = dict_res[:rt][1][end]/kr 
+# fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
+# ra = fa*dict_res[:rtcr][1][end]
+# tscr = (ra*Vmax_init*atp/(Km_init+atp))*(ω_ab*atp/(θtscr+atp))
+# tlr = (1/408)*dict_res[:rh][1][end]*dict_res[:rm_b][1][end]*(g_max*atp/(θtlr+atp))
+# tot = tscr+tlr
 
 Plots.plot(solu.t, [dict_res[:rtca],dict_res[:rtcb],dict_res[:rtcr]], xaxis=(:log10, (0.01,Inf)), labels=["RtcA" "RtcB" "RtcR"])
 Plots.plot(solu.t, [dict_res[:rm_a], dict_res[:rm_b], dict_res[:rm_r]], xaxis=(:log10, (0.01,Inf)), labels=["rm_a" "rm_b" "rm_r"])
@@ -26,8 +33,13 @@ plot(solu.t, dict_res[:rd])
 r_tot = reduce(vcat, (dict_res[:rh]+dict_res[:rd]+dict_res[:rt]))
 Plots.plot(solu.t, [((@.dict_res[:rh][1]/r_tot) *100), (@.dict_res[:rt][1]/r_tot *100), (@.dict_res[:rd][1]/r_tot *100)], xaxis=(:log10, (0.01,Inf)), labels=["Rh" "Rt" "Rd"])
 
+
 # vary param
-param_range = collect(0:0.01:0.2)
-results = change_param(param_range, "kdam")
-plot(param_range, results[:rh])
+kdeg_range = collect(0:0.01:0.2)
+results_kdeg = change_param(kdeg_range, "kdeg")
+plot(kdeg_range, results_kdeg[:rd], legend=false, xlabel="kdeg", ylabel="[Rd]")
+
+kdam_range = collect(0:0.1:10)
+results_kdam = change_param(kdam_range, "kdam")
+plot(kdam_range, [results_kdam[:rh],results_kdam[:rd]], labels=["Rh" "Rd"], xlabel="kdam", ylabel="[Species]")
 
