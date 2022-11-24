@@ -3,11 +3,14 @@ using DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames, OrderedCo
 include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 
+prob = ODEProblem(rtc_model_density, init_den, tspan, param_vector[1])
+solu1 = solve(prob, Rodas4())
 
-
+get_curve(solu1, :den)
 
 param_vector = @SVector [values(param_dict)]
 solu = @time(sol(rtc_model, init, tspan, param_vector[1]))
+get_curve(solu, :rh)
 
 plot(solu[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r" "rtcr" "rh" "rd" "rt"],  xaxis=(:log10, (1,Inf)))
 # savefig(plot(solu[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r" "rtcr" "rh" "rd" "rt"],  xaxis=(:log10, (1,Inf))), "rtc_plot.svg") #, palette=:seaborn_bright)

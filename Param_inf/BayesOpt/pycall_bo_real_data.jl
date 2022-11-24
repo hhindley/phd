@@ -4,16 +4,18 @@ include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
 
 
-
-
 function rtc_bo_ω(;ω_ab, ω_r)
-     obj_wt = compare_data_and_sol(rtc_model, tspan_promoter, param_dict, t_promoter, "mrnas", WT1, WT1_std)
-     return -(sum(obj_wt))
+     obj_wt = compare_data_and_sol(rtc_model, init, tspan2, param_dict, t_2, "mrnas", WT1, WT1_std)
+
+     obj_gr_wt1 = compare_data_and_sol(rtc_model_density, init_den, tspan2, param_dict, t_2, "den", WT2, WT2_std)
+     obj_gr_wt2 = compare_data_and_sol(rtc_model_density, init_den, tspan2, param_dict, t_2, "den", WT3, WT3_std)
+     obj_gr_wt3 = compare_data_and_sol(rtc_model_density, init_den, tspan4, param_dict, t_4, "den", WT4, WT4_std)
+
+     return -sum(sum(obj) for obj in (obj_wt, obj_gr_wt1, obj_gr_wt2, obj_gr_wt3))
  end
 
 
  function rtc_bo_dam(;kdam)
-    # ω_ab - promoter expression
      obj_wt = compare_data_and_sol(rtc_model, tspan, t_2, "mrnas", WT1, param_dict)
 
      return -(sum(obj_wt))
