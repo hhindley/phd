@@ -5,9 +5,9 @@ include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 
 
 
-params = @SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km, k_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr]
 
-solu = @time(sol(rtc_model, init, tspan, params))
+param_vector = @SVector [values(param_dict)]
+solu = @time(sol(rtc_model, init, tspan, param_vector[1]))
 
 plot(solu[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r" "rtcr" "rh" "rd" "rt"],  xaxis=(:log10, (1,Inf)))
 # savefig(plot(solu[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r" "rtcr" "rh" "rd" "rt"],  xaxis=(:log10, (1,Inf))), "rtc_plot.svg") #, palette=:seaborn_bright)
