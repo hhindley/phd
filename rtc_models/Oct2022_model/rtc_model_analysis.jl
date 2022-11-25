@@ -4,11 +4,22 @@ include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 
 prob = ODEProblem(rtc_model_density, init_den, tspan, param_vector[1])
-solu1 = solve(prob, Rodas4())
-
-get_curve(solu1, :den)
+solu1 = solve(prob, Rodas4())#, abstol=1e-15, reltol=1e-12) doesn't solve when run at timespans more than 2100 in length
 
 param_vector = @SVector [values(param_dict)]
+plot(solu1[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r" "rtcr" "rh" "rd" "rt" "den"],  xaxis=(:log10, (1,Inf)))
+den = get_curve(solu1, :den)
+plot(solu1.t, den)
+rh = get_curve(solu1, :rh)
+plot(solu1.t, rh)
+lam = gr_c*rh
+plot(solu1.t, lam)
+
+
+param_vector = @SVector [values(param_dict)]
+
+solu1 = sol(rtc_model_density, init_den, tspan, param_vector[1])
+
 solu = @time(sol(rtc_model, init, tspan, param_vector[1]))
 get_curve(solu, :rh)
 

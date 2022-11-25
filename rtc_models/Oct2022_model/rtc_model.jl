@@ -30,7 +30,6 @@ function rtc_model(initial, params, t)
 
     # ribosomes
     rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-
     rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
 
     # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
@@ -84,7 +83,7 @@ init = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_
 init_den = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0, den_0]
 
 
-tspan = (0, 10000)
+tspan = (0, 2100)
 
 
 
