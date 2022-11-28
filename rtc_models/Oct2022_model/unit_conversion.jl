@@ -1,6 +1,7 @@
 using DifferentialEquations, StaticArrays, DataFrames, Plots, OrderedCollections, Statistics#, PlotlyJS
 include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
+include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 
 θ = 4.38; max = 1260; thr = 7;
 
@@ -36,7 +37,8 @@ growth_rate_constant = mean(cs)
 
 # growth rate constant
 lam = 2.77/60 # taken from colD data in google colab notebook - need more WT data to base this off I think
-rh = ribo_conc[end] # taken from ribosome table at the highest growth rate 
+lambda = grs[end]
+rh =  ribo_conc[end] # taken from ribosome table at the highest growth rate 
 gr_c = lam/rh
 
 #initial value of rh 
@@ -44,20 +46,15 @@ growth_rate = 2.5/60 # /60 to get from per hour to per minute
 rh_0 = growth_rate/growth_rate_constant
 
 # influx of healthy ribosomes
-kin = lam*rh/g_max
+kin = lambda*rh/g_max
 
 # translation rate calculation for kdeg 
-
-
-
-params = @SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km, k_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr]
+params = @SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr]
 solu = sol(rtc_model, init, tspan, params)
 rh = get_ssval(solu, :rh)
 rm_a = get_ssval(solu, :rm_a)
 rt = get_ssval(solu, :rt)
 rtcr = get_ssval(solu, :rtcr)
-
-
 alpha = rt/kr 
 fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
 ra = fa*rtcr
@@ -70,6 +67,8 @@ tlr = rh*rm_a*tlr_el # using ss values here but don't know parameters?
 tscr_ab+tlr
 
 d
+
+
 
 
 # steady state value of RtcR to use as initial value 

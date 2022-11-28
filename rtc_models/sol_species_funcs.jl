@@ -7,7 +7,7 @@ function get_curve(sol, species)
     if length(sol[1]) == 9
         rename!(df, [:time, :rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt])
     else
-        rename!(df, [:time, :rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :den])
+        rename!(df, [:time, :rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :N])
     end
     species = df[:, species]
     return species
@@ -30,7 +30,22 @@ end
 
 
 # solving functions
-function sol(model, init, tspan, params)
+function choose_param_vector(model)
+    if model == rtc_model
+        params = param_dict
+        init = initial
+    elseif model == rtc_model_N
+        params =  param_dict_N
+        init = init_N
+    else 
+        params = param_dict_ko
+        init = init_N
+    end
+    return (@SVector [values(params)])[1], init
+end
+
+function sol(model, tspan)
+    params, init = choose_param_vector(model)
     prob = ODEProblem(model, init, tspan, params)
     sol = solve(prob, Rodas4())
     return sol

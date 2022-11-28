@@ -54,42 +54,9 @@ function rtc_model(initial, params, t)
     @SVector [drm_a, drtca, drm_b, drtcb, drm_r, drtcr, drh, drd, drt]
 end
 
-
-# L = 100; c = 0.01; kr = 10; Vmax_init = 5; Km_init = 55.829; ω_r = 4.14; 
-# θtscr = 20; g_max = 4; θtlr = 20; gr_c = 0.01; k_b = 10;
-# d = 0.01; krep = 10;  kdam = 0.05; ktag = 10; kdeg = 0.001; kin = 0.4; atp = 10;
-# km = 5;
-# ω_ab = 4.14; 
-
-L = 10; c = 0.001; kr = 0.125; Vmax_init = 39.51; Km_init = 250; 
-θtscr = 160.01;  θtlr = 255.73; k_b = 17.7; na = 338; nb = 408; nr = 532*6;
-d = 0.2; krep = 137; ktag = 0.1; atp = 2500; km_a = 20; km_b = 16;
-g_max = 2.0923; gr_c = 0.000599; kdeg = 0.001; kin = 2.638;#0 
-ω_ab = 4; ω_r = 0.0019*6;  ω_a = 4; ω_b = 4;
-kdam = 0.05; 
-
-rtca_0 = 0.00894; rtcb_0 = 0.0216; rh_0 = 69.4; rtcr_0 = 0.04 #8.67e-3;
-# rtca_0 = 1; rtcb_0 = 1; rh_0 = 10; 
-rm_a_0 = 0; rm_b_0 = 0; rm_r_0 = 0; rd_0 = 0; rt_0 = 0;
-den_0 = 0.1;
-
-param_dict = OrderedDict("L"=>L, "c"=>c, "kr"=>kr, "Vmax_init"=>Vmax_init, "Km_init"=>Km_init, "ω_ab"=>ω_ab, "ω_r"=>ω_r, "θtscr"=>θtscr, "g_max"=>g_max, "θtlr"=>θtlr, "km_a"=>km_a, "km_b"=>km_b, "gr_c"=>gr_c, "d"=>d, "krep"=>krep, "kdam"=>kdam, "ktag"=>ktag, "kdeg"=>kdeg, "kin"=>kin, "atp"=>atp, "na"=>na, "nb"=>nb, "nr"=>nr)
-param_dict_ko = OrderedDict("L"=>L, "c"=>c, "kr"=>kr, "Vmax_init"=>Vmax_init, "Km_init"=>Km_init, "ω_a"=>ω_a, "ω_b"=>ω_b, "ω_r"=>ω_r, "θtscr"=>θtscr, "g_max"=>g_max, "θtlr"=>θtlr, "km_a"=>km_a, "km_b"=>km_b, "gr_c"=>gr_c, "d"=>d, "krep"=>krep, "kdam"=>kdam, "ktag"=>ktag, "kdeg"=>kdeg, "kin"=>kin, "atp"=>atp, "na"=>na, "nb"=>nb, "nr"=>nr)
-
-
-# params = @SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km, k_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr]
-init = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0]
-
-init_den = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0, den_0]
-
-
-tspan = (0, 2100)
-
-
-
-function rtc_model_knockout_density(initial, params, t) 
+function rtc_model_knockout_N(initial, params, t) 
     L, c, kr, Vmax_init, Km_init, ω_a, ω_b, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr = params
-    rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, den = initial
+    rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, N = initial
 
 
     # growth rate
@@ -136,14 +103,14 @@ function rtc_model_knockout_density(initial, params, t)
     drh = Vrep - Vdam + Vinflux - dil(rh)
     drd = Vdam - Vtag - kdeg*rd - dil(rd)
     drt = Vtag - Vrep - dil(rt)
-    dden = lam*den
+    dN = lam*N*(1-(N/k))
 
-    @SVector [drm_a, drtca, drm_b, drtcb, drm_r, drtcr, drh, drd, drt, dden]
+    @SVector [drm_a, drtca, drm_b, drtcb, drm_r, drtcr, drh, drd, drt, dN]
 end
 
-function rtc_model_density(initial, params, t) 
-    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr = params
-    rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, den = initial
+function rtc_model_N(initial, params, t) 
+    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, k = params
+    rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, N = initial
 
 
     # growth rate
@@ -190,7 +157,7 @@ function rtc_model_density(initial, params, t)
     drh = Vrep - Vdam + Vinflux - dil(rh)
     drd = Vdam - Vtag - kdeg*rd - dil(rd)
     drt = Vtag - Vrep - dil(rt)
-    dden = lam*den
+    dN = lam*N*(1-(N/k))
 
-    @SVector [drm_a, drtca, drm_b, drtcb, drm_r, drtcr, drh, drd, drt, dden]
+    @SVector [drm_a, drtca, drm_b, drtcb, drm_r, drtcr, drh, drd, drt, dN]
 end

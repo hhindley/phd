@@ -2,6 +2,7 @@ using BlackBoxOptim, Plots, PyCall, DifferentialEquations, StaticArrays, Benchma
 include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
+include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 
 
 

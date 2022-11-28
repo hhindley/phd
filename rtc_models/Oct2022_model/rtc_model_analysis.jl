@@ -2,25 +2,22 @@ using DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames, OrderedCo
 
 include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
+include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 
-prob = ODEProblem(rtc_model_density, init_den, tspan, param_vector[1])
-solu1 = solve(prob, Rodas4())#, abstol=1e-15, reltol=1e-12) doesn't solve when run at timespans more than 2100 in length
+solu1 = sol(rtc_model_N, tspan)
 
-param_vector = @SVector [values(param_dict)]
 plot(solu1[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r" "rtcr" "rh" "rd" "rt" "den"],  xaxis=(:log10, (1,Inf)))
-den = get_curve(solu1, :den)
-plot(solu1.t, den)
+N = get_curve(solu1, :N)
+plot(solu1.t, N,  xaxis=(:log10, (1,Inf)))
 rh = get_curve(solu1, :rh)
 plot(solu1.t, rh)
 lam = gr_c*rh
 plot(solu1.t, lam)
 
 
-param_vector = @SVector [values(param_dict)]
 
-solu1 = sol(rtc_model_density, init_den, tspan, param_vector[1])
 
-solu = @time(sol(rtc_model, init, tspan, param_vector[1]))
+solu = @time(sol(rtc_model, tspan))
 get_curve(solu, :rh)
 
 plot(solu[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r" "rtcr" "rh" "rd" "rt"],  xaxis=(:log10, (1,Inf)))
@@ -28,13 +25,7 @@ plot(solu[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r"
 
 dict_res = get_all_curves(solu, all_species)
 
-# transcription+translation of rtcb
-# alpha = dict_res[:rt][1][end]/kr 
-# fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-# ra = fa*dict_res[:rtcr][1][end]
-# tscr = (ra*Vmax_init*atp/(Km_init+atp))*(ω_ab*atp/(θtscr+atp))
-# tlr = (1/408)*dict_res[:rh][1][end]*dict_res[:rm_b][1][end]*(g_max*atp/(θtlr+atp))
-# tot = tscr+tlr
+
 
 Plots.plot(solu.t, [dict_res[:rtca],dict_res[:rtcb],dict_res[:rtcr]], xaxis=(:log10, (0.01,Inf)), labels=["RtcA" "RtcB" "RtcR"])
 Plots.plot(solu.t, [dict_res[:rm_a], dict_res[:rm_b], dict_res[:rm_r]], xaxis=(:log10, (0.01,Inf)), labels=["rm_a" "rm_b" "rm_r"])
