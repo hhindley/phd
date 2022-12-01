@@ -7,11 +7,13 @@ include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 
 
 x=[1,1]
-param_dict_new = copy(param_dict)
-param_dict_new["ω_ab"] = x[1]; param_dict_new["ω_r"] = x[2]
+param_dict_bbopt = copy(param_dict) # work out a way to include this in choosing params function so can be used on the below line and dont have to alter the exact dictionary
+param_dict["ω_ab"] = x[1]; param_dict["ω_r"] = x[2];
+param_dict
+
 
 function rtc_bo_ω(x)
-    obj_wt = compare_data_and_sol(rtc_model, init, tspan_promoter, param_dict_new, t_promoter, "mrnas", WT1, WT1_std)
+    obj_wt = compare_data_and_sol(rtc_model, tspan2, t_2, "mrnas", WT1, WT1_std)
     return (sum(obj_wt))
 end
 

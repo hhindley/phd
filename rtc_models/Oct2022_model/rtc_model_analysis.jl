@@ -4,11 +4,11 @@ include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 
-solu1 = sol(rtc_model_N, tspan)
+solu_N = sol(rtc_model_N, tspan)
 
-plot(solu1[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r" "rtcr" "rh" "rd" "rt" "den"],  xaxis=(:log10, (1,Inf)))
-N = get_curve(solu1, :N)
-plot(solu1.t, N,  xaxis=(:log10, (1,Inf)))
+plot(solu_N[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r" "rtcr" "rh" "rd" "rt" "den"],  xaxis=(:log10, (1,Inf)))
+N = get_curve(solu_N, :N)
+plot(solu_N.t, N)#,  xaxis=(:log10, (1,Inf)))
 rh = get_curve(solu1, :rh)
 plot(solu1.t, rh)
 lam = gr_c*rh
@@ -25,8 +25,10 @@ plot(solu[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r"
 
 dict_res = get_all_curves(solu, all_species)
 
-
-
+Plots.plot(solu.t, [dict_res[:rm_a], dict_res[:rtca]], labels=["rm_a" "RtcA"])
+Plots.plot(solu.t, [dict_res[:rm_b], dict_res[:rtcb]], labels=["rm_b" "RtcB"])
+Plots.plot(solu.t, [dict_res[:rm_b], dict_res[:rtcb], dict_res[:rm_a], dict_res[:rtca]], labels=["rm_b" "RtcB" "rm_a" "RtcA"])
+Plots.plot(solu.t, [dict_res[:rm_r], dict_res[:rtcr]], labels=["rm_r" "RtcR"])
 Plots.plot(solu.t, [dict_res[:rtca],dict_res[:rtcb],dict_res[:rtcr]], xaxis=(:log10, (0.01,Inf)), labels=["RtcA" "RtcB" "RtcR"])
 Plots.plot(solu.t, [dict_res[:rm_a], dict_res[:rm_b], dict_res[:rm_r]], xaxis=(:log10, (0.01,Inf)), labels=["rm_a" "rm_b" "rm_r"])
 Plots.plot(solu.t, [dict_res[:rh], dict_res[:rt], dict_res[:rd]], xaxis=(:log10, (0.01,Inf)), labels=["Rh" "Rt" "Rd"])

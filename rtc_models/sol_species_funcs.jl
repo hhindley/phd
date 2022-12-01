@@ -44,6 +44,8 @@ function choose_param_vector(model)
     return (@SVector [values(params)])[1], init
 end
 
+
+
 function sol(model, tspan)
     params, init = choose_param_vector(model)
     prob = ODEProblem(model, init, tspan, params)
@@ -51,7 +53,8 @@ function sol(model, tspan)
     return sol
 end
 
-function sol_with_t(model, init, tspan, params, t)
+function sol_with_t(model, init, params, tspan, t)
+    # params, init = choose_param_vector(model)
     prob = ODEProblem(model, init, tspan, params)
     sol = solve(prob, Rodas4(), saveat=t)
     return sol
@@ -63,7 +66,7 @@ function change_param(param_range, parameter)
     for val in param_range  
         param_dict[parameter] = val
         params = values(param_dict) # try get this to be an Svector at some point
-        solu = sol(rtc_model, init, tspan, params)
+        solu = sol(rtc_model, tspan)
         for (i,j) in zip(values(dict_res), all_species)
             push!(i, get_ssval(solu, j))
         end

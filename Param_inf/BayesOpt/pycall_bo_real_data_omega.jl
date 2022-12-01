@@ -1,70 +1,35 @@
-using Plots, PyCall, DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames
+using PlotlyJS, PyCall, DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames, CSV, OrderedCollections
 include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
+include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
 include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 
-# set time span and how many time points to solve at 
-tspan = (0, 100)
-t = exp10.(range(-3,2,15))
-pushfirst!(t, 0)
 
-sol_syn = sol_with_t(rtc_model, initial, params, tspan, t)
+function rtc_bo_ω(;ω_ab, ω_r)
+    obj_wt_ab, obj_wt_r = obj(rtc_model, initial, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr]), tspan2, t_2, "mrna", WT1, WT1_std)
 
-# plot solution 
-Plots.plot(sol_syn[2:end], xaxis=(:log10, (1,Inf)), yaxis=(:log10, (1,Inf)))
+    obj_gr_wt1 = obj_OD(rtc_model_N, init_N, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, k]), tspan2, t_2, "N", WT2, WT2_std)
+    obj_gr_wt2 = obj_OD(rtc_model_N, init_N, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, k]), tspan4, t_4, "N", WT3, WT3_std)
+    obj_gr_wt3 = obj_OD(rtc_model_N, init_N, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, k]), tspan4, t_4, "N", WT4, WT4_std)
 
-rtca_syn = get_curve(sol_syn, :rtca)
-rtcr_syn = get_curve(sol_syn, :rtcr)
+     return -sum(sum(obj) for obj in (obj_wt_ab/36, obj_wt_r/36, obj_gr_wt1/36, obj_gr_wt2/36, obj_gr_wt3/(66^2)))
+ end
 
-# rt_syn = get_curve(sol_syn, :rt)
-rd_syn = get_curve(sol_syn, :rd)
-rh_syn = get_curve(sol_syn, :rh)
-
-
-# objective function
-function rtc_bo(;ω_ab, ω_r, kdam)
-    solu = sol_with_t(rtc_model, init, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr]), tspan, t)
-    rtca = get_curve(solu, :rtca)
-    rtcr = get_curve(solu, :rtcr)
-    rh = get_curve(solu, :rh)
-    rd = get_curve(solu, :rd)
-
-    obj = []
-    # ω_ab
-    for (i,j) in zip(rtca, rtca_syn)
-        append!(obj, abs2(i-j))
-    end
-    
-    # ω_r
-    for (i,j) in zip(rtcr, rtcr_syn)
-        append!(obj, abs2(i-j))
-    end
-
-    # kdam 
-    for (i,j) in zip(rh, rh_syn)
-        append!(obj, abs2(i-j))
-    end
-    for (i,j) in zip(rd, rd_syn)
-        append!(obj, abs2(i-j))
-    end
-
-    return -sum(obj)
-end
 
 # in python writing the ranges to search for parameter value
 py"""
-param_range = {'ω_ab': (0, 10), 'ω_r': (0, 10), 'kdam': (0, 1)}
+param_range_ω = {'ω_ab': (0, 50), 'ω_r': (0, 50)}#, 'kdam': (0, 1)}
 """
 
 # import bayes_opt package from python
 bayes_opt = pyimport("bayes_opt")
 
 # setting the optimizer 
-optimizer = bayes_opt.BayesianOptimization(f=rtc_bo, pbounds=py"param_range", random_state=27, verbose=2) # verbose = 1 prints only when a maximum is observed (pink)
+optimizer = bayes_opt.BayesianOptimization(f=rtc_bo_ω, pbounds=py"param_range_ω", random_state=27, verbose=2) # verbose = 1 prints only when a maximum is observed (pink)
 
 # timing the process and maximising the optimizer 
 function timer()
-    optimizer.maximize(init_points=2, n_iter=10, acq="ucb")#, kappa=2)
+    optimizer.maximize(init_points=2, n_iter=100, acq="ei", xi=0.1) #kappa=2, 
 end
 
 @time timer()
@@ -74,33 +39,55 @@ print(optimizer.max)
 
 
 # creating lists of values of parameters tried and errors for each one  
-function results(optimizer)
-    vals, errors = [], []
-    for i in collect(1:length(optimizer.space.target))
-        a = collect(values(optimizer.res)[i])
-        append!(vals, collect(values(a[2][2])))
-        append!(errors, -(collect(values(a[1][2]))))
-    end
-
-    # reversing sum of squares error calculation to get errors close to zero 
-    errors_ori = sqrt.(errors/15)
-
-    # best values 
-    best_param = collect(values(collect(values(optimizer.max))[2]))
-    best_error = -[collect(values(optimizer.max))[1]]
-
-    # best error with sum of squares reversed 
-    best_error_ori = sqrt.(best_error/15)
-    return vals, errors, errors_ori, best_param, best_error, best_error_ori
-end
-
-vals, errors, errors_ori, best_param, best_error, best_error_ori = results(optimizer)
+vals_ab, vals_r, errors, best_param_ab, best_param_r, best_error = results_two_param(optimizer)
 
 # plot errors over iterations 
-Plots.plot(range(1,length(optimizer.space.target)), errors, markershapes=[:circle], ylabel=("Error"), xlabel=("Iteration"), legend=false, xticks = 0:5:length(optimizer.space.target), size=(1000,500))#, yaxis=(:log10, (1,Inf)))
+plot(range(10,length(errors)), errors[10:end], mode="markers+lines", Layout(xaxis_title="Iteration", yaxis_title="Error"))#, yaxis=(:log10, (1,Inf)))
+plot(range(1,length(errors)), errors, mode="markers+lines", Layout(xaxis_title="Iteration", yaxis_title="Error"))#, yaxis=(:log10, (1,Inf)))
 # png("error")
-Plots.plot(range(1,length(optimizer.space.target)), errors_ori, markershapes=[:circle], ylabel=("Adjusted error"), xlabel=("Iteration"), legend=false, xticks = 0:5:length(optimizer.space.target), size=(1000,500))#, yaxis=(:log10, (1,Inf)))
-# png("adjusted errors")
+
+layout = Layout(scene=attr(xaxis_title="ω_ab", yaxis_title="ω_r", zaxis_title="Error"))
+plot(surface(z=(errors), x=vals_ab, y=vals_r), layout)
+
+layout1 = Layout(xaxis_title="ω_ab", yaxis_title="ω_r", zaxis_title="Error")
+plot(contour(z=errors, x=vals_ab, y=vals_r), layout1)
+plot(range(1,length(optimizer.space.target)), vals_r)
+
+
+nVab = range(extrema(vals_ab)[1], extrema(vals_ab)[2],100)
+nVr = range(extrema(vals_r)[1], extrema(vals_r)[2],100)
+
+
+plot(surface(z=errors,x=vals_ab, y=vals_r))
+
+using ScatteredInterpolation
+points = hcat(vals_ab, vals_r)'
+itp = interpolate(Multiquadratic(), points, errors)
+
+
+
+
+using Interpolations
+a = rand(1:100, 100, 100, 100)
+itp = interpolate(a, BSpline(Linear()))
+v = itp(nVab, nVr, errors)
+
+
+N = 32
+u = LinRange(0, 2π, N)
+v = LinRange(0, π, N)
+x = cos.(u) * sin.(v)'
+y = sin.(u) * sin.(v)'
+z = repeat(cos.(v)',outer=[N, 1])
+plot(surface(x=x,y=y,z=z))
+
+
+
+using Plots
+Plots.surface(vals_ab, vals_r, errors)
+
+# will work for one param not two 
+vals, errors, errors_ori, best_param, best_error, best_error_ori = results(optimizer)
 
 # plot params over iterations
 Plots.plot(range(1,length(optimizer.space.target)), vals, markershapes=[:circle], ylabel=("Param attempt"), xlabel=("Iteration"), legend=false, xticks = 0:1:length(optimizer.space.target))#, size=(1000,500))#, yaxis=(:log10, (1,Inf)))
@@ -112,6 +99,10 @@ Plots.scatter(vals, errors, ylabel=("Error"), xlabel=("Parameter"), legend = fal
 scatter!(best_param, best_error, color = "red", label = "", markershape=[:circle])
 # png("error_vs_param")
 
+
+# adujusted errors dont think this is a thing
+Plots.plot(range(1,length(optimizer.space.target)), errors_ori, markershapes=[:circle], ylabel=("Adjusted error"), xlabel=("Iteration"), legend=false, xticks = 0:5:length(optimizer.space.target), size=(1000,500))#, yaxis=(:log10, (1,Inf)))
+# png("adjusted errors")
 # errors and params with original errors by sqrt and /15 (undoing sum?)
 Plots.scatter(vals, errors_ori, ylabel=("Adjusted error"), xlabel=("Parameter"), legend = false)#,  yaxis=(:log10, (1,Inf)))
 scatter!(best_param, best_error_ori, color = "red", label = "")

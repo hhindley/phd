@@ -1,70 +1,30 @@
-using Plots, PyCall, DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames
+using Plots, PyCall, DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames, CSV, OrderedCollections
 include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
+include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
 include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 
-# set time span and how many time points to solve at 
-tspan = (0, 100)
-t = exp10.(range(-3,2,15))
-pushfirst!(t, 0)
 
-sol_syn = sol_with_t(rtc_model, initial, params, tspan, t)
+function rtc_bo_dam(;kdam)
+     obj_wt = compare_data_and_sol(rtc_model, tspan, t_2, "mrnas", WT1, param_dict)
 
-# plot solution 
-Plots.plot(sol_syn[2:end], xaxis=(:log10, (1,Inf)), yaxis=(:log10, (1,Inf)))
+     return -(sum(obj_wt))
+ end
 
-rtca_syn = get_curve(sol_syn, :rtca)
-rtcr_syn = get_curve(sol_syn, :rtcr)
-
-# rt_syn = get_curve(sol_syn, :rt)
-rd_syn = get_curve(sol_syn, :rd)
-rh_syn = get_curve(sol_syn, :rh)
-
-
-# objective function
-function rtc_bo(;ω_ab, ω_r, kdam)
-    solu = sol_with_t(rtc_model, init, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr]), tspan, t)
-    rtca = get_curve(solu, :rtca)
-    rtcr = get_curve(solu, :rtcr)
-    rh = get_curve(solu, :rh)
-    rd = get_curve(solu, :rd)
-
-    obj = []
-    # ω_ab
-    for (i,j) in zip(rtca, rtca_syn)
-        append!(obj, abs2(i-j))
-    end
-    
-    # ω_r
-    for (i,j) in zip(rtcr, rtcr_syn)
-        append!(obj, abs2(i-j))
-    end
-
-    # kdam 
-    for (i,j) in zip(rh, rh_syn)
-        append!(obj, abs2(i-j))
-    end
-    for (i,j) in zip(rd, rd_syn)
-        append!(obj, abs2(i-j))
-    end
-
-    return -sum(obj)
-end
 
 # in python writing the ranges to search for parameter value
 py"""
-param_range = {'ω_ab': (0, 10), 'ω_r': (0, 10), 'kdam': (0, 1)}
+param_range_dam = {'kdam': (0, 1)}
 """
-
 # import bayes_opt package from python
 bayes_opt = pyimport("bayes_opt")
 
 # setting the optimizer 
-optimizer = bayes_opt.BayesianOptimization(f=rtc_bo, pbounds=py"param_range", random_state=27, verbose=2) # verbose = 1 prints only when a maximum is observed (pink)
+optimizer = bayes_opt.BayesianOptimization(f=rtc_bo_ω, pbounds=py"param_range_ω", random_state=27, verbose=2) # verbose = 1 prints only when a maximum is observed (pink)
 
 # timing the process and maximising the optimizer 
 function timer()
-    optimizer.maximize(init_points=2, n_iter=10, acq="ucb")#, kappa=2)
+    optimizer.maximize(init_points=2, n_iter=10, acq="ucb", kappa=2)#, xi=0.0)
 end
 
 @time timer()
@@ -72,27 +32,7 @@ print(optimizer.max)
 
 
 
-
 # creating lists of values of parameters tried and errors for each one  
-function results(optimizer)
-    vals, errors = [], []
-    for i in collect(1:length(optimizer.space.target))
-        a = collect(values(optimizer.res)[i])
-        append!(vals, collect(values(a[2][2])))
-        append!(errors, -(collect(values(a[1][2]))))
-    end
-
-    # reversing sum of squares error calculation to get errors close to zero 
-    errors_ori = sqrt.(errors/15)
-
-    # best values 
-    best_param = collect(values(collect(values(optimizer.max))[2]))
-    best_error = -[collect(values(optimizer.max))[1]]
-
-    # best error with sum of squares reversed 
-    best_error_ori = sqrt.(best_error/15)
-    return vals, errors, errors_ori, best_param, best_error, best_error_ori
-end
 
 vals, errors, errors_ori, best_param, best_error, best_error_ori = results(optimizer)
 

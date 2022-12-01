@@ -23,7 +23,7 @@ kin = 2.381 #2.638;#0
 ω_r = 0.0019*6;  
 ω_a = 4; 
 ω_b = 4;
-kdam = 0.05; 
+kdam = 0 #0.05; 
 k = 1.5; # carrying capacity - changes depending on the data?
 
 rtca_0 = 0.00894; 
@@ -32,15 +32,15 @@ rh_0 = 69.56; #69.4
 rtcr_0 = 0.04; # 8.67e-3;
 rm_a_0 = 0; 
 rm_b_0 = 0; 
-rm_r_0 = 0; 
+rm_r_0 = 0.04 # 0; 
 rd_0 = 0; 
 rt_0 = 0;
-N_0 = 1;
+N_0 = 0.01;
 
 param_dict = OrderedDict("L"=>L, "c"=>c, "kr"=>kr, "Vmax_init"=>Vmax_init, "Km_init"=>Km_init, "ω_ab"=>ω_ab, "ω_r"=>ω_r, "θtscr"=>θtscr, "g_max"=>g_max, "θtlr"=>θtlr, "km_a"=>km_a, "km_b"=>km_b, "gr_c"=>gr_c, "d"=>d, "krep"=>krep, "kdam"=>kdam, "ktag"=>ktag, "kdeg"=>kdeg, "kin"=>kin, "atp"=>atp, "na"=>na, "nb"=>nb, "nr"=>nr);
 param_dict_ko = OrderedDict("L"=>L, "c"=>c, "kr"=>kr, "Vmax_init"=>Vmax_init, "Km_init"=>Km_init, "ω_a"=>ω_a, "ω_b"=>ω_b, "ω_r"=>ω_r, "θtscr"=>θtscr, "g_max"=>g_max, "θtlr"=>θtlr, "km_a"=>km_a, "km_b"=>km_b, "gr_c"=>gr_c, "d"=>d, "krep"=>krep, "kdam"=>kdam, "ktag"=>ktag, "kdeg"=>kdeg, "kin"=>kin, "atp"=>atp, "na"=>na, "nb"=>nb, "nr"=>nr, "k"=>k);
 param_dict_N =  OrderedDict("L"=>L, "c"=>c, "kr"=>kr, "Vmax_init"=>Vmax_init, "Km_init"=>Km_init, "ω_ab"=>ω_ab, "ω_r"=>ω_r, "θtscr"=>θtscr, "g_max"=>g_max, "θtlr"=>θtlr, "km_a"=>km_a, "km_b"=>km_b, "gr_c"=>gr_c, "d"=>d, "krep"=>krep, "kdam"=>kdam, "ktag"=>ktag, "kdeg"=>kdeg, "kin"=>kin, "atp"=>atp, "na"=>na, "nb"=>nb, "nr"=>nr, "k"=>k);
-
+params = (@SVector [values(param_dict)])[1]
 initial = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0];
 init_N = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0, N_0];
 
