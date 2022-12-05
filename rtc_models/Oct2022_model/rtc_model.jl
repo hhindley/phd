@@ -54,9 +54,9 @@ function rtc_model(initial, params, t)
     @SVector [drm_a, drtca, drm_b, drtcb, drm_r, drtcr, drh, drd, drt]
 end
 
-function rtc_model_knockout_N(initial, params, t) 
+function rtc_model_knockout_OD(initial, params, t) 
     L, c, kr, Vmax_init, Km_init, ω_a, ω_b, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr = params
-    rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, N = initial
+    rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, OD = initial
 
 
     # growth rate
@@ -103,14 +103,14 @@ function rtc_model_knockout_N(initial, params, t)
     drh = Vrep - Vdam + Vinflux - dil(rh)
     drd = Vdam - Vtag - kdeg*rd - dil(rd)
     drt = Vtag - Vrep - dil(rt)
-    dN = lam*N*(1-(N/k))
+    dOD = lam*OD*(1-(OD/k))
 
-    @SVector [drm_a, drtca, drm_b, drtcb, drm_r, drtcr, drh, drd, drt, dN]
+    @SVector [drm_a, drtca, drm_b, drtcb, drm_r, drtcr, drh, drd, drt, dOD]
 end
 
-function rtc_model_N(initial, params, t) 
+function rtc_model_OD(initial, params, t) 
     L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, k = params
-    rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, N = initial
+    rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, OD = initial
 
 
     # growth rate
@@ -157,7 +157,7 @@ function rtc_model_N(initial, params, t)
     drh = Vrep - Vdam + Vinflux - dil(rh)
     drd = Vdam - Vtag - kdeg*rd - dil(rd)
     drt = Vtag - Vrep - dil(rt)
-    dN = lam*N*(1-(N/k))
+    dOD = lam*OD*(1-(OD/k))
 
-    @SVector [drm_a, drtca, drm_b, drtcb, drm_r, drtcr, drh, drd, drt, dN]
+    @SVector [drm_a, drtca, drm_b, drtcb, drm_r, drtcr, drh, drd, drt, dOD]
 end

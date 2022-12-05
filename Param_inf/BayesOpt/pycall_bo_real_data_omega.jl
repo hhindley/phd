@@ -1,4 +1,4 @@
-using PlotlyJS, PyCall, DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames, CSV, OrderedCollections
+using PlotlyJS, PyCall, DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames, CSV, OrderedCollections, ScatteredInterpolation
 include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
@@ -8,18 +8,35 @@ include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 function rtc_bo_ω(;ω_ab, ω_r)
     obj_wt_ab, obj_wt_r = obj(rtc_model, initial, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr]), tspan2, t_2, "mrna", WT1, WT1_std)
 
-    obj_gr_wt1 = obj_OD(rtc_model_N, init_N, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, k]), tspan2, t_2, "N", WT2, WT2_std)
-    obj_gr_wt2 = obj_OD(rtc_model_N, init_N, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, k]), tspan4, t_4, "N", WT3, WT3_std)
-    obj_gr_wt3 = obj_OD(rtc_model_N, init_N, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, k]), tspan4, t_4, "N", WT4, WT4_std)
+    # obj_gr_wt1 = obj_OD(rtc_model_OD, (@SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0, OD_0_wt2]), (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, findmax(WT2)[1]]), tspan2, t_2, "OD", WT2, WT2_std)
 
-     return -sum(sum(obj) for obj in (obj_wt_ab/36, obj_wt_r/36, obj_gr_wt1/36, obj_gr_wt2/36, obj_gr_wt3/(66^2)))
- end
+    # obj_gr_wt2 = obj_OD(rtc_model_OD, (@SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0, OD_0_wt3]), (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, findmax(WT3)[1]]), tspan2, t_2, "OD", WT3, WT3_std)
+
+    # obj_gr_wt3 = obj_OD(rtc_model_OD, (@SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0, OD_0_wt4]), (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, findmax(WT4)[1]]), tspan4, t_4, "OD", WT4, WT4_std)
+
+    # return -(obj_wt_ab/36)
+    # return -(obj_wt_r/36)
+    # return -(obj_gr_wt1/36)
+    # return -(obj_gr_wt2/36)
+    # return -(obj_gr_wt3/(66^2))
+
+    return -(obj_wt_ab/36 + obj_wt_r/36)
+    # return -(obj_wt_ab/36 + obj_wt_r/36 + obj_gr_wt1/36)
+    # return -(obj_wt_ab/36 + obj_wt_r/36 + obj_gr_wt1/36 + obj_gr_wt2/36)
+    # return -(obj_wt_ab/36 + obj_wt_r/36 + obj_gr_wt1/36 + obj_gr_wt2/36 + obj_gr_wt3/(66^2))
+
+
+end
 
 
 # in python writing the ranges to search for parameter value
 py"""
-param_range_ω = {'ω_ab': (0, 50), 'ω_r': (0, 50)}#, 'kdam': (0, 1)}
+param_range_ω = {'ω_ab': (0, 1), 'ω_r': (40, 100)}
 """
+
+# py"""
+# param_range_ω = {'θtlr': (0, 100), 'g_max': (0, 100)}
+# """
 
 # import bayes_opt package from python
 bayes_opt = pyimport("bayes_opt")
@@ -29,62 +46,35 @@ optimizer = bayes_opt.BayesianOptimization(f=rtc_bo_ω, pbounds=py"param_range_�
 
 # timing the process and maximising the optimizer 
 function timer()
-    optimizer.maximize(init_points=2, n_iter=100, acq="ei", xi=0.1) #kappa=2, 
+    optimizer.maximize(init_points=2, n_iter=50, acq="ei", xi=0.01) #kappa=2, xi = 0.0 (prefer exploitation), xi = 0.1 (prefer exploration)
 end
 
 @time timer()
 print(optimizer.max)
 
-
-
-
 # creating lists of values of parameters tried and errors for each one  
 vals_ab, vals_r, errors, best_param_ab, best_param_r, best_error = results_two_param(optimizer)
 
 # plot errors over iterations 
+plot(range(1,length(errors)), errors, mode="markers+lines", Layout(xaxis_title="Iteration", yaxis_title="Error", yaxis_range=[0, 100]))#, yaxis=(:log10, (1,Inf)))
+
 plot(range(10,length(errors)), errors[10:end], mode="markers+lines", Layout(xaxis_title="Iteration", yaxis_title="Error"))#, yaxis=(:log10, (1,Inf)))
 plot(range(1,length(errors)), errors, mode="markers+lines", Layout(xaxis_title="Iteration", yaxis_title="Error"))#, yaxis=(:log10, (1,Inf)))
 # png("error")
 
-layout = Layout(scene=attr(xaxis_title="ω_ab", yaxis_title="ω_r", zaxis_title="Error"))
-plot(surface(z=(errors), x=vals_ab, y=vals_r), layout)
-
 layout1 = Layout(xaxis_title="ω_ab", yaxis_title="ω_r", zaxis_title="Error")
 plot(contour(z=errors, x=vals_ab, y=vals_r), layout1)
-plot(range(1,length(optimizer.space.target)), vals_r)
 
 
-nVab = range(extrema(vals_ab)[1], extrema(vals_ab)[2],100)
-nVr = range(extrema(vals_r)[1], extrema(vals_r)[2],100)
+# 3D plot
+x,y,z = plot_3D(vals_ab, vals_r, errors)
 
-
-plot(surface(z=errors,x=vals_ab, y=vals_r))
-
-using ScatteredInterpolation
-points = hcat(vals_ab, vals_r)'
-itp = interpolate(Multiquadratic(), points, errors)
+layout = Layout(scene=attr(xaxis_title="ω_ab", yaxis_title="ω_r", zaxis_title="Error"))
+plot(surface(x=x,y=y, z=z), layout)
 
 
 
 
-using Interpolations
-a = rand(1:100, 100, 100, 100)
-itp = interpolate(a, BSpline(Linear()))
-v = itp(nVab, nVr, errors)
-
-
-N = 32
-u = LinRange(0, 2π, N)
-v = LinRange(0, π, N)
-x = cos.(u) * sin.(v)'
-y = sin.(u) * sin.(v)'
-z = repeat(cos.(v)',outer=[N, 1])
-plot(surface(x=x,y=y,z=z))
-
-
-
-using Plots
-Plots.surface(vals_ab, vals_r, errors)
 
 # will work for one param not two 
 vals, errors, errors_ori, best_param, best_error, best_error_ori = results(optimizer)

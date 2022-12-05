@@ -1,13 +1,13 @@
-using DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames, OrderedCollections, Plots #, PlotlyJS
+using DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames, OrderedCollections, Plots #PlotlyJS
 
 include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 
-solu_N = sol(rtc_model_N, tspan)
+solu_N = sol(rtc_model_OD, init_OD, tspan)
 
 plot(solu_N[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r" "rtcr" "rh" "rd" "rt" "den"],  xaxis=(:log10, (1,Inf)))
-N = get_curve(solu_N, :N)
+N = get_curve(solu_N, :OD)
 plot(solu_N.t, N)#,  xaxis=(:log10, (1,Inf)))
 rh = get_curve(solu1, :rh)
 plot(solu1.t, rh)
@@ -17,10 +17,10 @@ plot(solu1.t, lam)
 
 
 
-solu = @time(sol(rtc_model, tspan))
+solu = @time(sol(rtc_model, initial, tspan))
 get_curve(solu, :rh)
 
-plot(solu[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r" "rtcr" "rh" "rd" "rt"],  xaxis=(:log10, (1,Inf)))
+Plots.plot(solu[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r" "rtcr" "rh" "rd" "rt"],  xaxis=(:log10, (1,Inf)))
 # savefig(plot(solu[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r" "rtcr" "rh" "rd" "rt"],  xaxis=(:log10, (1,Inf))), "rtc_plot.svg") #, palette=:seaborn_bright)
 
 dict_res = get_all_curves(solu, all_species)
@@ -43,10 +43,19 @@ Plots.plot(solu.t, [((@.dict_res[:rh][1]/r_tot) *100), (@.dict_res[:rt][1]/r_tot
 
 # vary param
 kdeg_range = collect(0:0.01:0.2)
-results_kdeg = change_param(kdeg_range, "kdeg")
+results_kdeg = change_param(kdeg_range, "kdeg", all_species)
 plot(kdeg_range, results_kdeg[:rd], legend=false, xlabel="kdeg", ylabel="[Rd]")
 
-kdam_range = collect(0:0.1:10)
-results_kdam = change_param(kdam_range, "kdam")
-plot(kdam_range, [results_kdam[:rh],results_kdam[:rd]], labels=["Rh" "Rd"], xlabel="kdam", ylabel="[Species]")
+kdam_range = collect(0:0.1:100)
+results_kdam = change_param(kdam_range, "kdam", rtc_model_OD, init_OD, all_species_OD, param_dict_OD)
+plot(kdam_range, [results_kdam[:OD]], labels="OD", xlabel="kdam", ylabel="[Species]")
 
+
+
+ω_ab_range = collect(0:0.1:10)
+results_ωab = change_param(ω_ab_range, "ω_ab", rtc_model_OD, init_OD, all_species_OD, param_dict_OD)
+plot(ω_ab_range, [results_ωab[:OD]], labels="OD", xlabel="ω_ab", ylabel="[Species]")
+
+ω_r_range = collect(0:0.1:10)
+results_ωr = change_param(ω_r_range, "ω_r", rtc_model_OD, init_OD, all_species_OD, param_dict_OD)
+plot(ω_r_range, [results_ωr[:OD]], labels="OD", xlabel="ω_r", ylabel="[Species]")

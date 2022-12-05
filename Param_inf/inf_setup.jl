@@ -18,6 +18,7 @@ nB_std = df2[!,24]; nB_colD_std = df2[!,25]; nB_B_std = df2[!,26]; nB_B_colD_std
 nR = df2[!,14]; nR_colD = df2[!,15]; nR_std = df2[!,30]; nR_colD_std = df2[!,31]; 
 
 
+
 # set time span and how many time points to solve at 
 tspan2 = (0, 2880)
 t_2 = dfc[!,1]*60
@@ -37,11 +38,11 @@ function compare_data_and_sol(solu, curve, data, std)#(model, params, init, tspa
         rm_r = get_curve(solu, :rm_r)
         append!(obj, [abs2((i-j)/k) for (i,j,k) in zip(rm_a, data, std)])
         append!(obj1, [abs2((i-j)/k) for (i,j,k) in zip(rm_r, data, std)])
-    return obj, obj1
-    elseif curve == "N"
-        N = get_curve(solu, :N)
-        append!(obj, [abs2((i-j)/k) for (i,j,k) in zip(N, data, std)])
-    return obj
+    return sum(obj), sum(obj1)
+    elseif curve == "OD"
+        OD = get_curve(solu, :OD)
+        append!(obj, [abs2((i-j)/k) for (i,j,k) in zip(OD, data, std)])
+    return sum(obj)
     end
 end
  
@@ -52,7 +53,6 @@ function obj(model, init, params, tspan, t, curve, data, std)
 end
 
 function obj_OD(model, init, params, tspan, t, curve, data, std)
-    k = set_k(data)
     solu = sol_with_t(model, init, params, tspan, t)
     obj_wt = compare_data_and_sol(solu, curve, data, std)
     return obj_wt
@@ -67,6 +67,17 @@ function set_k(data)
         k = findmax(WT4)[1]
     end
     return k
+end
+
+function set_OD0(data)
+    if data == WT2
+        OD_0 = OD_0_wt2
+    elseif data == WT3
+        OD_0 = OD_0_wt3
+    else 
+        OD_0 = OD_0_wt4
+    end
+    return OD_0
 end
 
 
@@ -92,7 +103,7 @@ function results_one_param(optimizer)
 end
 
 function results_two_param(optimizer)
-    val_ab, val_r, errors = [], [], []
+    val_ab, val_r, errors = Array{Float64}(undef, 0), Array{Float64}(undef, 0), Array{Float64}(undef, 0)
     for i in collect(1:length(optimizer.space.target))
         a = collect(values(optimizer.res)[i])
         append!(val_ab, collect(values(a[2][2]))[2])
@@ -106,4 +117,21 @@ function results_two_param(optimizer)
     best_error = -[collect(values(optimizer.max))[1]]
 
     return val_ab, val_r, errors, best_param_ab, best_param_r, best_error
+end
+
+function plot_3D(vals_ab, vals_r, errors)
+    points = hcat(vals_ab, vals_r)'
+    nx = 1001
+    ny = 2000
+    x = LinRange(0,500, nx)
+    y = LinRange(0,1000, ny)
+    xy = Iterators.product(x,y)
+    xx = getindex.(xy,1)
+    yy = getindex.(xy,2)
+    points2 = hcat(vec(xx), vec(yy))'
+
+    itp = interpolate(Multiquadratic(), points, errors)
+    interpolated = ScatteredInterpolation.evaluate(itp, points2) # evaluate it for how ever many coordinates that you want
+    z = reshape(interpolated, nx,ny) # make the interpolated into a grid for plotting 
+    return x, y, z
 end
