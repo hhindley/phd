@@ -1,18 +1,20 @@
-using DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames, OrderedCollections, Plots #PlotlyJS
+using DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames, OrderedCollections, PlotlyJS
 
 include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 
-solu_N = sol(rtc_model_OD, init_OD, tspan)
+solu_OD = sol(rtc_model_OD, init_OD, params, tspan)
 
-plot(solu_N[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r" "rtcr" "rh" "rd" "rt" "den"],  xaxis=(:log10, (1,Inf)))
-N = get_curve(solu_N, :OD)
-plot(solu_N.t, N)#,  xaxis=(:log10, (1,Inf)))
-rh = get_curve(solu1, :rh)
-plot(solu1.t, rh)
-lam = gr_c*rh
-plot(solu1.t, lam)
+plotly_plot_sol_OD(solu_OD)
+
+# plot(solu_N[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r" "rtcr" "rh" "rd" "rt" "den"],  xaxis=(:log10, (1,Inf)))
+# N = get_curve(solu_N, :OD)
+# plot(solu_N.t, N)#,  xaxis=(:log10, (1,Inf)))
+# rh = get_curve(solu1, :rh)
+# plot(solu1.t, rh)
+# lam = gr_c*rh
+# plot(solu1.t, lam)
 
 
 
@@ -48,14 +50,14 @@ plot(kdeg_range, results_kdeg[:rd], legend=false, xlabel="kdeg", ylabel="[Rd]")
 
 kdam_range = collect(0:0.1:100)
 results_kdam = change_param(kdam_range, "kdam", rtc_model_OD, init_OD, all_species_OD, param_dict_OD)
+
 plot(kdam_range, [results_kdam[:OD]], labels="OD", xlabel="kdam", ylabel="[Species]")
 
-
-
-ω_ab_range = collect(0:0.1:10)
+ω_ab_range = collect(1:0.1:2)
 results_ωab = change_param(ω_ab_range, "ω_ab", rtc_model_OD, init_OD, all_species_OD, param_dict_OD)
-plot(ω_ab_range, [results_ωab[:OD]], labels="OD", xlabel="ω_ab", ylabel="[Species]")
+plot(ω_ab_range, results_ωab[:OD], Layout(xaxis_title="ω_ab", yaxis_title="OD"))
 
-ω_r_range = collect(0:0.1:10)
+
+ω_r_range = collect(0:1:100)
 results_ωr = change_param(ω_r_range, "ω_r", rtc_model_OD, init_OD, all_species_OD, param_dict_OD)
-plot(ω_r_range, [results_ωr[:OD]], labels="OD", xlabel="ω_r", ylabel="[Species]")
+plot(ω_r_range, results_ωr[:OD], Layout(xaxis_title="ω_r", yaxis_title="OD"))

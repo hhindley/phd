@@ -99,19 +99,19 @@ spl5 = Spline1D(time3, WT_colD; k=1, bc="extrapolate")
 OD_0_wtcolD = evaluate(spl5, 0)
 
 spl6 = Spline1D(time3, nA_colD; k=1, bc="extrapolate")
-OD_04_nAcolD = evaluate(spl6, 0)
+OD_0_nAcolD = evaluate(spl6, 0)
 
 spl7 = Spline1D(time3, nB_colD; k=1, bc="extrapolate")
-OD_04_nB_colD = evaluate(spl7, 0)
+OD_0_nBcolD = evaluate(spl7, 0)
 
 spl8 = Spline1D(time3, nB_B_colD; k=1, bc="extrapolate")
-OD_04_nBBcolD = evaluate(spl8, 0)
+OD_0_nBBcolD = evaluate(spl8, 0)
 
 spl9 = Spline1D(time3, nB_Bmut_colD; k=1, bc="extrapolate")
-OD_04_bBBmutcolD = evaluate(spl9, 0)
+OD_0_nBBmutcolD = evaluate(spl9, 0)
 
 spl10 = Spline1D(time3, nR_colD; k=1, bc="extrapolate")
-OD_04_nRcolD = evaluate(spl0, 0)
+OD_0_nRcolD = evaluate(spl10, 0)
 
 
 function check_OD_0(time, data, OD)
@@ -120,14 +120,25 @@ function check_OD_0(time, data, OD)
     time2 = [[0];time]
     data2 = [[OD];data]
     p2 = plot(time2*60, data2, markershape=:circle)
-    return p1, p2
+    return display(plot(p1, p2, layout=(2,1)))
 end
 
-p1, p2 = check_OD_0(time1, WT2, OD_0)
-plot(p1,p2, layout=(2,1))
+check_OD_0(time1, WT2, OD_0)
 
-p3, p4 = check_OD_0(time2, WT3, OD_02)
-plot(p3,p4, layout=(2,1))
+check_OD_0(time2, WT3, OD_02)
 
-p5, p6 = check_OD_0(time3, WT4, OD_03)
-plot(p5,p6, layout=(2,1))
+check_OD_0(time3, WT4, OD_03)
+
+check_OD_0(time2, hpx_rtcon, OD_0_hpxon)
+
+check_OD_0(time3, WT_colD, OD_0_wtcolD)
+
+check_OD_0(time3, nA_colD, OD_0_nAcolD)
+
+check_OD_0(time3, nB_colD, OD_0_nBcolD)
+
+check_OD_0(time3, nB_B_colD, OD_0_nBBcolD)
+
+check_OD_0(time3, nB_Bmut_colD, OD_0_nBBmutcolD)
+
+check_OD_0(time3, nR_colD, OD_0_nRcolD)

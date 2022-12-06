@@ -121,10 +121,10 @@ end
 
 function plot_3D(vals_ab, vals_r, errors)
     points = hcat(vals_ab, vals_r)'
-    nx = 1001
-    ny = 2000
-    x = LinRange(0,500, nx)
-    y = LinRange(0,1000, ny)
+    nx = 101
+    ny = 200
+    x = LinRange((py"param_range_ω"["ω_ab"])[1],(py"param_range_ω"["ω_ab"])[2], nx)
+    y = LinRange((py"param_range_ω"["ω_r"])[1],(py"param_range_ω"["ω_r"])[2], ny)
     xy = Iterators.product(x,y)
     xx = getindex.(xy,1)
     yy = getindex.(xy,2)

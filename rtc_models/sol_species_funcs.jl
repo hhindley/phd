@@ -30,9 +30,16 @@ function get_all_curves(sol, species)
     for (i,j) in zip(values(dict_res), species)
         push!(i, get_curve(sol, j))
     end
-    return dict_res
+    return DataFrame((dict_res))
 end
 
+function get_all_curves_df(sol, species) 
+    df_res = DataFrame(name => [] for name in species)
+    for (i,j) in zip(values(dict_res), species)
+        push!(i, get_curve(sol, j))
+    end
+    return df_res
+end
 
 # solving functions
 function choose_param_vector(model)
@@ -51,7 +58,7 @@ end
 
 
 
-function sol(model, init, tspan)
+function sol(model, init, params, tspan)
     params, init = choose_param_vector(model)
     prob = ODEProblem(model, init, tspan, params)
     sol = solve(prob, Rodas4())
@@ -71,7 +78,7 @@ function change_param(param_range, parameter, model, init, species, param_dict)
     for val in param_range  
         param_dict[parameter] = val
         params = values(param_dict) # try get this to be an Svector at some point
-        solu = sol(model, init, tspan)
+        solu = sol(model, init, params, tspan)
         for (i,j) in zip(values(dict_res), species)
             push!(i, get_ssval(solu, j))
         end
@@ -79,3 +86,48 @@ function change_param(param_range, parameter, model, init, species, param_dict)
     return dict_res
 end
 
+function plotly_plot_sol(sol)
+    rm_a = get_curve(sol, :rm_a); rm_b = get_curve(sol, :rm_b); rm_r = get_curve(sol, :rm_r); rtca = get_curve(sol, :rtca); rtcb = get_curve(sol, :rtcb); rtcr = get_curve(sol, :rtcr); rh = get_curve(sol, :rh); rt = get_curve(sol, :rt); rd = get_curve(sol, :rd);
+
+    rma_curve = scatter(x=sol.t, y=rm_a, name="mRNA RtcA")
+    rmb_curve = scatter(x=sol.t, y=rm_b, name="mRNA RtcB")
+    rmr_curve = scatter(x=sol.t, y=rm_r, name="mRNA RtcR")
+    rtca_curve = scatter(x=sol.t, y=rtca, name="RtcA")
+    rtcb_curve = scatter(x=sol.t, y=rtcb, name="RtcB")
+    rtcr_curve = scatter(x=sol.t, y=rtcr, name="RtcR")
+    rh_curve = scatter(x=sol.t, y=rh, name="Rh")
+    rt_curve = scatter(x=sol.t, y=rt, name="Rt")
+    rd_curve = scatter(x=sol.t, y=rd, name="Rd")
+    return display(plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve])    )
+end
+
+function plotly_plot_sol_withdata(sol)
+    rm_a = get_curve(sol, :rm_a); rm_b = get_curve(sol, :rm_b); rm_r = get_curve(sol, :rm_r); rtca = get_curve(sol, :rtca); rtcb = get_curve(sol, :rtcb); rtcr = get_curve(sol, :rtcr); rh = get_curve(sol, :rh); rt = get_curve(sol, :rt); rd = get_curve(sol, :rd);
+
+    rma_curve = scatter(x=sol.t, y=rm_a, name="mRNA RtcA")
+    rmb_curve = scatter(x=sol.t, y=rm_b, name="mRNA RtcB")
+    rmr_curve = scatter(x=sol.t, y=rm_r, name="mRNA RtcR")
+    rtca_curve = scatter(x=sol.t, y=rtca, name="RtcA")
+    rtcb_curve = scatter(x=sol.t, y=rtcb, name="RtcB")
+    rtcr_curve = scatter(x=sol.t, y=rtcr, name="RtcR")
+    rh_curve = scatter(x=sol.t, y=rh, name="Rh")
+    rt_curve = scatter(x=sol.t, y=rt, name="Rt")
+    rd_curve = scatter(x=sol.t, y=rd, name="Rd")
+    return display(plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve, data_plot]))
+end
+
+function plotly_plot_sol_OD(sol)
+    rm_a = get_curve(sol, :rm_a); rm_b = get_curve(sol, :rm_b); rm_r = get_curve(sol, :rm_r); rtca = get_curve(sol, :rtca); rtcb = get_curve(sol, :rtcb); rtcr = get_curve(sol, :rtcr); rh = get_curve(sol, :rh); rt = get_curve(sol, :rt); rd = get_curve(sol, :rd); OD = get_curve(sol, :OD)
+
+    rma_curve = scatter(x=sol.t, y=rm_a, name="mRNA RtcA")
+    rmb_curve = scatter(x=sol.t, y=rm_b, name="mRNA RtcB")
+    rmr_curve = scatter(x=sol.t, y=rm_r, name="mRNA RtcR")
+    rtca_curve = scatter(x=sol.t, y=rtca, name="RtcA")
+    rtcb_curve = scatter(x=sol.t, y=rtcb, name="RtcB")
+    rtcr_curve = scatter(x=sol.t, y=rtcr, name="RtcR")
+    rh_curve = scatter(x=sol.t, y=rh, name="Rh")
+    rt_curve = scatter(x=sol.t, y=rt, name="Rt")
+    rd_curve = scatter(x=sol.t, y=rd, name="Rd")
+    OD_curve = scatter(x=sol.t, y=OD, name="OD")
+    return display(plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve, OD_curve]))
+end

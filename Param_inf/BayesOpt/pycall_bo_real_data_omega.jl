@@ -31,12 +31,9 @@ end
 
 # in python writing the ranges to search for parameter value
 py"""
-param_range_ω = {'ω_ab': (0, 1), 'ω_r': (40, 100)}
+param_range_ω = {'ω_ab': (0, 0.5), 'ω_r': (70, 90)}
 """
 
-# py"""
-# param_range_ω = {'θtlr': (0, 100), 'g_max': (0, 100)}
-# """
 
 # import bayes_opt package from python
 bayes_opt = pyimport("bayes_opt")
@@ -46,7 +43,7 @@ optimizer = bayes_opt.BayesianOptimization(f=rtc_bo_ω, pbounds=py"param_range_�
 
 # timing the process and maximising the optimizer 
 function timer()
-    optimizer.maximize(init_points=2, n_iter=50, acq="ei", xi=0.01) #kappa=2, xi = 0.0 (prefer exploitation), xi = 0.1 (prefer exploration)
+    optimizer.maximize(init_points=2, n_iter=600, acq="ei", xi=0.01) #kappa=2, xi = 0.0 (prefer exploitation), xi = 0.1 (prefer exploration)
 end
 
 @time timer()
@@ -63,7 +60,7 @@ plot(range(1,length(errors)), errors, mode="markers+lines", Layout(xaxis_title="
 # png("error")
 
 layout1 = Layout(xaxis_title="ω_ab", yaxis_title="ω_r", zaxis_title="Error")
-plot(contour(z=errors, x=vals_ab, y=vals_r), layout1)
+# plot(contour(z=errors, x=vals_ab, y=vals_r, layout1))
 
 
 # 3D plot
@@ -71,35 +68,23 @@ x,y,z = plot_3D(vals_ab, vals_r, errors)
 
 layout = Layout(scene=attr(xaxis_title="ω_ab", yaxis_title="ω_r", zaxis_title="Error"))
 plot(surface(x=x,y=y, z=z), layout)
+plot(contour(z=z, x=x, y=y, contours_start=0, contours_end=50))
 
+# plotting how well the data fits 
+data_plot = scatter(x=dfc[!,1]*60, y=WT1, name="data")
+plot(data_plot)
+solu_t = sol_with_t(rtc_model, initial, params, tspan2, t_2)
+solu = sol(rtc_model, initial,params, tspan2)
 
+plotly_plot_sol(solu_t)
+plotly_plot_sol(solu)
+plotly_plot_sol_withdata(solu_t)
+plotly_plot_sol_withdata(solu)
 
-
-
-# will work for one param not two 
-vals, errors, errors_ori, best_param, best_error, best_error_ori = results(optimizer)
-
-# plot params over iterations
-Plots.plot(range(1,length(optimizer.space.target)), vals, markershapes=[:circle], ylabel=("Param attempt"), xlabel=("Iteration"), legend=false, xticks = 0:1:length(optimizer.space.target))#, size=(1000,500))#, yaxis=(:log10, (1,Inf)))
-hline!([4.14], labels= false)
-# png("param_attempts")
-
-# errors and params
-Plots.scatter(vals, errors, ylabel=("Error"), xlabel=("Parameter"), legend = false)#,  yaxis=(:log10, (1,Inf)))
-scatter!(best_param, best_error, color = "red", label = "", markershape=[:circle])
-# png("error_vs_param")
-
-
-# adujusted errors dont think this is a thing
-Plots.plot(range(1,length(optimizer.space.target)), errors_ori, markershapes=[:circle], ylabel=("Adjusted error"), xlabel=("Iteration"), legend=false, xticks = 0:5:length(optimizer.space.target), size=(1000,500))#, yaxis=(:log10, (1,Inf)))
-# png("adjusted errors")
-# errors and params with original errors by sqrt and /15 (undoing sum?)
-Plots.scatter(vals, errors_ori, ylabel=("Adjusted error"), xlabel=("Parameter"), legend = false)#,  yaxis=(:log10, (1,Inf)))
-scatter!(best_param, best_error_ori, color = "red", label = "")
-# png("adjusted_error_vs_param")
-
-
-
+rm_a = get_curve(solu_t, :rm_a); rm_r = get_curve(solu_t, :rm_r); 
+rma_curve = scatter(x=solu_t.t, y=rm_a, name="mRNA RtcA")
+rmr_curve = scatter(x=solu_t.t, y=rm_r, name="mRNA RtcR")
+plot([data_plot, rma_curve, rmr_curve])
 
 # trying different values of kappa
 vals1, errors1, errors_ori1, best_param1, best_error1, best_error_ori1 = [], [], [], [], [], []
