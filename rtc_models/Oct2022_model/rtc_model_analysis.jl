@@ -19,7 +19,9 @@ plotly_plot_sol_OD(solu_OD)
 
 
 
-solu = @time(sol(rtc_model, initial, tspan))
+solu = @time(sol(rtc_model, initial, params, tspan))
+plotly_plot_sol(solu)
+
 get_curve(solu, :rh)
 
 Plots.plot(solu[2:end], ylabel="[species]", labels=["rm_a" "rtca" "rm_b" "rtcb" "rm_r" "rtcr" "rh" "rd" "rt"],  xaxis=(:log10, (1,Inf)))

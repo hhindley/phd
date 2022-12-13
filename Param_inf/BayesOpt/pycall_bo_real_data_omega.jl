@@ -14,13 +14,13 @@ function rtc_bo_ω(;ω_ab, ω_r)
 
     # obj_gr_wt3 = obj_OD(rtc_model_OD, (@SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0, OD_0_wt4]), (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, findmax(WT4)[1]]), tspan4, t_4, "OD", WT4, WT4_std)
 
-    # return -(obj_wt_ab/36)
+    return -(obj_wt_ab/36)
     # return -(obj_wt_r/36)
     # return -(obj_gr_wt1/36)
     # return -(obj_gr_wt2/36)
     # return -(obj_gr_wt3/(66^2))
 
-    return -(obj_wt_ab/36 + obj_wt_r/36)
+    # return -(obj_wt_ab/36 + obj_wt_r/36)
     # return -(obj_wt_ab/36 + obj_wt_r/36 + obj_gr_wt1/36)
     # return -(obj_wt_ab/36 + obj_wt_r/36 + obj_gr_wt1/36 + obj_gr_wt2/36)
     # return -(obj_wt_ab/36 + obj_wt_r/36 + obj_gr_wt1/36 + obj_gr_wt2/36 + obj_gr_wt3/(66^2))
@@ -31,7 +31,7 @@ end
 
 # in python writing the ranges to search for parameter value
 py"""
-param_range_ω = {'ω_ab': (0, 0.5), 'ω_r': (70, 90)}
+param_range_ω = {'ω_ab': (0, 5), 'ω_r': (50, 90)}
 """
 
 
@@ -43,7 +43,7 @@ optimizer = bayes_opt.BayesianOptimization(f=rtc_bo_ω, pbounds=py"param_range_�
 
 # timing the process and maximising the optimizer 
 function timer()
-    optimizer.maximize(init_points=2, n_iter=600, acq="ei", xi=0.01) #kappa=2, xi = 0.0 (prefer exploitation), xi = 0.1 (prefer exploration)
+    optimizer.maximize(init_points=2, n_iter=1000, acq="ei", xi=0.01) #kappa=2, xi = 0.0 (prefer exploitation), xi = 0.1 (prefer exploration)
 end
 
 @time timer()
