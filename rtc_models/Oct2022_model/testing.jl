@@ -1,43 +1,20 @@
-using CSV, DataFrames, DifferentialEquations, StaticArrays, BenchmarkTools, OrderedCollections, DataInterpolations, Plots# PlotlyJS
+using CSV, DataFrames, DifferentialEquations, StaticArrays, BenchmarkTools, OrderedCollections, DataInterpolations, PlotlyJS
 include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 
-
 csv = DataFrame(CSV.File("/home/holliehindley/phd/data/results_colD_grfit.csv")) # read csv to a dataframe
 gr = csv."gr"
-t1 = csv."t"*60
+t1 = csv."t"
 
-function plot_int(fit, title) # must be plotted with plots.jl
-    p1 = scatter(t1, gr, label="input data",title=title, xlabel="time", ylabel="growth rate")
-    plot!(fit, label="fit")
-    return display(p1)
-end
-plot_int(lam, "Initial fit")
-plot_int(LinearInterpolation(gr,ts), "Linear Interpolation")
-plot_int(QuadraticInterpolation(gr,ts), "Quadratic Interpolation") # quadratic is best
-plot_int(LagrangeInterpolation(gr,ts), "Lagrange Interpolation")
-plot_int(ConstantInterpolation(gr,ts), "Constant Interpolation")
-plot_int(QuadraticSpline(gr,ts), "Quadratic Spline")
-plot_int(CubicSpline(gr,ts), "Cubic Spline")
-plot_int(BSplineInterpolation(gr,ts,2,:ArcLen,:Average), "BSpline Interpolation")
-plot_int(BSplineApprox(gr,ts,1,2,:ArcLen,:Average), "BSpline Approx")
+lam_colD = QuadraticInterpolation(gr,t1)
 
-print(gr)
-lam = QuadraticInterpolation(gr,ts)
-print(lam)
-lam(21.616666666666667)
-lam[132]
-lam[67]
-print(gr[1:66])
-plot()
-typeof(lam)
+csv_wt = DataFrame(CSV.File("/home/holliehindley/phd/data/results_rtcOFF_grfit.csv"))
+gr_wt = csv_wt."gr"
+t1_wt = csv_wt."t"
 
-lam_t = []
-for i in t1
-    push!(lam_t, lam(i))
-end
-lam_t-gr
+lam_wt = LinearInterpolation(gr_wt, t1_wt)
+@show lam_wt
 
 function rtc_model1!(initial, params, t) 
     L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam = params
@@ -89,20 +66,18 @@ function rtc_model1!(initial, params, t)
     drd = Vdam - Vtag - kdeg*rd - dil(rd)
     drt = Vtag - Vrep - dil(rt)
 
-    # @show (params[23])
+    # @show (lam(t)), t
 
     @SVector [drm_a, drtca, drm_b, drtcb, drm_r, drtcr, drh, drd, drt]
 end
 
-params = [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam]
+params = [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam_wt]
 initial = [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0];
 
-ts = csv."t"*60
-tspan = (0, 1297);
-
+tspan = (0,100000)
 prob = ODEProblem(rtc_model1!, initial, tspan, params)
 solu = solve(prob, Rodas4())#, saveat=ts)
-plot(solu)
+
 
 plotly_plot_sol(solu)
 
