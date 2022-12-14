@@ -1,4 +1,4 @@
-using DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames, OrderedCollections, PlotlyJS
+using DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, DataFrames, OrderedCollections, PlotlyJS
 
 include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")

@@ -26,16 +26,16 @@ function get_ssval(sol, species)
 end
 
 function get_all_curves(sol, species) 
-    dict_res = OrderedDict(name => [] for name in all_species)
+    dict_res = OrderedDict(name => [] for name in species)
     for (i,j) in zip(values(dict_res), species)
         push!(i, get_curve(sol, j))
     end
-    return DataFrame((dict_res))
+    return ((dict_res))
 end
 
 function get_all_curves_df(sol, species) 
     df_res = DataFrame(name => [] for name in species)
-    for (i,j) in zip(values(dict_res), species)
+    for (i,j) in zip(values(df_res), species)
         push!(i, get_curve(sol, j))
     end
     return df_res
@@ -130,4 +130,17 @@ function plotly_plot_sol_OD(sol)
     rd_curve = scatter(x=sol.t, y=rd, name="Rd")
     OD_curve = scatter(x=sol.t, y=OD, name="OD")
     return display(plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve, OD_curve]))
+end
+
+function plot_from_dict(dict, sol)
+    rma_curve = scatter(x=sol.t, y=dict[:rm_a], name="mRNA RtcA")
+    rmb_curve = scatter(x=sol.t, y=dict[:rm_b], name="mRNA RtcB")
+    rmr_curve = scatter(x=sol.t, y=dict[:rm_r], name="mRNA RtcR")
+    rtca_curve = scatter(x=sol.t, y=dict[:rtca], name="RtcA")
+    rtcb_curve = scatter(x=sol.t, y=dict[:rtcb], name="RtcB")
+    rtcr_curve = scatter(x=sol.t, y=dict[:rtcr], name="RtcR")
+    rh_curve = scatter(x=sol.t, y=dict[:rh], name="Rh")
+    rt_curve = scatter(x=sol.t, y=dict[:rt], name="Rt")
+    rd_curve = scatter(x=sol.t, y=dict[:rd], name="Rd")
+    return display(plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve])    )
 end

@@ -6,7 +6,7 @@ function rtc_model(initial, params, t)
 
     # growth rate
     lam = gr_c*rh 
-    # @show lam, t
+    @show lam
     # dilution by growth and degradation 
     dil(species) = lam*species
     deg(species) = d*species
@@ -27,7 +27,7 @@ function rtc_model(initial, params, t)
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
     tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
-    @show tlr_el
+
     # ribosomes
     rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
     rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
