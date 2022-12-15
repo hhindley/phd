@@ -6,7 +6,7 @@ function rtc_model(initial, params, t)
 
     # growth rate
     lam = gr_c*rh 
-    @show lam
+    # @show lam
     # dilution by growth and degradation 
     dil(species) = lam*species
     deg(species) = d*species
