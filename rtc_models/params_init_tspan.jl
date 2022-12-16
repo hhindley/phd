@@ -19,11 +19,11 @@ g_max = 2.0923;
 gr_c = 0.0008856; # 0.000599; 
 kdeg = 0.001; 
 kin = 0.054; #2.381 
-ω_ab = 0.001 #4#0.093; #0.0828304057748932;#4; 
-ω_r = 0.001 #0.0019*6 #70.53; #0.0019*6#79.43865871861044; #0.0019*6;  
+ω_ab = 0.0001#4#0.093; #0.0828304057748932;#4; 
+ω_r = 0.001#0.0019*6 #70.53; #0.0019*6#79.43865871861044; #0.0019*6;  
 ω_a = 4; 
 ω_b = 4;
-kdam = 0#0.05 #0.05; 
+kdam = 0.05 #0.05; 
 k = 2; # carrying capacity - changes depending on the data?
 
 rtca_0 = 0.00894; 
@@ -57,4 +57,4 @@ init_OD = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, 
 
 # params_la = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 
-tspan = (0, 1297);
+tspan = (0, 1e9);

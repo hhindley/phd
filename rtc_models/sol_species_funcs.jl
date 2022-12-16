@@ -97,7 +97,7 @@ function change_param(param_range, parameter, model, init, species, params)
     return dict_res
 end
 
-function plotly_plot_sol(sol)
+function plotly_plot_sol(sol, log)
     rm_a = get_curve(sol, :rm_a); rm_b = get_curve(sol, :rm_b); rm_r = get_curve(sol, :rm_r); rtca = get_curve(sol, :rtca); rtcb = get_curve(sol, :rtcb); rtcr = get_curve(sol, :rtcr); rh = get_curve(sol, :rh); rt = get_curve(sol, :rt); rd = get_curve(sol, :rd);
 
     rma_curve = scatter(x=sol.t, y=rm_a, name="mRNA RtcA")
@@ -109,7 +109,22 @@ function plotly_plot_sol(sol)
     rh_curve = scatter(x=sol.t, y=rh, name="Rh")
     rt_curve = scatter(x=sol.t, y=rt, name="Rt")
     rd_curve = scatter(x=sol.t, y=rd, name="Rd")
-    return (plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve] ,Layout(xaxis_type="log")))
+    return (plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve] ,Layout(xaxis_type=log)))
+end
+
+function plotly_plot_sol_timepoints(sol)
+    rm_a = get_curve(sol, :rm_a); rm_b = get_curve(sol, :rm_b); rm_r = get_curve(sol, :rm_r); rtca = get_curve(sol, :rtca); rtcb = get_curve(sol, :rtcb); rtcr = get_curve(sol, :rtcr); rh = get_curve(sol, :rh); rt = get_curve(sol, :rt); rd = get_curve(sol, :rd);
+
+    rma_curve = scatter(x=collect(0: length(sol.t)), y=rm_a, name="mRNA RtcA")
+    rmb_curve = scatter(x=collect(0: length(sol.t)), y=rm_b, name="mRNA RtcB")
+    rmr_curve = scatter(x=collect(0: length(sol.t)), y=rm_r, name="mRNA RtcR")
+    rtca_curve = scatter(x=collect(0: length(sol.t)), y=rtca, name="RtcA")
+    rtcb_curve = scatter(x=collect(0: length(sol.t)), y=rtcb, name="RtcB")
+    rtcr_curve = scatter(x=collect(0: length(sol.t)), y=rtcr, name="RtcR")
+    rh_curve = scatter(x=collect(0: length(sol.t)), y=rh, name="Rh")
+    rt_curve = scatter(x=collect(0: length(sol.t)), y=rt, name="Rt")
+    rd_curve = scatter(x=collect(0: length(sol.t)), y=rd, name="Rd")
+    return (plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve]))# ,Layout(xaxis_type="log")))
 end
 
 function plotly_plot_sol_withdata(sol)
@@ -175,7 +190,7 @@ function sweep_paramx2(model, params, species, func, param1, param2, param_range
         append!(vec, values(all_res[i]))
     end
     vec = reshape(vec, (length(param_range),length(param_range)))
-    return plot(contour(x=param_range, y=param_range, z=vec, colorbar=attr(title="$species")), Layout(xaxis_title="$param2", yaxis_title="$param1", title="$func of $species"))
+    return plot(contour(x=param_range, y=param_range, z=vec, colorbar=attr(title="$species", titleside="right")), Layout(xaxis_title="$param2", yaxis_title="$param1", title="$func of $species"))
 
 end
 
@@ -233,7 +248,7 @@ end
 function plot_sol_and_lam(solu, lam)
     lambda = get_lambda(solu, lam)
     p15 = plot(scatter(x=solu.t, y=lambda), Layout(title="λ"))
-    p = plotly_plot_sol(solu)
+    p = plotly_plot_sol(solu, "log")
     return [p p15]
 end
 
