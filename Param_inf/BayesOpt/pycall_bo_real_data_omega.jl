@@ -6,7 +6,7 @@ include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 
 
 function rtc_bo_ω(;ω_ab, ω_r)
-    obj_wt_ab, obj_wt_r = obj(rtc_model, initial, (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr]), tspan2, t_2, "mrna", WT1, WT1_std)
+    obj_wt_ab, obj_wt_r = obj(rtc_model, initial, ([L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr]), tspan2, t_2, "mrna", WT1, WT1_std)
 
     # obj_gr_wt1 = obj_OD(rtc_model_OD, (@SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0, OD_0_wt2]), (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, findmax(WT2)[1]]), tspan2, t_2, "OD", WT2, WT2_std)
 
@@ -43,7 +43,7 @@ optimizer = bayes_opt.BayesianOptimization(f=rtc_bo_ω, pbounds=py"param_range_�
 
 # timing the process and maximising the optimizer 
 function timer()
-    optimizer.maximize(init_points=2, n_iter=1000, acq="ei", xi=0.01) #kappa=2, xi = 0.0 (prefer exploitation), xi = 0.1 (prefer exploration)
+    optimizer.maximize(init_points=2, n_iter=100, acq="ei", xi=0.01) #kappa=2, xi = 0.0 (prefer exploitation), xi = 0.1 (prefer exploration)
 end
 
 @time timer()
@@ -61,6 +61,9 @@ plot(range(1,length(errors)), errors, mode="markers+lines", Layout(xaxis_title="
 
 layout1 = Layout(xaxis_title="ω_ab", yaxis_title="ω_r", zaxis_title="Error")
 # plot(contour(z=errors, x=vals_ab, y=vals_r, layout1))
+
+
+
 
 
 # 3D plot

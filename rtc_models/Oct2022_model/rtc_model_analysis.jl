@@ -7,41 +7,41 @@ include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 solu = @time(sol(rtc_model, initial, tspan, params))
 plotly_plot_sol(solu)
 
-rtca = get_curve(solu, :rtca)
-c = rtca[length(rtca)-3:length(rtca)]
-std(c)
+ω_ab_range = collect(0:1:2)
+params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :gr_c, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr)
+p1 = sweep_paramx2(rtc_model, params, :rtca, get_ssval, :ω_r, :ω_ab, ω_ab_range)
 
-params = [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr]
-all_res = []
-ω_ab_range = collect(0:0.1:5)
+params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :gr_c, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr)
+p2 = sweep_paramx2(rtc_model, params, :rtca, check_get_ssval, :ω_r, :ω_ab, ω_ab_range)
+
+p1
+
+
+
+
+
+h=[]
 for i in ω_ab_range
-    params[7] = i
-    dict_res = OrderedDict(name => [] for name in all_species)
+    params[:ω_r] = i
+    g=[]
     for val in ω_ab_range  
-        params[6] = val
+        params[:ω_ab] = val
         solu = sol(rtc_model, initial, tspan, params)
-        for (i,j) in zip(values(dict_res), all_species)
-            push!(i, get_ssval(solu, j))
-        end
+        push!(g, get_ssval(solu, :rtca))
     end
-    push!(all_res, dict_res)
-
+    push!(h, g)
 end
 
-rtcas = []
+h
+
+vect = []
 for i in (1:length(ω_ab_range))
-    push!(rtcas, all_res[i][:rtca])
+    append!(vect, values(h[i]))
 end
+vec
+vect = reshape(vect, (length(ω_ab_range),length(ω_ab_range)))
 
-values(rtcas)
-vec = []
-for i in (1:length(ω_ab_range))
-    append!(vec, values(rtcas[i]))
-end
-vec = reshape(vec, (length(ω_ab_range),length(ω_ab_range)))
-
-
-plot(contour(x=ω_ab_range, y=ω_ab_range, z=vec, colorbar=attr(title="RtcA")), Layout(xaxis_title="ω_ab", yaxis_title="ω_r", title="RtcA conc at last time point"))
+plot(contour(x=ω_ab_range, y=ω_ab_range, z=vec))
 
 
 
@@ -49,53 +49,77 @@ plot(contour(x=ω_ab_range, y=ω_ab_range, z=vec, colorbar=attr(title="RtcA")), 
 
 
 
-
-params = [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr]
-all_res = []
-ω_ab_range = collect(0:0.1:5)
+f=[]
 for i in ω_ab_range
-    params[7] = i
-    dict_res = OrderedDict(name => [] for name in all_species)
-    for val in ω_ab_range  
-        params[6] = val
-        solu = sol(rtc_model, initial, tspan, params)
-        for (i,j) in zip(values(dict_res), all_species)
-            push!(i, check_get_ssval(solu, j))
+    params[:gr_c] = i
+    h=[]
+    for i in ω_ab_range
+        params[:ω_r] = i
+        g=[]
+        for val in ω_ab_range  
+            params[:ω_ab] = val
+            solu = sol(rtc_model, initial, tspan, params)
+            push!(g, get_ssval(solu, :rtca))
         end
+        push!(h, g)
     end
-    push!(all_res, dict_res)
-
+    push!(f,h)
 end
 
+f
+
+vect = []
+for j in (1:length(ω_ab_range))
+    for i in (1:length(ω_ab_range))
+        append!(vect, values(f[j][i]))
+    end
+end
+vect
+vect = reshape(vect, (9,3))
+# vect = Array{Float64}(vect)
+vect
+
+# plot(surface(x=ω_ab_range, y=ω_ab_range, z=vect))
+
+
+
+# points = Array{Float64}(hcat(ω_ab_range, ω_ab_range)')
+# nx = 101
+# ny = 200
+# x = LinRange(minimum(ω_ab_range),maximum(ω_ab_range), nx)
+# y = LinRange(minimum(ω_ab_range),maximum(ω_ab_range), ny)
+# xy = Iterators.product(x,y)
+# xx = getindex.(xy,1)
+# yy = getindex.(xy,2)
+# points2 = hcat(vec(xx), vec(yy))'
+# using ScatteredInterpolation
+# itp = ScatteredInterpolation.interpolate(Multiquadratic(), points, vect)
+# interpolated = ScatteredInterpolation.evaluate(itp, points2) # evaluate it for how ever many coordinates that you want
+# z = reshape(interpolated, nx,ny)
+
+# layout = Layout(scene=attr(xaxis_title="t", yaxis_title="lambda", zaxis_title="rtca"))
+# plot(surface(x=x,y=y, z=z, surfacecolor=z), layout)
+
+
+
+
+
+
+
+
+
+all_res = sweep_paramx3(rtc_model, params, :rtca, get_ssval, :ω_r, :ω_ab, :gr_c, ω_ab_range)
+
+all_res
+all_res[1][:rtca]
+all_res[1][1][:rtca]
 rtcas = []
-for i in (1:length(ω_ab_range))
-    push!(rtcas, all_res[i][:rtca])
+for j in (1:length(ω_ab_range))
+    for i in (1:length(ω_ab_range))
+        push!(rtcas, all_res[j][i][:rtca])
+    end
 end
-
-values(rtcas)
-vec = []
-for i in (1:length(ω_ab_range))
-    append!(vec, values(rtcas[i]))
-end
-vec = reshape(vec, (length(ω_ab_range),length(ω_ab_range)))
-
-
-plot(contour(x=ω_ab_range, y=ω_ab_range, z=vec, colorbar=attr(title="RtcA")), Layout(xaxis_title="ω_ab", yaxis_title="ω_r", title="RtcA conc at last time point"))#, xaxis_type="log", yaxis_type="log"))
-
-
-
-
-
-
-
-
-
-
-
-
-ntspan[2]
-
-
+rtcas
 
 
 get_curve(solu, :rh)
