@@ -5,7 +5,7 @@ include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 
 solu = @time(sol(rtc_model, initial, tspan, params))
-plotly_plot_sol(solu)
+plotly_plot_sol(solu, "log")
 
 ω_ab_range = collect(0:1:2)
 params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :gr_c, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr)
@@ -39,7 +39,7 @@ for i in (1:length(ω_ab_range))
     append!(vect, values(h[i]))
 end
 vec
-vect = reshape(vect, (length(ω_ab_range),length(ω_ab_range)))
+vect = reshape(vec, (length(ω_ab_range),length(ω_ab_range)))
 
 plot(contour(x=ω_ab_range, y=ω_ab_range, z=vec))
 
@@ -149,7 +149,7 @@ Plots.plot(solu.t, [((@.dict_res[:rh][1]/r_tot) *100), (@.dict_res[:rt][1]/r_tot
 # vary param
 kdeg_range = collect(0:0.01:0.2)
 results_kdeg = change_param(kdeg_range, "kdeg", rtc_model_OD, init_OD, all_species_OD, param_dict_OD)
-plot(kdeg_range, results_kdeg[:rd], Layout(xaxis_title="kdeg", yaxis_title="rd"))
+plot(kdeg_range, results_kdeg[:rm_a], Layout(xaxis_title="kdeg", yaxis_title="rd"))
 
 
 kdam_range = collect(0:0.1:10)

@@ -16,3 +16,7 @@ kdam = (kin/M)/r0
 kdam = kin/Φ0
 
 kdam = kin/r0
+
+kdam = (kin/M)/Φ0
+
+kdam = (Φ0/M)/r0

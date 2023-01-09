@@ -4,6 +4,11 @@ csv = DataFrame(CSV.File("/home/holliehindley/phd/data/results_colD_grfit.csv"))
 gr = csv."gr"
 t1 = csv."t"
 
+# gr[gr.<0] .= 0
+
+
+
+
 scatter(t1, gr, label="inut pdata",title="Initial fit", xlabel="time", ylabel="growth rate")
 plot!(t1, gr, label="fit")
 

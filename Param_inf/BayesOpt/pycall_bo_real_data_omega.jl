@@ -1,12 +1,16 @@
-using PlotlyJS, PyCall, DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames, CSV, OrderedCollections, ScatteredInterpolation
+using PlotlyJS, PyCall, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, DataFrames, CSV, OrderedCollections, ScatteredInterpolation
 include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
 include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
+include("/home/holliehindley/phd/rtc_models/Oct2022_model/units/millerunit_conversion.jl")
 
+csv_wt = DataFrame(CSV.File("/home/holliehindley/phd/data/results_rtcOFF_grfit.csv"))
+csv_wt = select!(csv_wt, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
+lam_wt, new_df_wt = extend_gr_curve(csv_wt)
 
 function rtc_bo_ω(;ω_ab, ω_r)
-    obj_wt_ab, obj_wt_r = obj(rtc_model, initial, ([L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr]), tspan2, t_2, "mrna", WT1, WT1_std)
+    obj_wt_ab, obj_wt_r = obj(rtc_model1!, initial, ([L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, atp, na, nb, nr, lam_wt]), tspan2, t_2, "mrna", WT_mRNA_conc, WT_mRNA_conc_std)
 
     # obj_gr_wt1 = obj_OD(rtc_model_OD, (@SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0, OD_0_wt2]), (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, findmax(WT2)[1]]), tspan2, t_2, "OD", WT2, WT2_std)
 
@@ -31,7 +35,7 @@ end
 
 # in python writing the ranges to search for parameter value
 py"""
-param_range_ω = {'ω_ab': (0, 5), 'ω_r': (50, 90)}
+param_range_ω = {'ω_ab': (0, 0.01), 'ω_r': (0, 0.01)}
 """
 
 
@@ -43,11 +47,21 @@ optimizer = bayes_opt.BayesianOptimization(f=rtc_bo_ω, pbounds=py"param_range_�
 
 # timing the process and maximising the optimizer 
 function timer()
-    optimizer.maximize(init_points=2, n_iter=100, acq="ei", xi=0.01) #kappa=2, xi = 0.0 (prefer exploitation), xi = 0.1 (prefer exploration)
+    optimizer.maximize(init_points=2, n_iter=5, acq="ei", xi=0.01) #kappa=2, xi = 0.0 (prefer exploitation), xi = 0.1 (prefer exploration)
 end
 
 @time timer()
 print(optimizer.max)
+
+
+
+
+
+
+
+
+
+
 
 # creating lists of values of parameters tried and errors for each one  
 vals_ab, vals_r, errors, best_param_ab, best_param_r, best_error = results_two_param(optimizer)

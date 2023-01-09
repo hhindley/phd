@@ -172,12 +172,13 @@ function plot_from_dict(dict, sol)
 end
 
 
-function sweep_paramx2(model, params, species, func, param1, param2, param_range)
+function sweep_paramx2(model, lam, species, func, param1, param2, param_range1, param_range2)
     all_res = []
-    for i in param_range
+    params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+    for i in param_range1
         params[param1] = i
         res1 = []
-        for val in param_range  
+        for val in param_range2 
             params[param2] = val
             solu = sol(model, initial, tspan, params)
             push!(res1, func(solu, species))
@@ -186,11 +187,11 @@ function sweep_paramx2(model, params, species, func, param1, param2, param_range
 
     end
     vec = []
-    for i in (1:length(param_range))
+    for i in (1:length(param_range1))
         append!(vec, values(all_res[i]))
     end
-    vec = reshape(vec, (length(param_range),length(param_range)))
-    return plot(contour(x=param_range, y=param_range, z=vec, colorbar=attr(title="$species", titleside="right")), Layout(xaxis_title="$param2", yaxis_title="$param1", title="$func of $species"))
+    vec = reshape(vec, (length(param_range1),length(param_range1)))
+    return plot(contour(x=param_range1, y=param_range2, z=vec, colorbar=attr(title="$species", titleside="right")), Layout(xaxis_title="$param1", yaxis_title="$param2", title="$func of $species"))
 
 end
 
@@ -329,3 +330,14 @@ function scale_lam(csv, species)
     end
 return plot(scatter(x=lam_range, y=rtcas), Layout(xaxis_title="λ", yaxis_title="std last vals $species"))
 end
+
+function extend_gr_curve(csv)
+    mean_gr = mean((csv."gr"[Int64((length(csv."t")*2/3)+1):end]))
+    df = DataFrame(t=Float64[], gr=Float64[])
+    for t in collect(csv."t"[end]+10:5000:1e9)
+        push!(df, [t, mean_gr])
+    end    
+    new_df = vcat(csv, df)
+    lam = QuadraticInterpolation(new_df."gr",new_df."t")
+    return lam, new_df
+end  

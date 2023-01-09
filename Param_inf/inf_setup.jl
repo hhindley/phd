@@ -1,4 +1,4 @@
-using DataFrames, CSV
+using DataFrames, CSV, PyCall
 
 # data
 dfc = DataFrame(CSV.File("/home/holliehindley/phd/data/fig4c_bo.csv"))
@@ -6,7 +6,7 @@ WT1 = dfc[!,2]; hpx = dfc[!,3]; WT1_std = dfc[!,4]; hpx_std = dfc[!,5]; # promot
 
 dfe = DataFrame(CSV.File("/home/holliehindley/phd/data/fig4e_rtcoff_bo.csv"))
 WT2 = dfe[!,2]; hpx_rtcoff = dfe[!,3]; WT2_std = dfe[!,4]; hpx_rtcoff_std = dfe[!,5]; # growth
-WT2
+
 dff = DataFrame(CSV.File("/home/holliehindley/phd/data/fig4f_rtcon_bo.csv"))
 WT3 = dff[!,2]; hpx_rtcon = dff[!,3]; WT3_std = dff[!,4]; hpx_rtcon_std = dff[!,5]; # growth
 
