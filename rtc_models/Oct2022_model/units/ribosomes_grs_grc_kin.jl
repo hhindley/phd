@@ -2,6 +2,8 @@ using Statistics, PlotlyJS, DataInterpolations
 
 SF = 1e6/(6.022e23*1e-15)
 
+4000*SF
+
 # ribosomes
 ribo_cell =  [6800,13500,26300,45100,72000]
 ribo_conc = []
@@ -22,7 +24,7 @@ growth_rate_constant = mean(cs)
 
 plot(scatter(x=grs, y=ribo_conc))
 int = LinearInterpolation(ribo_conc, grs)
-r_c = int(0.013) # ribosome conc at growth rate of 0.013
+r_c = int(0.0) # ribosome conc at growth rate of 0.013
 
 function plot_int(fit, title, t1, gr) # must be plotted with plots.jl
     p1 = Plots.scatter(t1, gr, label="inut pdata",title=title, xlabel="Growth rate (/min)", ylabel="Ribosome conc (μM)")

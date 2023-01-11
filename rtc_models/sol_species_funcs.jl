@@ -32,8 +32,42 @@ function check_get_ssval(sol, species, n=3)
     else
         rename!(df, [:time, :rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :OD])
     end
-    # print(df[length(sol.t)-n:length(sol.t), :rtca])
-    return std(df[length(sol.t)-n:length(sol.t), species])
+
+    ss_vals = Dict(:rm_a=>[], :rtca=>[], :rm_b=>[], :rtcb=>[], :rm_r=>[], :rtcr=>[], :rh=>[], :rd=>[], :rt=>[])
+    for i in collect(0:2)
+        alpha = df[!,:rt][end-i]/kr 
+        fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
+        ra = fa*df[!,:rtcr][end-i]
+        
+        Vinit = ra*Vmax_init*atp/(Km_init+atp)
+        tscr_el_a = ω_ab*atp/(θtscr+atp)
+        tscr_a = Vinit*tscr_el_a
+        tscr_el_b = ω_ab*atp/(θtscr+atp)
+        tscr_b = Vinit*tscr_el_b
+        tscr_r = ω_r*atp/(θtscr+atp)
+
+        tlr_el = g_max*atp/(θtlr+atp)
+
+        rtca1 = (atp*df[!,:rtca][end-i])/(atp+(km_a*df[!,:rd][end-i])) 
+        rtcb1 = (atp*df[!,:rtcb][end-i])/(atp+(km_b*df[!,:rt][end-i])) 
+
+        Vrep = krep*rtcb1*df[!,:rt][end-i]
+        Vdam = kdam*df[!,:rh][end-i]
+        Vinflux = kin*tlr_el 
+        Vtag = ktag*rtca1*df[!,:rd][end-i]
+
+        push!(ss_vals[:rm_a], tscr_a - lam(lam[end-i])*df[!,:rm_a][end-i] - d*df[!,:rm_a][end-i])
+        push!(ss_vals[:rtca], (1/na)*df[!,:rh][end-i]*df[!,:rm_a][end-i]*tlr_el - lam(lam[end-i])*df[!,:rtca][end-i])  
+        push!(ss_vals[:rm_b], tscr_b - lam(lam[end-i])*df[!,:rm_b][end-i] - d*df[!,:rm_b][end-i])
+        push!(ss_vals[:rtcb], (1/nb)*df[!,:rh][end-i]*df[!,:rm_b][end-i]*tlr_el - lam(lam[end-i])*df[!,:rtcb][end-i])
+        push!(ss_vals[:rm_r], tscr_r - lam(lam[end-i])*df[!,:rm_r][end-i] - d*df[!,:rm_r][end-i])
+        push!(ss_vals[:rtcr], (1/nr)*df[!,:rh][end-i]*df[!,:rm_r][end-i]*tlr_el - lam(lam[end-i])*df[!,:rtcr][end-i])
+        push!(ss_vals[:rh], Vrep - Vdam + Vinflux - lam(lam[end-i])*df[!,:rh][end-i])
+        push!(ss_vals[:rd], Vdam - Vtag - kdeg*df[!,:rd][end-i] - lam(lam[end-i])*df[!,:rd][end-i])
+        push!(ss_vals[:rt], Vtag - Vrep - lam(lam[end-i])*df[!,:rt][end-i])
+    end
+    return std(ss_vals[species])
+    # return (std(df[length(sol.t)-n:length(sol.t), species])/mean(df[length(sol.t)-n:length(sol.t), species]))*100
 end
 
 function get_all_curves(sol, species) 
@@ -192,11 +226,13 @@ function sweep_paramx2(model, lam, species, func, param1, param2, param_range1, 
     end
     vec = reshape(vec, (length(param_range1),length(param_range1)))
     return plot(contour(x=param_range1, y=param_range2, z=vec, colorbar=attr(title="$species", titleside="right")), Layout(xaxis_title="$param1", yaxis_title="$param2", title="$func of $species"))
-
 end
+# contours_start=0, contours_end=1000000,
 
-function sweep_paramx3(model, params, species, func, param1, param2, param3, param_range)
+
+function sweep_paramx3(model, lam, species, func, param1, param2, param3, param_range)
     all_res = []
+    params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
     for v in param_range
         params[param3] = v
         res1 = []
@@ -213,8 +249,8 @@ function sweep_paramx3(model, params, species, func, param1, param2, param3, par
         push!(all_res, res1)
     end
 
-    all_res = reshape(all_res, length(param_range), length(param_range))
-    @show size(all_res)
+    # all_res = reshape(all_res, length(param_range), length(param_range))
+    # @show size(all_res)
 
     # rtcas = []
     # for i in (1:length(param_range))
