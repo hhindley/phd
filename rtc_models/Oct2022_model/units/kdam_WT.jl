@@ -1,32 +1,23 @@
 include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 
-M = 1e-15
+v = 1e-15
 
 r0 = 0.087
 p = 0.76
+r_mw = 2.7e6
+tot_prot = 15e-12
 
 Φ0 = p*r0
 
-tlr_el = g_max*atp/(θtlr+atp)
-kin
-kdam = (tlr_el*kin/M)*(1/Φ0)
+g_ribos = Φ0*tot_prot # unit grams
 
-kdam = (kin/M)/r0 
+mol_ribos = g_ribos/r_mw # unit mol
 
+conc_ribos = mol_ribos/v # unit M
 
-kdam = kin/r0
+rh0 = conc_ribos*1e6 # unit μM
 
-kdam = (kin/M)/Φ0
-
-kdam = (Φ0/M)/r0
+kdam = kin/rh0
 
 
-kdam = kin*tlr_el/r0
-
-
-
-kdam = kin/Φ0
-kdam = kin*tlr_el/Φ0
-
-kdam = kin/(Φ0*M)
 

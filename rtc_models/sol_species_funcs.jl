@@ -220,11 +220,14 @@ function sweep_paramx2(model, lam, species, func, param1, param2, param_range1, 
         push!(all_res, res1)
 
     end
+    # @show size(all_res)
     vec = []
     for i in (1:length(param_range1))
         append!(vec, values(all_res[i]))
     end
+    # @show (vec)
     vec = reshape(vec, (length(param_range1),length(param_range1)))
+    @show (vec)
     return plot(contour(x=param_range1, y=param_range2, z=vec, colorbar=attr(title="$species", titleside="right")), Layout(xaxis_title="$param1", yaxis_title="$param2", title="$func of $species"))
 end
 # contours_start=0, contours_end=1000000,
@@ -248,29 +251,22 @@ function sweep_paramx3(model, lam, species, func, param1, param2, param3, param_
         end
         push!(all_res, res1)
     end
+    vec = []
+    for i in (1:length(param_range))
+        append!(vec, values(all_res[i]))
+    end
+    vec1 = []
+    for i in (1:length(vec))
+        append!(vec1, values(vec[i]))
+    end
+    
+    vec2 = reshape(vec1, (length(param_range),length(param_range),length(param_range)))
+    vec2 = convert(Array{Float64}, vec2)
 
-    # all_res = reshape(all_res, length(param_range), length(param_range))
-    # @show size(all_res)
+    x,y,z = mgrid(param_range, param_range, param_range)
 
-    # rtcas = []
-    # for i in (1:length(param_range))
-    #     for i in (1:length(param_range))
-    #         push!(rtcas, all_res[i][species])
-    #     end
-    # end
-    # @show size(rtcas)
-
-    # values(rtcas)
-    # vec = []
-    # for i in (1:length(param_range))
-    #     append!(vec, values(rtcas[i]))
-    # end
-    # @show size(vec)
-    # # vec = reshape(vec, (length(param_range),length(param_range)))
-    # @show size(all_res)
-
-    return all_res
-    # return plot(contour(x=ω_ab_range, y=ω_ab_range, z=vec, colorbar=attr(title="$species")), Layout(xaxis_title="ω_ab", yaxis_title="ω_r", title="ss val of $species"))
+    return plot(volume(x=x[:], y=y[:], z=z[:], value=vec2[:], opacity=0.1, surface_count=21, #slices_z=attr(show=true, locations=[0.4], fill=1),
+    colorbar=attr(title="$species", titleside="right")), Layout(scene=attr(xaxis_title="$param1", yaxis_title="$param2", zaxis_title="$param3", title="$func of $species")))
 
 end
 

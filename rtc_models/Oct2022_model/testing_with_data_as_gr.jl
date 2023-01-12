@@ -47,8 +47,8 @@ p = plotly_plot_sol(solu_colD, "log")
 
 # scale_lam(csv, :rtca)
 
-ω_ab_range = collect(range(0, 1, length=20))
-ω_r_range = collect(range(0, 1, length=20))
+ω_ab_range = collect(range(0, 1, length=10))
+ω_r_range = collect(range(0, 1, length=10))
 
 pc = sweep_paramx2(rtc_model1!, lam_colD, :rtca, get_ssval, :ω_r, :ω_ab, ω_r_range, ω_ab_range)
 p1c = sweep_paramx2(rtc_model1!, lam_colD, :rtcb, get_ssval, :ω_r, :ω_ab, ω_r_range, ω_ab_range)
@@ -92,9 +92,18 @@ p6h_std = sweep_paramx2(rtc_model1!, lam_wt, :rh, check_get_ssval, :ω_r, :ω_ab
 p7h_std = sweep_paramx2(rtc_model1!, lam_wt, :rd, check_get_ssval, :ω_r, :ω_ab, ω_r_range, ω_ab_range)
 p8h_std = sweep_paramx2(rtc_model1!, lam_wt, :rt, check_get_ssval, :ω_r, :ω_ab, ω_r_range, ω_ab_range)
 
+# 3d plots
+include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
+
+p3d1 = sweep_paramx3(rtc_model1!, lam_wt, :rtca, get_ssval, :ω_r, :ω_ab, :kdam, ω_r_range)
+p3d2 = sweep_paramx3(rtc_model1!, lam_wt, :rtcb, get_ssval, :ω_r, :ω_ab, :kdam, ω_r_range)
+p3d3 = sweep_paramx3(rtc_model1!, lam_wt, :rtcr, get_ssval, :ω_r, :ω_ab, :kdam, ω_r_range)
+p3d4 = sweep_paramx3(rtc_model1!, lam_wt, :rm_a, get_ssval, :ω_r, :ω_ab, :kdam, ω_r_range)
+p3d5 = sweep_paramx3(rtc_model1!, lam_wt, :rm_b, get_ssval, :ω_r, :ω_ab, :kdam, ω_r_range)
+p3d6 = sweep_paramx3(rtc_model1!, lam_wt, :rm_r, get_ssval, :ω_r, :ω_ab, :kdam, ω_r_range)
+p3d7 = sweep_paramx3(rtc_model1!, lam_wt, :rh, get_ssval, :ω_r, :ω_ab, :kdam, ω_r_range)
+p3d8 = sweep_paramx3(rtc_model1!, lam_wt, :rd, get_ssval, :ω_r, :ω_ab, :kdam, ω_r_range)
+p3d9 = sweep_paramx3(rtc_model1!, lam_wt, :rt, get_ssval, :ω_r, :ω_ab, :kdam, ω_r_range)
 
 
 
-res_3 = sweep_paramx3(rtc_model1!, lam_wt, :rtcr, get_ssval, :ω_r, :ω_ab, :kdam, ω_r_range)
-
-res_3 = reshape(res_3, 20, 1)
