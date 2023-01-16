@@ -81,28 +81,6 @@ more_iter(optimizer, x, y)
 
 
 
-# creating lists of values of parameters tried and errors for each one  
-vals_ab, vals_r, errors, best_param_ab, best_param_r, best_error = results_two_param(optimizer)
-
-# plot errors over iterations 
-plot(range(10,length(errors)), errors[10:end], mode="markers+lines", Layout(xaxis_title="Iteration", yaxis_title="Error"))#, yaxis=(:log10, (1,Inf)))
-plot(range(1,length(errors)), errors, mode="markers+lines", Layout(xaxis_title="Iteration", yaxis_title="Error"))#, yaxis=(:log10, (1,Inf)))
-# png("error")
-
-layout1 = Layout(xaxis_title="ω_ab", yaxis_title="ω_r", zaxis_title="Error")
-plot(contour(z=errors, x=vals_ab, y=vals_r), layout1)
-
-
-# 3D plot
-x,y,z = plot_3D(vals_ab, vals_r, errors)
-
-layout = Layout(scene=attr(xaxis_title="ω_ab", yaxis_title="ω_r", zaxis_title="Error"))
-plot(surface(x=x,y=y, z=z), layout)
-
-
-
-
-
 
 
 
@@ -178,31 +156,13 @@ x = reshape(x, (10000,1))
 plot_gp(optimizer, x, y)
 
 
+function more_iter(optimizer, x, y)
+    optimizer.maximize(init_points=0, n_iter=1, kappa=5)
+    return plot_gp(optimizer,x,y)
+end
+
+more_iter(optimizer, x, y)
 
 
-optimizer.maximize(init_points=0, n_iter=1, kappa=5)#, xi=0.1) #kappa=2, 
-
-plot_gp(optimizer, x, y)
-# steps = length(optimizer.space)
-# mu, utility, x_obs, y_obs = plot_gp(optimizer, x, y)
-# p = make_subplots(rows=2, cols=1, shared_xaxes=true, vertical_spacing=0.02)
-# add_trace!(p, scatter(x=vec(x), y=y), row=1, col=1)
-# add_trace!(p, scatter(x=((x_obs)[1]), y=y_obs[1]), row=1, col=1)
-# add_trace!(p, scatter(x=((x_obs)[2]), y=y_obs[2]), row=1, col=1)
-# add_trace!(p, scatter(x=vec(x), y=mu), row=1, col=1)
-# p
-
-# add_trace!(p, scatter(x=vec(x), y=utility), row=2, col=1)
-# p
-# add_trace!(p, scatter(x=Float64[x[argmax(utility)]], y=Float64[maximum(utility)]), row=2, col=1)
-# p
-
-# relayout!(p, title_text=("Gaussian Process and Utility Function After $steps Steps"))
-# p
-# relayout!(p, xaxis_range[-2,10])
-# Layout(xaxis_range=[-2, 10], yaxis_range=[0, maximum(utility)+0.5])
 
 
-maximum(utility)
-
-x[3446]

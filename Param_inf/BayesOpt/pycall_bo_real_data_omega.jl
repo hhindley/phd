@@ -1,16 +1,16 @@
-using PlotlyJS, PyCall, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, DataFrames, CSV, OrderedCollections, ScatteredInterpolation
+using PlotlyJS, PyCall, DifferentialEquations, StaticArrays, DataInterpolations, LabelledArrays, BenchmarkTools, DataFrames, CSV, OrderedCollections, ScatteredInterpolation
 include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
 include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
-include("/home/holliehindley/phd/rtc_models/Oct2022_model/units/millerunit_conversion.jl")
+# include("/home/holliehindley/phd/rtc_models/Oct2022_model/units/millerunit_conversion.jl")
 
 csv_wt = DataFrame(CSV.File("/home/holliehindley/phd/data/results_rtcOFF_grfit.csv"))
 csv_wt = select!(csv_wt, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
 lam_wt, new_df_wt = extend_gr_curve(csv_wt)
 
 function rtc_bo_ω(;ω_ab, ω_r)
-    obj_wt_ab, obj_wt_r = obj(rtc_model1!, initial, ([L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, atp, na, nb, nr, lam_wt]), tspan2, t_2, "mrna", WT_mRNA_conc, WT_mRNA_conc_std)
+    obj_wt_ab, obj_wt_r = obj(rtc_model1!, initial, ([L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, atp, na, nb, nr, lam_wt]), tspan2, t_2, "mrna", WT1, WT1_std)
 
     # obj_gr_wt1 = obj_OD(rtc_model_OD, (@SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0, OD_0_wt2]), (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, findmax(WT2)[1]]), tspan2, t_2, "OD", WT2, WT2_std)
 
@@ -35,7 +35,7 @@ end
 
 # in python writing the ranges to search for parameter value
 py"""
-param_range_ω = {'ω_ab': (0, 0.01), 'ω_r': (0, 0.01)}
+param_range_ω = {'ω_ab': (0, 1), 'ω_r': (0, 1)}
 """
 
 
@@ -53,14 +53,34 @@ end
 @time timer()
 print(optimizer.max)
 
+function posterior(optimizer, x_obs, y_obs, grid)
+    optimizer._gp.fit(x_obs, y_obs)
+    mu, sigma = optimizer._gp.predict(grid, return_std=true)
+    return mu, sigma
+end
 
+function plot_gp(optimizer, x, y)
+    p = make_subplots(rows=2, cols=1, shared_xaxes=true, vertical_spacing=0.02)
+    x_obs = Array([[res["params"]["ω_ab"]] for res in optimizer.res])
+    y_obs = Array([res["target"] for res in optimizer.res])
+    mu, sigma = posterior(optimizer, x_obs, y_obs, x)
 
+    add_trace!(p, line(x=x,y=y), row=1, col=1)
+    add_trace!(p, scatter(x=x_obs.flatten(), y=y_obs), row=1, col=1)
+    add_trace!(p, scatter(x=x, y=mu), row=1, col=1)
 
+    utility_function = bayes_opt.UtilityFunction(kind="ucb", kappa=5, xi=0)
+    utility = utility_function.utility(x, optimizer._gp, 0)
 
+    add_trace!(p, line(x=x, y=utility), row=2, col=1)
+    add_trace!(p, scatter(x=x[argmax(utility)], y=maximum(utility)), row=2, col=1)
+    return p
+end
 
-
-
-
+x = reshape(csv_wt."t", (6,1))
+y = WT1
+# plot(scatter(x=x, y=y))
+plot_gp(optimizer, x, y)
 
 
 # creating lists of values of parameters tried and errors for each one  
