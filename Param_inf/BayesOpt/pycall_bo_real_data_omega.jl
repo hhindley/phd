@@ -4,38 +4,27 @@ include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
 include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 # include("/home/holliehindley/phd/rtc_models/Oct2022_model/units/millerunit_conversion.jl")
+csv_mRNA_conc = DataFrame(CSV.File("/home/holliehindley/phd/data/mRNA_conc_uM.csv"))
+mRNA_conc = csv_mRNA_conc[:,1]
+mRNA_std = csv_mRNA_conc[:,2]
 
 csv_wt = DataFrame(CSV.File("/home/holliehindley/phd/data/results_rtcOFF_grfit.csv"))
 csv_wt = select!(csv_wt, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
 lam_wt, new_df_wt = extend_gr_curve(csv_wt)
 
+# solu = sol_with_t(rtc_model1!, initial, [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, atp, na, nb, nr, lam_wt], tspan2, t_2);
+# plotly_plot_sol(solu, "")
+
 function rtc_bo_ω(;ω_ab, ω_r)
-    obj_wt_ab, obj_wt_r = obj(rtc_model1!, initial, ([L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, atp, na, nb, nr, lam_wt]), tspan2, t_2, "mrna", WT1, WT1_std)
-
-    # obj_gr_wt1 = obj_OD(rtc_model_OD, (@SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0, OD_0_wt2]), (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, findmax(WT2)[1]]), tspan2, t_2, "OD", WT2, WT2_std)
-
-    # obj_gr_wt2 = obj_OD(rtc_model_OD, (@SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0, OD_0_wt3]), (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, findmax(WT3)[1]]), tspan2, t_2, "OD", WT3, WT3_std)
-
-    # obj_gr_wt3 = obj_OD(rtc_model_OD, (@SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0, OD_0_wt4]), (@SVector [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, gr_c, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, findmax(WT4)[1]]), tspan4, t_4, "OD", WT4, WT4_std)
-
+    # @show ω_ab, ω_r
+    obj_wt_ab = obj(rtc_model1!, initial, ([L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, atp, na, nb, nr, lam_wt]), tspan2, t_2, "mrna", mRNA_conc, mRNA_std)
     return -(obj_wt_ab/36)
-    # return -(obj_wt_r/36)
-    # return -(obj_gr_wt1/36)
-    # return -(obj_gr_wt2/36)
-    # return -(obj_gr_wt3/(66^2))
-
-    # return -(obj_wt_ab/36 + obj_wt_r/36)
-    # return -(obj_wt_ab/36 + obj_wt_r/36 + obj_gr_wt1/36)
-    # return -(obj_wt_ab/36 + obj_wt_r/36 + obj_gr_wt1/36 + obj_gr_wt2/36)
-    # return -(obj_wt_ab/36 + obj_wt_r/36 + obj_gr_wt1/36 + obj_gr_wt2/36 + obj_gr_wt3/(66^2))
-
-
 end
 
 
 # in python writing the ranges to search for parameter value
 py"""
-param_range_ω = {'ω_ab': (0, 1), 'ω_r': (0, 1)}
+param_range_ω = {'ω_ab': (0, 0.1), 'ω_r': (0, 0.1)}
 """
 
 
@@ -47,7 +36,7 @@ optimizer = bayes_opt.BayesianOptimization(f=rtc_bo_ω, pbounds=py"param_range_�
 
 # timing the process and maximising the optimizer 
 function timer()
-    optimizer.maximize(init_points=2, n_iter=5, acq="ei", xi=0.01) #kappa=2, xi = 0.0 (prefer exploitation), xi = 0.1 (prefer exploration)
+    optimizer.maximize(init_points=2, n_iter=100, acq="ei", xi=0.01) #kappa=2, xi = 0.0 (prefer exploitation), xi = 0.1 (prefer exploration)
 end
 
 @time timer()
@@ -62,26 +51,35 @@ end
 function plot_gp(optimizer, x, y)
     p = make_subplots(rows=2, cols=1, shared_xaxes=true, vertical_spacing=0.02)
     x_obs = Array([[res["params"]["ω_ab"]] for res in optimizer.res])
-    y_obs = Array([res["target"] for res in optimizer.res])
+    y_obs = Array([[res["target"]] for res in optimizer.res])
     mu, sigma = posterior(optimizer, x_obs, y_obs, x)
 
-    add_trace!(p, line(x=x,y=y), row=1, col=1)
-    add_trace!(p, scatter(x=x_obs.flatten(), y=y_obs), row=1, col=1)
-    add_trace!(p, scatter(x=x, y=mu), row=1, col=1)
-
+    steps = length(optimizer.space)
+    add_trace!(p, scatter(x=vec(x), y=y, name="Target"), row=1, col=1)
+    add_trace!(p, scatter(x=reduce(vcat, x_obs), y=reduce(vcat, y_obs), line=attr(width=0), name="Observation", marker=attr(color="red")), row=1, col=1)
+    add_trace!(p, scatter(x=vec(x), y=mu, line=attr(color="green"), name="Prediction"), row=1, col=1)
+    
+    add_trace!(p, scatter(x=vec(x), y=(@. mu+sigma), line=attr(width=0), showlegend=false), row=1, col=1)
+    add_trace!(p, scatter(x=vec(x), y=(@. mu-sigma), line=attr(width=0), fill="tonexty", showlegend=true, name="95% confidence interval"), row=1, col=1)
+    
     utility_function = bayes_opt.UtilityFunction(kind="ucb", kappa=5, xi=0)
     utility = utility_function.utility(x, optimizer._gp, 0)
 
-    add_trace!(p, line(x=x, y=utility), row=2, col=1)
-    add_trace!(p, scatter(x=x[argmax(utility)], y=maximum(utility)), row=2, col=1)
+    add_trace!(p, scatter(x=vec(x), y=utility, name="Utility function"), row=2, col=1)
+    add_trace!(p, scatter(x=Float64[x[argmax(utility)]], y=Float64[maximum(utility)], marker=attr(symbol="star", color="yellow", size=8, line=attr(color="black", width=0.5)), name="Next best guess"), row=2, col=1)
+    relayout!(p, title_text=("Gaussian Process and Utility Function After $steps Steps"))
     return p
+    # return x_obs, y_obs
 end
 
+
 x = reshape(csv_wt."t", (6,1))
-y = WT1
+y = mRNA_conc
 # plot(scatter(x=x, y=y))
 plot_gp(optimizer, x, y)
 
+Iterators.flatten(x_obs)
+plot(scatter(x=x, y=y))
 
 # creating lists of values of parameters tried and errors for each one  
 vals_ab, vals_r, errors, best_param_ab, best_param_r, best_error = results_two_param(optimizer)

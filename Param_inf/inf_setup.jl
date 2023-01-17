@@ -28,17 +28,17 @@ t_4 = df2[!,1]*60
 
 
 function compare_data_and_sol(solu, curve, data, std)#(model, params, init, tspan, t, curve, data, std)
-    obj, obj1 = [], []
+    obj = [] #, obj1 = [], []
     # params_dict, init = choose_param_vector(model)
     # params = set_N(data)
     # print(params)
     # solu = sol_with_t(model, init, params, tspan, t)
     if curve == "mrna"
         rm_a = get_curve(solu, :rm_a)
-        rm_r = get_curve(solu, :rm_r)
+        # rm_r = get_curve(solu, :rm_r)
         append!(obj, [abs2((i-j)/k) for (i,j,k) in zip(rm_a, data, std)])
-        append!(obj1, [abs2((i-j)/k) for (i,j,k) in zip(rm_r, data, std)])
-    return sum(obj), sum(obj1)
+        # append!(obj1, [abs2((i-j)/k) for (i,j,k) in zip(rm_r, data, std)])
+    return sum(obj)#, sum(obj1)
     elseif curve == "OD"
         OD = get_curve(solu, :OD)
         append!(obj, [abs2((i-j)/k) for (i,j,k) in zip(OD, data, std)])
@@ -47,6 +47,7 @@ function compare_data_and_sol(solu, curve, data, std)#(model, params, init, tspa
 end
  
 function obj(model, init, params, tspan, t, curve, data, std)
+    # @show ω_ab
     solu = sol_with_t(model, init, params, tspan, t)
     obj_wt = compare_data_and_sol(solu, curve, data, std)
     return obj_wt

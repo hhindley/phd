@@ -47,8 +47,8 @@ p = plotly_plot_sol(solu_colD, "log")
 
 # scale_lam(csv, :rtca)
 
-ω_ab_range = collect(range(0, 1, length=10))
-ω_r_range = collect(range(0, 1, length=10))
+ω_ab_range = collect(range(0, 0.1, length=10))
+ω_r_range = collect(range(0, 0.1, length=10))
 
 pc = sweep_paramx2(rtc_model1!, lam_colD, :rtca, get_ssval, :ω_r, :ω_ab, ω_r_range, ω_ab_range)
 p1c = sweep_paramx2(rtc_model1!, lam_colD, :rtcb, get_ssval, :ω_r, :ω_ab, ω_r_range, ω_ab_range)
