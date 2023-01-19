@@ -117,12 +117,33 @@ function sol_with_t(model, init, params, tspan, t)
     return solu
 end
 
-function change_param(param_range, parameter, model, init, species, params)
+function change_param_OD(param_range, parameter, model, species, lam, data)#, params)
     # param_dict = OrderedDict("L"=>L, "c"=>c, "kr"=>kr, "Vmax_init"=>Vmax_init, "Km_init"=>Km_init, "ω_ab"=>ω_ab, "ω_r"=>ω_r, "θtscr"=>θtscr, "g_max"=>g_max, "θtlr"=>θtlr, "km_a"=>km_a, "km_b"=>km_b, "gr_c"=>gr_c, "d"=>d, "krep"=>krep, "kdam"=>kdam, "ktag"=>ktag, "kdeg"=>kdeg, "kin"=>kin, "atp"=>atp, "na"=>na, "nb"=>nb, "nr"=>nr, "k"=>k)
     dict_res = OrderedDict(name => [] for name in species)
+    k = set_k(data)
+    OD_0 = set_OD0(data)
+    init = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0, OD_0];
+    params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, k, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :k, :lam)
     for val in param_range  
         params[parameter] = val
         param = values(params)
+        # @show params
+        solu = sol(model, init, tspan, param)
+        for (i,j) in zip(values(dict_res), species)
+            push!(i, get_ssval(solu, j))
+        end
+    end
+    return dict_res
+end
+
+function change_param(param_range, parameter, model, init, species, lam)#, params)
+    # param_dict = OrderedDict("L"=>L, "c"=>c, "kr"=>kr, "Vmax_init"=>Vmax_init, "Km_init"=>Km_init, "ω_ab"=>ω_ab, "ω_r"=>ω_r, "θtscr"=>θtscr, "g_max"=>g_max, "θtlr"=>θtlr, "km_a"=>km_a, "km_b"=>km_b, "gr_c"=>gr_c, "d"=>d, "krep"=>krep, "kdam"=>kdam, "ktag"=>ktag, "kdeg"=>kdeg, "kin"=>kin, "atp"=>atp, "na"=>na, "nb"=>nb, "nr"=>nr, "k"=>k)
+    dict_res = OrderedDict(name => [] for name in species)
+    params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+    for val in param_range  
+        params[parameter] = val
+        param = values(params)
+        # @show params[:kdam]
         solu = sol(model, init, tspan, param)
         for (i,j) in zip(values(dict_res), species)
             push!(i, get_ssval(solu, j))
@@ -176,7 +197,7 @@ function plotly_plot_sol_withdata(sol)
     return display(plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve, data_plot]))
 end
 
-function plotly_plot_sol_OD(sol)
+function plotly_plot_sol_OD(sol, log)
     rm_a = get_curve(sol, :rm_a); rm_b = get_curve(sol, :rm_b); rm_r = get_curve(sol, :rm_r); rtca = get_curve(sol, :rtca); rtcb = get_curve(sol, :rtcb); rtcr = get_curve(sol, :rtcr); rh = get_curve(sol, :rh); rt = get_curve(sol, :rt); rd = get_curve(sol, :rd); OD = get_curve(sol, :OD)
 
     rma_curve = scatter(x=sol.t, y=rm_a, name="mRNA RtcA")
@@ -189,7 +210,7 @@ function plotly_plot_sol_OD(sol)
     rt_curve = scatter(x=sol.t, y=rt, name="Rt")
     rd_curve = scatter(x=sol.t, y=rd, name="Rd")
     OD_curve = scatter(x=sol.t, y=OD, name="OD")
-    return display(plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve, OD_curve]))
+    return display(plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve, OD_curve], Layout(xaxis_type=log)))
 end
 
 function plot_from_dict(dict, sol)
@@ -373,3 +394,35 @@ function extend_gr_curve(csv)
     lam = QuadraticInterpolation(new_df."gr",new_df."t")
     return lam, new_df
 end  
+
+
+function plot_change_param_sols(range, results, param)
+
+    rma = scatter(x=range, y=results[:rm_a], name="rm_a");
+    rmb = scatter(x=range, y=results[:rm_b], name="rm_b");
+    rmr = scatter(x=range, y=results[:rm_r], name="rm_r");
+    rtca = scatter(x=range, y=results[:rtca], name="rtca");
+    rtcb = scatter(x=range, y=results[:rtcb], name="rtcb");
+    rtcr = scatter(x=range, y=results[:rtcr], name="rtcr");
+    rh = scatter(x=range, y=results[:rh], name="rh");
+    rd = scatter(x=range, y=results[:rd], name="rd");
+    rt = scatter(x=range, y=results[:rt], name="rt");
+
+    return plot([rma, rmb, rmr, rtca, rtcb, rtcr, rh, rd, rt], Layout(xaxis_title="$param", yaxis_title="species (μM)"))
+end
+
+function plot_change_param_sols_OD(range, results, param)
+
+    rma = scatter(x=range, y=results[:rm_a], name="rm_a");
+    rmb = scatter(x=range, y=results[:rm_b], name="rm_b");
+    rmr = scatter(x=range, y=results[:rm_r], name="rm_r");
+    rtca = scatter(x=range, y=results[:rtca], name="rtca");
+    rtcb = scatter(x=range, y=results[:rtcb], name="rtcb");
+    rtcr = scatter(x=range, y=results[:rtcr], name="rtcr");
+    rh = scatter(x=range, y=results[:rh], name="rh");
+    rd = scatter(x=range, y=results[:rd], name="rd");
+    rt = scatter(x=range, y=results[:rt], name="rt");
+    OD = scatter(x=range, y=results[:OD], name="OD");
+
+    return plot([rma, rmb, rmr, rtca, rtcb, rtcr, rh, rd, rt, OD], Layout(xaxis_title="$param", yaxis_title="species (μM)"))
+end

@@ -4,7 +4,7 @@ include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
 include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 # include("/home/holliehindley/phd/rtc_models/Oct2022_model/units/millerunit_conversion.jl")
-csv_mRNA_conc = DataFrame(CSV.File("/home/holliehindley/phd/data/mRNA_conc_uM.csv"))
+csv_mRNA_conc = DataFrame(CSV.File("/home/holliehindley/phd/data/paper_conv.csv"))
 mRNA_conc = csv_mRNA_conc[:,1]
 mRNA_std = csv_mRNA_conc[:,2]
 
@@ -36,7 +36,7 @@ optimizer = bayes_opt.BayesianOptimization(f=rtc_bo_Ï‰, pbounds=py"param_range_Ï
 
 # timing the process and maximising the optimizer 
 function timer()
-    optimizer.maximize(init_points=2, n_iter=100, acq="ei", xi=0.01) #kappa=2, xi = 0.0 (prefer exploitation), xi = 0.1 (prefer exploration)
+    optimizer.maximize(init_points=2, n_iter=500, acq="ei", xi=0.1) #kappa=2, xi = 0.0 (prefer exploitation), xi = 0.1 (prefer exploration)
 end
 
 @time timer()

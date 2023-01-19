@@ -2,6 +2,7 @@ using CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, Benc
 include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
+include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
 
 csv = DataFrame(CSV.File("/home/holliehindley/phd/data/results_colD_grfit.csv")) # read csv to a datafram
 csv = select!(csv, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
@@ -20,16 +21,23 @@ plot(scatter(x=new_df_wt."t", y=new_df_wt."gr"[1:15]), Layout(xaxis_title="t", y
 
 
 tspan_wt = (0, lam_wt[end])
-params_wt = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, atp, na, nb, nr, lam_wt] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+params_wt = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam_wt] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 solu_wt = sol(rtc_model1!, initial, tspan_wt, params_wt)
 p = plotly_plot_sol(solu_wt, "log")
 
 tspan_colD = (0, lam_colD[end])
-params_colD = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, atp, na, nb, nr, lam_colD] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+params_colD = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam_colD] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 solu_colD = sol(rtc_model1!, initial, tspan_colD, params_colD)
 p = plotly_plot_sol(solu_colD, "log")
 
 
+k = set_k(WT4)
+OD_0 = set_OD0(WT4)
+init = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0, OD_0];
+params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, k, lam_colD] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :k, :lam)
+solu = sol(rtc_model_OD_t!, init, tspan_colD, params)
+
+plotly_plot_sol_OD(solu, "log")
 # # p_tp = plotly_plot_sol_timepoints(solu)
 
 # lambda_colD = get_lambda(solu, lam_colD)
@@ -49,6 +57,35 @@ p = plotly_plot_sol(solu_colD, "log")
 
 ω_ab_range = collect(range(0, 0.1, length=10))
 ω_r_range = collect(range(0, 0.1, length=10))
+
+
+
+
+kdam_range = collect(0:0.001:0.2)
+results_kdam = change_param(kdam_range, :kdam, rtc_model1!, initial, all_species, lam_colD)
+plot_change_param_sols(kdam_range, results_kdam, "kdam")
+
+ωab_range = collect(0:0.01:1)
+results_ab = change_param(ωab_range, :ω_ab, rtc_model1!, initial, all_species, lam_colD)
+plot_change_param_sols(ωab_range, results_ab, "ω_ab")
+
+ωr_range = collect(0:0.01:1)
+results_r = change_param(ωr_range, :ω_r, rtc_model1!, initial, all_species, lam_colD)
+plot_change_param_sols(ωr_range, results_r, "ω_r")
+
+
+results_kdam_OD = change_param_OD(kdam_range, :kdam, rtc_model_OD_t!, all_species_OD, lam_colD, WT4)
+plot_change_param_sols_OD(kdam_range, results_kdam_OD, "kdam")
+
+results_ab_OD = change_param_OD(ωab_range, :ω_ab, rtc_model_OD_t!, all_species_OD, lam_colD, WT4)
+plot_change_param_sols_OD(ωab_range, results_ab_OD, "ω_ab")
+
+results_r_OD = change_param_OD(ωr_range, :ω_r, rtc_model_OD_t!, all_species_OD, lam_colD, WT4)#
+plot_change_param_sols_OD(ωr_range, results_r_OD, "ω_r")
+
+
+
+
 
 pc = sweep_paramx2(rtc_model1!, lam_colD, :rtca, get_ssval, :ω_r, :ω_ab, ω_r_range, ω_ab_range)
 p1c = sweep_paramx2(rtc_model1!, lam_colD, :rtcb, get_ssval, :ω_r, :ω_ab, ω_r_range, ω_ab_range)

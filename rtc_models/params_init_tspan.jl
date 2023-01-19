@@ -20,8 +20,8 @@ g_max = 2.0923;
 gr_c = 0.0008856; # 0.000599; 
 kdeg = 0.001; 
 kin = 0.054; #2.381 
-ω_ab = 4#0.093; #0.0828304057748932;#4; 
-ω_r = 0.0019*6 #70.53; #0.0019*6#79.43865871861044; #0.0019*6;  
+ω_ab = 0.006644#4#0.093; #0.0828304057748932;#4; 
+ω_r = 1.88e-5#0.0019*6 #70.53; #0.0019*6#79.43865871861044; #0.0019*6;  
 ω_a = 4; 
 ω_b = 4;
 kdam = 0.000147;#0.05; 
@@ -54,8 +54,8 @@ OD_0_nRcolD = 0.061;
 # param_dict_OD =  OrderedDict("L"=>L, "c"=>c, "kr"=>kr, "Vmax_init"=>Vmax_init, "Km_init"=>Km_init, "ω_ab"=>ω_ab, "ω_r"=>ω_r, "θtscr"=>θtscr, "g_max"=>g_max, "θtlr"=>θtlr, "km_a"=>km_a, "km_b"=>km_b, "gr_c"=>gr_c, "d"=>d, "krep"=>krep, "kdam"=>kdam, "ktag"=>ktag, "kdeg"=>kdeg, "kin"=>kin, "atp"=>atp, "na"=>na, "nb"=>nb, "nr"=>nr, "k"=>k);
 # params = (@SVector [values(param_dict)])[1]
 initial = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0];
-# init_OD = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0, OD_0];
+init_OD = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0, OD_0];
 
 # # params_la = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 
-tspan = (0, 2880);
+tspan = (0, 1e9);

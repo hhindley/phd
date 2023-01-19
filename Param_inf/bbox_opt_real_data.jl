@@ -1,10 +1,10 @@
-using BlackBoxOptim, Plots, PyCall, DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames, OrderedCollections
+using BlackBoxOptim, PyCall, DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames, OrderedCollections
 include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
 include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 
-csv_mRNA_conc = DataFrame(CSV.File("/home/holliehindley/phd/data/mRNA_conc_uM.csv"))
+csv_mRNA_conc = DataFrame(CSV.File("/home/holliehindley/phd/data/paper_conv.csv"))
 mRNA_conc = csv_mRNA_conc[:,1]
 mRNA_std = csv_mRNA_conc[:,2]
 

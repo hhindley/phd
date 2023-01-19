@@ -18,7 +18,6 @@ nB_std = df2[!,24]; nB_colD_std = df2[!,25]; nB_B_std = df2[!,26]; nB_B_colD_std
 nR = df2[!,14]; nR_colD = df2[!,15]; nR_std = df2[!,30]; nR_colD_std = df2[!,31]; 
 
 
-
 # set time span and how many time points to solve at 
 tspan2 = (0, 2880)
 t_2 = dfc[!,1]*60
