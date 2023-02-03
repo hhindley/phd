@@ -87,7 +87,7 @@ p_dam = plot(scatter(x=solu_V.t, y=vdam), Layout(title="/g_max", xaxis_type="log
 
 
 solu_colD = sol(rtc_model1!, initial, tspan_colD, params_colD)
-p = plotly_plot_sol(solu_colD, "log", "log")
+p = plotly_plot_sol(solu_colD, "log", "")
 
 res_cd = get_all_curves(solu_colD, all_species)
 lam_cd = get_lambda(solu_colD, lam_colD)
