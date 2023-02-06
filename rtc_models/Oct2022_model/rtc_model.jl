@@ -448,7 +448,7 @@ function rtc_model_atp!(initial, params, t)
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, atp = initial
     # growth rate
     # lam = csv."gr"
-    lam = 100
+    lam = 0
     # dilution by growth and degradation 
     dil(species) = lam*species
     deg(species) = d*species
@@ -492,7 +492,8 @@ function rtc_model_atp!(initial, params, t)
     drh = Vrep - Vdam + Vinflux - dil(rh)
     drd = Vdam - Vtag - kdeg*rd - dil(rd)
     drt = Vtag - Vrep - dil(rt)
-    datp = -d_atp
+    datp = -d_atp*atp
+    @show atp
 
     # @show (lam(t)), t
 

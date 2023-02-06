@@ -110,6 +110,13 @@ function sol(model, init, tspan, params)
     return solu
 end
 
+function solcb(model, init, tspan, params, callback)
+    # params, init = choose_param_vector(model)
+    prob = ODEProblem(model, init, tspan, params, callback=callback)
+    solu = solve(prob, Rodas4())
+    return solu
+end
+
 function sol_with_t(model, init, params, tspan, t)
     # params, init = choose_param_vector(model)
     prob = ODEProblem(model, init, tspan, params)

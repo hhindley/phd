@@ -22,17 +22,23 @@ rd_ss = get_ssval(solu, :rd)
 rt_ss = get_ssval(solu, :rt)
 atp_ss = 4000
 
-d_atp = 100
-tspan_atp = (0,100)
+d_atp = 1
+tspan_atp = (0,1e9)
 init_ss = [rm_a_ss, rtca_ss, rm_b_ss, rtcb_ss, rm_r_ss, rtcr_ss, rh_ss, rd_ss, rt_ss, atp_ss]
 params_atp = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, na, nb, nr, d_atp] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :na, :nb, :nr, :d_atp)
 solu_atp = sol(rtc_model_atp!, init_ss, tspan, params_atp)
 
 p = plotly_plot_sol_atp(solu_atp, "log", "log")
 
-atp_ss = 0.1
-d_atp = 0.01
-tspan_atp = (0,100)
-init_atp = [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0, atp_ss]
-params_atp = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, na, nb, nr, d_atp] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :na, :nb, :nr, :d_atp)
-solu_atp = sol(rtc_model_atp!, init_atp, tspan, params_atp)
+
+threshold = 0.1
+condition(u,t,integrator) = any( (u[10] .< threshold) .& (u[10].>0))
+function affect!(integrator)
+    integrator.u[10] = 0 #(integrator.u .< threshold) .& (integrator.u .> 0)
+    # @show integrator.u[10]
+end
+
+cb = DiscreteCallback(condition,affect!)
+solu_atp = solcb(rtc_model_atp!, init_ss, tspan, params_atp, cb)
+
+p = plotly_plot_sol_atp(solu_atp, "log", "log")
