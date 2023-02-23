@@ -2,6 +2,7 @@
 
 all_species = [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt]
 all_species_OD = [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :OD]
+all_species_atp = [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :atp]
 
 function get_curve(sol, species)
     df = DataFrame(sol)
@@ -19,7 +20,7 @@ function get_ssval(sol, species)
     if length(sol[1]) == 9
         rename!(df, [:time, :rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt])
     else
-        rename!(df, [:time, :rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :OD])
+        rename!(df, [:time, :rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :atp])
     end
     species = df[end, species]
     return species
@@ -159,6 +160,23 @@ function change_param(param_range, parameter, model, init, species, lam)#, param
     return dict_res
 end
 
+function change_param_atp(param_range, parameter, model, init, species)#, params)
+    # param_dict = OrderedDict("L"=>L, "c"=>c, "kr"=>kr, "Vmax_init"=>Vmax_init, "Km_init"=>Km_init, "ω_ab"=>ω_ab, "ω_r"=>ω_r, "θtscr"=>θtscr, "g_max"=>g_max, "θtlr"=>θtlr, "km_a"=>km_a, "km_b"=>km_b, "gr_c"=>gr_c, "d"=>d, "krep"=>krep, "kdam"=>kdam, "ktag"=>ktag, "kdeg"=>kdeg, "kin"=>kin, "atp"=>atp, "na"=>na, "nb"=>nb, "nr"=>nr, "k"=>k)
+    dict_res = OrderedDict(name => [] for name in species)
+    params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, na, nb, nr, d_atp] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :na, :nb, :nr, :d_atp)
+    for val in param_range  
+        params[parameter] = val
+        param = values(params)
+        # @show params[:kdam]
+        solu = sol(model, init, tspan, param)
+        # solu = solcb(model, init, tspan, param, cb)
+        for (i,j) in zip(values(dict_res), species)
+            push!(i, get_ssval(solu, j))
+        end
+    end
+    return dict_res
+end
+
 function plotly_plot_sol(sol, log, log1)
     rm_a = get_curve(sol, :rm_a); rm_b = get_curve(sol, :rm_b); rm_r = get_curve(sol, :rm_r); rtca = get_curve(sol, :rtca); rtcb = get_curve(sol, :rtcb); rtcr = get_curve(sol, :rtcr); rh = get_curve(sol, :rh); rt = get_curve(sol, :rt); rd = get_curve(sol, :rd);
 
@@ -174,21 +192,61 @@ function plotly_plot_sol(sol, log, log1)
     return (plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve] ,Layout(xaxis_type=log, yaxis_type=log1)))
 end
 
-function plotly_plot_sol_atp(sol, log, log1)
+function plotly_plot_sol_atp(sol, log, log1, title, show_leg, atp_end)
     rm_a = get_curve(sol, :rm_a); rm_b = get_curve(sol, :rm_b); rm_r = get_curve(sol, :rm_r); rtca = get_curve(sol, :rtca); rtcb = get_curve(sol, :rtcb); rtcr = get_curve(sol, :rtcr); rh = get_curve(sol, :rh); rt = get_curve(sol, :rt); rd = get_curve(sol, :rd); atp = get_curve(sol, :atp);
 
-    rma_curve = scatter(x=sol.t, y=rm_a, name="mRNA RtcA")
-    rmb_curve = scatter(x=sol.t, y=rm_b, name="mRNA RtcB")
-    rmr_curve = scatter(x=sol.t, y=rm_r, name="mRNA RtcR")
-    rtca_curve = scatter(x=sol.t, y=rtca, name="RtcA")
-    rtcb_curve = scatter(x=sol.t, y=rtcb, name="RtcB")
-    rtcr_curve = scatter(x=sol.t, y=rtcr, name="RtcR")
-    rh_curve = scatter(x=sol.t, y=rh, name="Rh")
-    rt_curve = scatter(x=sol.t, y=rt, name="Rt")
-    rd_curve = scatter(x=sol.t, y=rd, name="Rd")
-    atp_curve = scatter(x=sol.t, y=atp, name="ATP")
+    alpha = @. rt/kr
+    fa = @. (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
+    ra = @. fa*rtcr
+    Vinit = @. ra*Vmax_init*atp/(Km_init+atp)
+    tscr_el_a = @. ω_ab*atp/(θtscr+atp)
+    tscr_a = @. Vinit*tscr_el_a
+    tscr_el_b = @. ω_ab*atp/(θtscr+atp)
+    tscr_b = @. Vinit*tscr_el_b
+    tscr_r = @. ω_r*atp/(θtscr+atp)
+    tlr_el = @. g_max*atp/(θtlr+atp)
+    tlr(rm_x, nx) = @. (1/nx)*rh*rm_x*tlr_el
+    tlr_r = tlr(rm_r, nr); tlr_a = tlr(rm_a, na); tlr_b = tlr(rm_b, nb);
+    rtca1 = @. (atp*rtca)/(atp+(km_a*rd)) 
+    rtcb1 = @. (atp*rtcb)/(atp+(km_b*rt)) 
+    Vrep = @. krep*rtcb1*rt
+    Vdam = @. kdam*rh
+    Vinflux = @. kin*tlr_el
+    Vtag = @. ktag*rtca1*rd
 
-    return (plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve, atp_curve] ,Layout(xaxis_type=log, yaxis_type=log1)))
+    rma_curve = scatter(x=sol.t, y=rm_a, name="mRNA RtcA", showlegend=show_leg)
+    rmb_curve = scatter(x=sol.t, y=rm_b, name="mRNA RtcB", showlegend=show_leg)
+    rmr_curve = scatter(x=sol.t, y=rm_r, name="mRNA RtcR", showlegend=show_leg)
+    rtca_curve = scatter(x=sol.t, y=rtca, name="RtcA", showlegend=show_leg)
+    rtcb_curve = scatter(x=sol.t, y=rtcb, name="RtcB", showlegend=show_leg)
+    rtcr_curve = scatter(x=sol.t, y=rtcr, name="RtcR", showlegend=show_leg)
+    rh_curve = scatter(x=sol.t, y=rh, name="Rh", showlegend=show_leg)
+    rt_curve = scatter(x=sol.t, y=rt, name="Rt", showlegend=show_leg)
+    rd_curve = scatter(x=sol.t, y=rd, name="Rd", showlegend=show_leg)
+    atp_curve = scatter(x=sol.t, y=atp, name="ATP", showlegend=show_leg)
+    atp_end_curve = scatter(x=fill(atp_end, length(range(0,atp_ss))) , y=range(0,atp_ss))
+    alpha_curve = scatter(x=sol.t, y=alpha, name="alpha")
+    fa_curve = scatter(x=sol.t, y=fa, name="fa")
+    ra_curve = scatter(x=sol.t, y=ra, name="ra")
+    Vinit_curve = scatter(x=sol.t, y=Vinit, name="Vinit")
+    tscr_el_a_curve = scatter(x=sol.t, y=tscr_el_a, name="tscr_el_a")
+    tscr_a_curve = scatter(x=sol.t, y=tscr_a, name="tscr_a")
+    tscr_r_curve = scatter(x=sol.t, y=tscr_r, name="tscr_r")
+    tlr_el_curve = scatter(x=sol.t, y=tlr_el, name="tlr_el")
+    tlr_a_curve = scatter(x=sol.t, y=tlr_a, name="tlr_a")
+    tlr_b_curve = scatter(x=sol.t, y=tlr_b, name="tlr_b")
+    tlr_r_curve = scatter(x=sol.t, y=tlr_r, name="tlr_r")
+    rtca1_curve = scatter(x=sol.t, y=rtca1, name="rtca1")
+    rtcb1_curve = scatter(x=sol.t, y=rtcb1, name="rtcb1")
+    Vrep_curve = scatter(x=sol.t, y=Vrep, name="Vrep")
+    Vdam_curve = scatter(x=sol.t, y=Vdam, name="Vdam")
+    Vinflux_curve = scatter(x=sol.t, y=Vinflux, name="Vinflux")
+    Vtag_curve = scatter(x=sol.t, y=Vtag, name="Vtag")
+
+    # return (plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve, atp_curve, atp_end_curve,
+    # alpha_curve, fa_curve, ra_curve, Vinit_curve, tscr_el_a_curve, tscr_a_curve, tscr_r_curve, tlr_el_curve, tlr_a_curve, tlr_b_curve, tlr_r_curve,
+    # rtca1_curve, rtcb1_curve, Vrep_curve, Vdam_curve, Vinflux_curve,Vtag_curve], Layout(xaxis_type=log, yaxis_type=log1, title=title)))
+    return (plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve, atp_curve], Layout(xaxis_type=log, yaxis_type=log1, title=title)))
 end
 
 function plotly_plot_sol_timepoints(sol)
@@ -433,6 +491,22 @@ function plot_change_param_sols(range, results, param)
     rt = scatter(x=range, y=results[:rt], name="rt");
 
     return plot([rma, rmb, rmr, rtca, rtcb, rtcr, rh, rd, rt], Layout(xaxis_title="$param", yaxis_title="species (μM)"))
+end
+
+function plot_change_param_sols_atp(range, results, param, log, log1)
+
+    rma = scatter(x=range, y=results[:rm_a], name="rm_a");
+    rmb = scatter(x=range, y=results[:rm_b], name="rm_b");
+    rmr = scatter(x=range, y=results[:rm_r], name="rm_r");
+    rtca = scatter(x=range, y=results[:rtca], name="rtca");
+    rtcb = scatter(x=range, y=results[:rtcb], name="rtcb");
+    rtcr = scatter(x=range, y=results[:rtcr], name="rtcr");
+    rh = scatter(x=range, y=results[:rh], name="rh");
+    rd = scatter(x=range, y=results[:rd], name="rd");
+    rt = scatter(x=range, y=results[:rt], name="rt");
+    atp = scatter(x=range, y=results[:atp], name="ATP");
+
+    return plot([rma, rmb, rmr, rtca, rtcb, rtcr, rh, rd, rt, atp], Layout(xaxis_title="$param", yaxis_title="species (μM)", xaxis_type=log, yaxis_type=log1))
 end
 
 function plot_change_param_sols_OD(range, results, param)

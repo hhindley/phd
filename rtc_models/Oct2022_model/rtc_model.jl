@@ -493,7 +493,7 @@ function rtc_model_atp!(initial, params, t)
     drd = Vdam - Vtag - kdeg*rd - dil(rd)
     drt = Vtag - Vrep - dil(rt)
     datp = -d_atp*atp
-    @show atp
+    # @show atp
 
     # @show (lam(t)), t
 

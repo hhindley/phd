@@ -22,7 +22,7 @@ p = plotly_plot_sol(solu_wt, "log", "")
 tspan_colD = (0, lam_colD[end])
 params_colD = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam_colD] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 solu_colD = sol(rtc_model1!, initial, tspan_colD, params_colD)
-p = plotly_plot_sol(solu_colD, "log", "log")
+p = plotly_plot_sol(solu_colD, "log", "")
 
 params_kin_kdam = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, ktag, kdeg, atp, na, nb, nr, lam_colD] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :ktag, :kdeg, :atp, :na, :nb, :nr, :lam)
 
@@ -30,7 +30,7 @@ params_kin_kdam = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_
 solu_kin_kdam = sol(rtc_model_kin_kdam_t!, initial, tspan_colD, params_kin_kdam)
 p = plotly_plot_sol(solu_kin_kdam, "log", "log")
 res = get_all_curves(solu_kin_kdam, all_species)
-lam = get_lambda(solu_kin_kdam, lam_colD)
+lam = get_lambda(solu_wt, lam_wt)
 kdam = @. (kin/res[:rh][1]) - lam
 kin1 = @. lam*res[:rh][1]/g_max
 vinf = @. kin1*(g_max*atp/(θtlr+atp))
@@ -39,7 +39,7 @@ vrep = @. krep*rtcb1*res[:rt][1]
 vdam = @. kdam*res[:rh][1]
 p1 = plot(scatter(x=solu_kin_kdam.t, y=kdam), Layout(title="/g_max", xaxis_type="log", yaxis_title="kdam", xaxis_title="time"))
 p2 = plot(scatter(x=solu_kin_kdam.t, y=kin1), Layout(title="/g_max", xaxis_type="log", yaxis_title="kin", xaxis_title="time"))
-p3 = plot(scatter(x=solu_kin_kdam.t, y=lam), Layout(title="/g_max", xaxis_type="log", yaxis_title="λ", xaxis_title="time"))
+p3 = plot(scatter(x=solu_wt.t, y=lam), Layout(title="/g_max", xaxis_type="log", yaxis_title="λ", xaxis_title="time"))
 p4 = plot(scatter(x=solu_kin_kdam.t, y=res[:rh][1]), Layout(title="/g_max", xaxis_type="log", yaxis_title="rh", xaxis_title="time"))
 p5 = plot(scatter(x=solu_kin_kdam.t, y=vinf), Layout(title="/g_max", xaxis_type="log", yaxis_title="V_influx", xaxis_title="time"))
 p_rep = plot(scatter(x=solu_kin_kdam.t, y=vrep), Layout(title="/g_max", xaxis_type="log", yaxis_title="V_rep", xaxis_title="time"))
