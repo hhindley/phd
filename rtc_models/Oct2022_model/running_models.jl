@@ -8,11 +8,17 @@ csv = DataFrame(CSV.File("/home/holliehindley/phd/data/results_colD_grfit.csv"))
 csv = select!(csv, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
 csv_wt = DataFrame(CSV.File("/home/holliehindley/phd/data/results_rtcOFF_grfit.csv"))
 csv_wt = select!(csv_wt, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
-  
+csv_new = DataFrame(CSV.File("/home/holliehindley/phd/data/results_od1303_grfit.csv"))
+csv_new = select!(csv_new, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
+
+
 lam_colD, new_df = extend_gr_curve(csv)
 lam_wt, new_df_wt = extend_gr_curve(csv_wt)
 lam_colD[lam_colD.< 0] .= 0 #zero(eltype(lam_colD))
 lam_colD
+
+lam, new_df1 = extend_gr_curve(csv_new)
+lam[lam.< 0] .= 0 #zero(eltype(lam_colD))
 
 tspan_wt = (0, lam_wt[end])
 params_wt = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam_wt] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
@@ -23,6 +29,14 @@ tspan_colD = (0, lam_colD[end])
 params_colD = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam_colD] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 solu_colD = sol(rtc_model1!, initial, tspan_colD, params_colD)
 p = plotly_plot_sol(solu_colD, "log", "")
+
+tspan_new = (0, lam[end])
+params_new = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+solu_new = sol(rtc_model1!, initial, tspan_new, params_new)
+p = plotly_plot_sol(solu_new, "log", "")
+lam = get_lambda(solu_new, lam)
+plot(scatter(x=solu_new.t, y=lam), Layout(xaxis_type="log"))
+
 
 params_kin_kdam = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, ktag, kdeg, atp, na, nb, nr, lam_colD] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :ktag, :kdeg, :atp, :na, :nb, :nr, :lam)
 

@@ -6,10 +6,10 @@ include("functions.jl")
 
 tspan = (0,1e9)
 
-sol = simple_solve!(odemodel!, init, tspan, params)
+solu = simple_solve!(odemodel!, init, tspan, params)
 
 labels = ["cr" "em" "cp" "cq" "ct" "et" "cm" "mt" "mm" "q" "p" "si" "mq" "mp" "mr" "r" "a"]
-plot(sol, labels=labels, margin=5mm)
+plot(solu, labels=labels, margin=5mm)
 
 species = [:cr, :em, :cp, :cq, :ct, :et, :cm, :mt, :mm, :q, :p, :si, :mq, :mp, :mr, :r, :a]
 solDF = DataFrame([[j[i] for j in sol.u] for i=1:length(sol.u[1])], species)

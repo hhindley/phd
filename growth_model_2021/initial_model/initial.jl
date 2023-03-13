@@ -7,7 +7,7 @@ function initial_model(model, initvals, params)
     tspan = (0., 1e9)
 
     prob = ODEProblem(model, initvals, tspan, params)
-    sol = solve(prob, alg_hints=[:stiff])
+    return(solve(prob, alg_hints=[:stiff]))
 end
 solution = initial_model(odemodel!, init, params_init)  
 plot(solution)
