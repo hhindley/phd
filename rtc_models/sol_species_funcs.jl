@@ -381,6 +381,14 @@ function get_lambda(solu, lam)
     return lambda
 end
 
+function get_atp(solu, atp)
+    atp_list = []
+    for t in solu.t
+        push!(atp_list, atp(t))
+    end
+    return atp
+end
+
 function plot_sol_and_lam(solu, lam)
     lambda = get_lambda(solu, lam)
     p15 = plot(scatter(x=solu.t, y=lambda), Layout(title="λ"))
@@ -474,6 +482,17 @@ function extend_gr_curve(csv)
     end    
     new_df = vcat(csv, df)
     lam = QuadraticInterpolation(new_df."gr",new_df."t")
+    return lam, new_df
+end  
+
+function extend_atp_curve(csv)
+    mean_gr = mean((csv."atp"[Int64((length(csv."t")*2/3)+1):end]))
+    df = DataFrame(t=Float64[], atp=Float64[])
+    for t in collect(csv."t"[end]+10:5000:1e9)
+        push!(df, [t, mean_gr])
+    end    
+    new_df = vcat(csv, df)
+    lam = QuadraticInterpolation(new_df."atp",new_df."t")
     return lam, new_df
 end  
 
