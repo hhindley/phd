@@ -177,7 +177,7 @@ function change_param_atp(param_range, parameter, model, init, species)#, params
     return dict_res
 end
 
-function plotly_plot_sol(sol, log, log1)
+function plotly_plot_sol(sol, log, log1, title)
     rm_a = get_curve(sol, :rm_a); rm_b = get_curve(sol, :rm_b); rm_r = get_curve(sol, :rm_r); rtca = get_curve(sol, :rtca); rtcb = get_curve(sol, :rtcb); rtcr = get_curve(sol, :rtcr); rh = get_curve(sol, :rh); rt = get_curve(sol, :rt); rd = get_curve(sol, :rd);
 
     rma_curve = scatter(x=sol.t, y=rm_a, name="mRNA RtcA")
@@ -189,7 +189,7 @@ function plotly_plot_sol(sol, log, log1)
     rh_curve = scatter(x=sol.t, y=rh, name="Rh")
     rt_curve = scatter(x=sol.t, y=rt, name="Rt")
     rd_curve = scatter(x=sol.t, y=rd, name="Rd")
-    return (plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve] ,Layout(xaxis_type=log, yaxis_type=log1)))
+    return (plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve] ,Layout(xaxis_type=log, yaxis_type=log1, title=title)))
 end
 
 function plotly_plot_sol_atp(sol, log, log1, title, show_leg, atp_end)
