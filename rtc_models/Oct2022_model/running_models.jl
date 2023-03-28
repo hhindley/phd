@@ -10,15 +10,19 @@ csv_wt = DataFrame(CSV.File("/home/holliehindley/phd/data/results_rtcOFF_grfit.c
 csv_wt = select!(csv_wt, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
 csv_new = DataFrame(CSV.File("/home/holliehindley/phd/data/results_od1303_grfit.csv"))
 csv_new = select!(csv_new, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
-
+csv_new2 = DataFrame(CSV.File("/home/holliehindley/phd/data/results_od1303_grfit2.csv"))
+csv_new2 = select!(csv_new2, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
 
 lam_colD, new_df = extend_gr_curve(csv)
 lam_wt, new_df_wt = extend_gr_curve(csv_wt)
 lam_colD[lam_colD.< 0] .= 0 #zero(eltype(lam_colD))
 lam_colD
 
-lam, new_df1 = extend_gr_curve(csv_new)
+lam, new_df1 = extend_gr_curve_low(csv_new)
 lam[lam.< 0] .= 0 #zero(eltype(lam_colD))
+
+lam2, new_df2 = extend_gr_curve_low(csv_new2)
+lam2[lam2.< 0] .= 0 #zero(eltype(lam_colD))
 
 tspan_wt = (0, lam_wt[end])
 params_wt = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam_wt] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
@@ -28,14 +32,39 @@ p = plotly_plot_sol(solu_wt, "log", "")
 tspan_colD = (0, lam_colD[end])
 params_colD = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam_colD] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 solu_colD = sol(rtc_model1!, initial, tspan_colD, params_colD)
-p = plotly_plot_sol(solu_colD, "log", "")
+p = plotly_plot_sol(solu_colD, "log", "", "colD data")
+
+rm_a = get_curve(solu_colD, :rm_a)
+
+p = scatter(x=solu_colD.t, y=rm_a)
+p1 = scatter(x=(300,300), y=(0,10200))
+stat = plot([p,p1], Layout(xaxis_range=[100,1000], yaxis_range=[0,20]))
+savefig(stat,"stationary_phase_vis.svg")
+
+
+
 
 tspan_new = (0, lam[end])
 params_new = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 solu_new = sol(rtc_model1!, initial, tspan_new, params_new)
-p = plotly_plot_sol(solu_new, "log", "")
+p = plotly_plot_sol(solu_new, "log", "", "unsmoothed gr curve")
 lam = get_lambda(solu_new, lam)
 plot(scatter(x=solu_new.t, y=lam), Layout(xaxis_type="log"))
+
+tspan_new2 = (0, lam2[end])
+params_new2 = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam2] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+solu_new2 = sol(rtc_model1!, initial, tspan_new2, params_new2)
+p = plotly_plot_sol(solu_new2, "log", "", "smoothed gr curve")
+lam2 = get_lambda(solu_new2, lam2)
+plot(scatter(x=solu_new2.t, y=lam2), Layout(xaxis_type="log"))
+
+rm_a1 = get_curve(solu_new2, :rm_a)
+p = scatter(x=solu_new2.t, y=rm_a1)
+p1 = scatter(x=(600,600), y=(0,23500))
+stat = plot([p,p1], Layout(xaxis_range=[log(1),log(50)], yaxis_range=[0,200], xaxis_type="log"))
+
+savefig(stat,"stationary_phase_vis.svg")
+
 
 
 params_kin_kdam = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, ktag, kdeg, atp, na, nb, nr, lam_colD] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :ktag, :kdeg, :atp, :na, :nb, :nr, :lam)

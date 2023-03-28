@@ -41,7 +41,9 @@ rh = get_curve(solu_lam, :rh)
 rd = get_curve(solu_lam, :rd); rt = get_curve(solu_lam, :rt)
 rtot = @. rh+rd+rt
 plot(scatter(x=solu_lam.t,y=rtot), Layout(xaxis_type="log"))
-
+# open("./justlam.html", "w") do io
+#     PlotlyBase.to_html(io, p.plot)
+# end
 
 # just vary kin over time 
 atp = 4000; lam = 0.033;
@@ -49,6 +51,9 @@ params_kin = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, 
 solu_kin = sol(rtc_model_kin, initial, tspan, params_kin)
 
 plotly_plot_sol(solu_kin, "log", "", "k_in varied over time")
+rh = get_curve(solu_kin, :rh); rd = get_curve(solu_kin, :rd); rt = get_curve(solu_kin, :rt)
+rtot = @. rh+rd+rt
+plot(scatter(x=solu_lam.t,y=rtot), Layout(xaxis_type="log"))
 
 # just atp varied over time 
 lam = 0.033; kin = 0.054;
@@ -79,6 +84,11 @@ plotly_plot_sol(solu_atp_kin, "log", "log", "atp and k_in varied over time")
 atp = 4000;
 params_lam_kin = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin_t, atp, na, nb, nr, lam_t] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 solu_lam_kin = sol(lam_kin_t, initial, tspan, params_lam_kin)
-plotly_plot_sol(solu_lam_kin, "log", "", "k_in and λ varied over time")
+p1 = plotly_plot_sol(solu_lam_kin, "log", "", "k_in and λ varied over time")
+open("./lam_kin.html", "w") do io
+    PlotlyBase.to_html(io, p1.plot)
+end
 
-
+rh = get_curve(solu_lam_kin, :rh); rd = get_curve(solu_lam_kin, :rd); rt = get_curve(solu_lam_kin, :rt)
+rtot = @. rh+rd+rt
+plot(scatter(x=solu_lam.t,y=rtot), Layout(xaxis_type="log"))

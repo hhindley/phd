@@ -483,6 +483,17 @@ function extend_gr_curve(csv)
     new_df = vcat(csv, df)
     lam = QuadraticInterpolation(new_df."gr",new_df."t")
     return lam, new_df
+end
+
+function extend_gr_curve_low(csv)
+    mean_gr = 0.0001
+    df = DataFrame(t=Float64[], gr=Float64[])
+    for t in collect(csv."t"[end]+10:5000:1e9)
+        push!(df, [t, mean_gr])
+    end    
+    new_df = vcat(csv, df)
+    lam = QuadraticInterpolation(new_df."gr",new_df."t")
+    return lam, new_df
 end  
 
 function extend_atp_curve(csv)

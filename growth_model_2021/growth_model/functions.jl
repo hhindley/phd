@@ -1,6 +1,6 @@
 function simple_solve!(model, init, tspan, params)
     prob = ODEProblem(model, init, tspan, params);
-    solu = solve(prob, Rodas4())#, abstol=1e-15, reltol=1e-12);
+    solu = solve(prob, Rodas4(), isoutofdomain=(y,p,t)->any(x->x<0,y))#, abstol=1e-15, reltol=1e-12);
     return solu
 end
 
@@ -50,7 +50,11 @@ end
 
 function get_curve(sol, species)
     df = DataFrame(sol)
-    rename!(df, [:time, :cr, :em, :cp, :cq, :ct, :et, :cm, :mt, :mm, :q, :p, :si, :mq, :mp, :mr, :r, :a])
+    if length(sol[1]) == 17
+        rename!(df, [:time, :cr, :em, :cp, :cq, :ct, :et, :cm, :mt, :mm, :q, :p, :si, :mq, :mp, :mr, :r, :a])
+    else
+        rename!(df, [:time, :cr, :em, :cp, :cq, :ct, :et, :cm, :mt, :mm, :q, :p, :si, :mq, :mp, :mr, :r, :a, :s, :N])
+    end 
     species = df[:, species]
     return species
 end
@@ -82,4 +86,35 @@ function plotly_plot_sol(sol, log, log1)
     
 
     return (plot([cr_curve, em_curve, cp_curve, cq_curve, ct_curve, et_curve, cm_curve, mt_curve, mm_curve, q_curve, p_curve, si_curve, mq_curve, mp_curve, mr_curve, r_curve, a_curve] ,Layout(xaxis_type=log, yaxis_type=log1)))
+end
+
+function plotly_plot_sol_pop(sol, log, log1)
+    cr = get_curve(sol, :cr); em = get_curve(sol, :em); cp = get_curve(sol, :cp); cq = get_curve(sol, :cq); 
+    ct = get_curve(sol, :ct); et = get_curve(sol, :et); cm = get_curve(sol, :cm); mt = get_curve(sol, :mt); 
+    mm = get_curve(sol, :mm); q = get_curve(sol, :q); p = get_curve(sol, :p); si = get_curve(sol, :si);
+    mq = get_curve(sol, :mq); mp = get_curve(sol, :mp); mr = get_curve(sol, :mr); r = get_curve(sol, :r); 
+    a = get_curve(sol, :a); s = get_curve(sol, :s); N = get_curve(sol, :N);
+
+    cr_curve = scatter(x=sol.t, y=cr, name="cr")
+    em_curve = scatter(x=sol.t, y=em, name="em")
+    cp_curve = scatter(x=sol.t, y=cp, name="cp")
+    cq_curve = scatter(x=sol.t, y=cq, name="cq")
+    ct_curve = scatter(x=sol.t, y=ct, name="ct")
+    et_curve = scatter(x=sol.t, y=et, name="et")
+    cm_curve = scatter(x=sol.t, y=cm, name="cm")
+    mt_curve = scatter(x=sol.t, y=mt, name="mt")
+    mm_curve = scatter(x=sol.t, y=mm, name="mm")
+    q_curve = scatter(x=sol.t, y=q, name="q")
+    p_curve = scatter(x=sol.t, y=p, name="p")
+    si_curve = scatter(x=sol.t, y=si, name="si")
+    mq_curve = scatter(x=sol.t, y=mq, name="mq")
+    mp_curve = scatter(x=sol.t, y=mp, name="mp")
+    mr_curve = scatter(x=sol.t, y=mr, name="mr")
+    r_curve = scatter(x=sol.t, y=r, name="r")
+    a_curve = scatter(x=sol.t, y=a, name="a")
+    s_curve = scatter(x=sol.t, y=s, name="s")
+    N_curve = scatter(x=sol.t, y=N, name="N")
+
+
+    return (plot([cr_curve, em_curve, cp_curve, cq_curve, ct_curve, et_curve, cm_curve, mt_curve, mm_curve, q_curve, p_curve, si_curve, mq_curve, mp_curve, mr_curve, r_curve, a_curve, s_curve, N_curve] ,Layout(xaxis_type=log, yaxis_type=log1)))
 end

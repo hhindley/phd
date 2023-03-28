@@ -3,7 +3,7 @@ b= 0;
 dm= 0.1;
 kb= 1;
 ku= 1.0;
-f= 1;
+f= 0#1;
 thetar= 426.8693338968694;
 k_cm= 0.005990373118888;
 s0= 1e4;
@@ -25,16 +25,20 @@ wp= 0.0;
 nq= 4;
 nr= 7549.0;
 ns= 0.5;
+kin = 0;
+d_s = 0;
+d_n = 0;
 # params_init= [b, dm, kb, ku, f_init, thetar, k_cm, s0, gmax, cl, thetax, Kt, M, we, Km, vm, nx, Kq, Kp, vt, wr, wq, wp, hq, nr, ns]
 # params= [b, dm, kb, ku, f, thetar, k_cm, s0, gmax, cl, thetax, Kt, M, we, Km, vm, nx, Kq, Kp, vt, wr, wq, wp, hq, nr, ns]
 params = [b, dm, kb, ku, f, thetar, k_cm, s0, gmax, cl, thetax, Kt, M, we, Km, vm, nx, Kq, Kp, vt, wr, wq, wp, nq, nr, ns]
+pop_params = [dm, kb, ku, f, thetar, gmax, thetax, Kt, M, we, Km, vm, nx, Kq, vt, wr, wq, wp, nq, nr, ns, kin, d_s, d_n]
 
 cr_0= 0.
 em_0= 0.
 cp_0= 0.
 cq_0= 0.
 ct_0= 0.
-et_0= 0.
+et_0= 0. #0
 cm_0= 0.
 mt_0= 0.
 mm_0= 0.
@@ -46,8 +50,11 @@ mp_0= 0.
 mr_0= 0.
 r_0= 10.0
 a_0= 1000.0
-
+s_0 = 1e10
+N_0 = 1
 init= [cr_0, em_0, cp_0, cq_0, ct_0, et_0, cm_0, mt_0, mm_0, q_0, p_0, si_0, mq_0, mp_0, mr_0, r_0, a_0]
+pop_init= [cr_0, em_0, cp_0, cq_0, ct_0, et_0, cm_0, mt_0, mm_0, q_0, p_0, si_0, mq_0, mp_0, mr_0, r_0, a_0, s_0, N_0]
+
 
 cr_0= 0.
 em_0= 0.
