@@ -4,6 +4,33 @@ function simple_solve!(model, init, tspan, params)
     return solu
 end
 
+function get_ss_init(solu)
+    species = [:cr, :em, :cp, :cq, :ct, :et, :cm, :mt, :mm, :q, :p, :si, :mq, :mp, :mr, :r, :a]
+    initsolDF = DataFrame([[j[i] for j in solu.u] for i=1:length(solu.u[1])], species)
+    sscr = initsolDF[end,:][:cr]
+    ssem = initsolDF[end,:][:em]
+    sscp = initsolDF[end,:][:cp]
+    sscq = initsolDF[end,:][:cq]
+    ssct = initsolDF[end,:][:ct]
+    sscm = initsolDF[end,:][:cm]
+    ssmt = initsolDF[end,:][:mt]
+    ssmm = initsolDF[end,:][:mm]
+    ssq = initsolDF[end,:][:q]
+    ssp = initsolDF[end,:][:p]
+    sssi = initsolDF[end,:][:si]
+    ssmq = initsolDF[end,:][:mq]
+    ssmp = initsolDF[end,:][:mp]
+    ssmr = initsolDF[end,:][:mr]
+    ssr = initsolDF[end,:][:r]
+    ssa = initsolDF[end,:][:a]
+    sset = initsolDF[end,:][:et]
+    # sss = initsolDF[end,:][:s]
+    # ssN = initsolDF[end,:][:N]
+
+    # sset = 1
+    return @LArray [sscr, ssem, sscp, sscq, ssct, sset, sscm, ssmt, ssmm, ssq, ssp, sssi, ssmq, ssmp, ssmr, ssr, ssa, s_0, N_0] (:sscr, :ssem, :sscp, :sscq, :ssct, :sset, :sscm, :ssmt, :ssmm, :ssq, :ssp, :sssi, :ssmq, :ssmp, :ssmr, :ssr, :ssa, :s_0, :N_0)
+end
+
 function SSinitVals()
     include("initial.jl")
     initsol = initial_model(odemodelfull!, initfull, tspan, params)

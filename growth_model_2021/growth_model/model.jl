@@ -1,10 +1,10 @@
 function odemodel!(dydt, initial, params, t)
-    b, dm, kb, ku, f, thetar, k_cm, s0, gmax, cl, thetax, Kt, M, we, Km, vm, nx, Kq, Kp, vt, wr, wq, wp, hq, nr, ns = params
+    b, dm, kb, ku, f, thetar, k_cm, s0, gmax, cl, thetax, Kt, M, we, Km, vm, nx, Kq, Kp, vt, wr, wq, wp, hq, nr, ns, Kgamma = params
     cr, em, cp, cq, ct, et, cm, mt, mm, q, p, si, mq, mp, mr, r, a = initial
 
     dcr, dem, dcp, dcq, dct, det, dcm, dmt, dmm, dq, dp, dsi, dmq, dmp, dmr, dr, da = zeros(length(dydt))
     
-    Kgamma = gmax/Kp
+    # Kgamma = 7*sf #gmax/Kp
     gamma = gmax*a/(Kgamma+a)
     ttrate = (cq+cr+cp+ct+cm)*gamma
     lam = ttrate/M
@@ -68,12 +68,12 @@ function odemodelfull!(dydt, initial, params, t)
 end
 
 function pop_model!(dydt, initial, params, t)
-    dm, kb, ku, f, thetar, gmax, thetax, Kt, M, we, Km, vm, nx, Kq, vt, wr, wq, wp, hq, nr, ns, kin, d_s, d_n = params
+    dm, kb, ku, f, thetar, gmax, thetax, Kt, M, we, Km, vm, nx, Kq, vt, wr, wq, wp, hq, nr, ns, kin, d_s, d_n, Kgamma = params
     cr, em, cp, cq, ct, et, cm, mt, mm, q, p, si, mq, mp, mr, r, a, s, N = initial
 
     dcr, dem, dcp, dcq, dct, det, dcm, dmt, dmm, dq, dp, dsi, dmq, dmp, dmr, dr, da, ds, dN = zeros(length(dydt))
     
-    Kgamma = 3e8;#gmax/Kp
+    # Kgamma = 7*sf;#gmax/Kp
     gamma = gmax*a/(Kgamma+a)
     ttrate = (cq+cr+cp+ct+cm)*gamma
     lam = ttrate/M

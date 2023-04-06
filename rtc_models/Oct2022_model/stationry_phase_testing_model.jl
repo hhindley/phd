@@ -7,15 +7,15 @@ include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
 # load csv for growth rate and atp curves 
 csv_gr = DataFrame(CSV.File("/home/holliehindley/phd/data/results_colD_grfit.csv")) # read csv to a datafram
 csv_gr = select!(csv_gr, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
-csv_atp = DataFrame(CSV.File("/home/holliehindley/phd/data/atp_curve_from_growth_model.csv"))
+csv_atp = DataFrame(CSV.File("/home/holliehindley/phd/data/atp_for_rtcmodel.csv"))
 
 # set atp and lam curves from files 
 lam_t, new_df = extend_gr_curve(csv_gr)
 lam_t[lam_t.< 0] .= 0 #zero(eltype(lam_colD))
-plot(scatter(x=new_df."t", y=lam), Layout(xaxis_type="log"))
+plot(scatter(x=new_df."t", y=lam_t), Layout(xaxis_type="log"))
 
-atp_t, new_atp = extend_atp_curve(csv_atp)
-plot(scatter(x=new_atp."t", y=atp), Layout(xaxis_type="log"))
+atp_t = QuadraticInterpolation(csv_atp."atp",csv_atp."t")
+plot(scatter(x=csv_atp."t", y=atp), Layout(xaxis_type="log"))
 
 # set kin curve  
 rh = 11.29
@@ -37,6 +37,17 @@ atp = 4000; kin = 0.054;
 params_lam = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam_t] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 solu_lam = sol(rtc_model1!, initial, tspan, params_lam)
 p = plotly_plot_sol(solu_lam, "log", "", "λ varied over time")
+open("./model_output.html", "w") do io
+    PlotlyBase.to_html(io, p.plot)
+end
+p_all = plot_all_variables(solu_lam, lam_t)
+open("./all_model_output.html", "w") do io
+    PlotlyBase.to_html(io, p_all.plot)
+end
+
+
+
+
 rh = get_curve(solu_lam, :rh)
 rd = get_curve(solu_lam, :rd); rt = get_curve(solu_lam, :rt)
 rtot = @. rh+rd+rt
@@ -59,17 +70,17 @@ plot(scatter(x=solu_lam.t,y=rtot), Layout(xaxis_type="log"))
 lam = 0.033; kin = 0.054;
 params_atp = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp_t, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 solu_atp = sol(atp_t!, initial, tspan, params_atp)
-plotly_plot_sol(solu_atp, "log", "log", "atp varied over time")
+plotly_plot_sol(solu_atp, "log", "", "atp varied over time")
 
 
 # atp and lam varied over time 
 kin = 0.054;
 params_atp_lam = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp_t, na, nb, nr, lam_t] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 solu_atp_lam = sol(atp_gr_t!, initial, tspan, params_atp_lam)
-p = plotly_plot_sol(solu_atp_lam, "log", "log", "atp and λ varied over time")
+p = plotly_plot_sol(solu_atp_lam, "log", "", "atp and λ varied over time")
 
-lam_model = get_lambda(solu_atp_lam, lam)
-atp_model = get_atp(solu_atp_lam, atp)
+lam_model = get_lambda(solu_atp_lam, lam_t)
+atp_model = get_atp(solu_atp_lam, atp_t)
 plot(scatter(x=solu_atp_lam.t, y=lam_model), Layout(xaxis_type="log"))
 plot(scatter(x=solu_atp_lam.t, y=atp_model), Layout(xaxis_type="log"))
 
@@ -78,7 +89,7 @@ plot(scatter(x=solu_atp_lam.t, y=atp_model), Layout(xaxis_type="log"))
 lam = 0.033;
 params_atp_kin = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin_t, atp_t, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 solu_atp_kin = sol(atp_kin_t!, initial, tspan, params_atp_kin)
-plotly_plot_sol(solu_atp_kin, "log", "log", "atp and k_in varied over time")
+plotly_plot_sol(solu_atp_kin, "log", "", "atp and k_in varied over time")
 
 # kin and lam varied over time 
 atp = 4000;

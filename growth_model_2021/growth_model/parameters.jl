@@ -1,15 +1,17 @@
 # parameters
+sf = 22000;
+
 b= 0;
 dm= 0.1;
 kb= 1;
 ku= 1.0;
 f= 0#1;
-thetar= 426.8693338968694;
+thetar= 426.8693338968694*sf;
 k_cm= 0.005990373118888;
 s0= 1e4;
 gmax= 1260.0;
 cl= 0;
-thetax= 4.379733394834643;
+thetax= 4.379733394834643*sf;
 Kt= 1.0e3;
 M= 1.0e8;
 we= 4.139172187824451;
@@ -18,20 +20,21 @@ vm= 5800.0;
 nx= 300.0;
 Kq= 1.522190403737490e+05;
 Kp= 180.1378030928276;
+Kgamma = 7*sf;
 vt= 726.0;
 wr= 929.9678874564831;
 wq= 948.9349882947897;
 wp= 0.0;
 nq= 4;
 nr= 7549.0;
-ns= 0.5;
+ns= 0.01;
 kin = 0;
 d_s = 0;
 d_n = 0;
 # params_init= [b, dm, kb, ku, f_init, thetar, k_cm, s0, gmax, cl, thetax, Kt, M, we, Km, vm, nx, Kq, Kp, vt, wr, wq, wp, hq, nr, ns]
 # params= [b, dm, kb, ku, f, thetar, k_cm, s0, gmax, cl, thetax, Kt, M, we, Km, vm, nx, Kq, Kp, vt, wr, wq, wp, hq, nr, ns]
-params = [b, dm, kb, ku, f, thetar, k_cm, s0, gmax, cl, thetax, Kt, M, we, Km, vm, nx, Kq, Kp, vt, wr, wq, wp, nq, nr, ns]
-pop_params = [dm, kb, ku, f, thetar, gmax, thetax, Kt, M, we, Km, vm, nx, Kq, vt, wr, wq, wp, nq, nr, ns, kin, d_s, d_n]
+params = [b, dm, kb, ku, f, thetar, k_cm, s0, gmax, cl, thetax, Kt, M, we, Km, vm, nx, Kq, Kp, vt, wr, wq, wp, nq, nr, ns, Kgamma]
+pop_params = [dm, kb, ku, f, thetar, gmax, thetax, Kt, M, we, Km, vm, nx, Kq, vt, wr, wq, wp, nq, nr, ns, kin, d_s, d_n, Kgamma]
 
 cr_0= 0.
 em_0= 0.

@@ -10,10 +10,22 @@ include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
 
 
 
+csv_gr = DataFrame(CSV.File("/home/holliehindley/phd/data/results_colD_grfit.csv")) # read csv to a datafram
+csv_gr = select!(csv_gr, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
+lam_t, new_df = extend_gr_curve(csv_gr)
+lam_t[lam_t.< 0] .= 0
 
-kdam_range = collect(0:0.001:0.2)
-results_kdam = change_param(kdam_range, :kdam, rtc_model1!, initial, all_species, lam_colD)
-plot_change_param_sols(kdam_range, results_kdam, "kdam")
+kdam_range = collect(0:0.1:100)
+results_kdam = change_param(kdam_range, :kdam, rtc_model1!, initial, all_species, lam_t)
+sols_plot = plot_change_param_sols(kdam_range, results_kdam, "kdam")
+all_plot = plot_all_change_param(kdam_range, results_kdam)
+
+open("./kdam_sols_all.html", "w") do io
+    PlotlyBase.to_html(io, all_plot.plot)
+end
+
+
+
 
 ωab_range = collect(0:0.01:1)
 results_ab = change_param(ωab_range, :ω_ab, rtc_model1!, initial, all_species, lam_colD)

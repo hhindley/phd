@@ -285,7 +285,7 @@ function plotly_plot_sol_OD(sol, log)
     rma_curve = scatter(x=sol.t, y=rm_a, name="mRNA RtcA")
     rmb_curve = scatter(x=sol.t, y=rm_b, name="mRNA RtcB")
     rmr_curve = scatter(x=sol.t, y=rm_r, name="mRNA RtcR")
-    rtca_curve = scatter(x=sol.t, y=rtca, name="RtcA")
+    rtca_curve = scsatter(x=sol.t, y=rtca, name="RtcA")
     rtcb_curve = scatter(x=sol.t, y=rtcb, name="RtcB")
     rtcr_curve = scatter(x=sol.t, y=rtcr, name="RtcR")
     rh_curve = scatter(x=sol.t, y=rh, name="Rh")
@@ -507,6 +507,47 @@ function extend_atp_curve(csv)
     return lam, new_df
 end  
 
+function plot_all_change_param(range, res)
+    # res = get_all_curves(solu, all_species)
+    # lambda = get_lambda(solu, lam)
+    alpha = res[:rt]/kr
+    fa = @. (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
+    ra = @. fa*res[:rtcr]
+    Vinit = @. ra*Vmax_init*atp/(Km_init+atp)
+    tscr_el_a = ω_ab*atp/(θtscr+atp)
+    tscr_a = Vinit*tscr_el_a
+    tscr_el_b = ω_ab*atp/(θtscr+atp)
+    tscr_b = Vinit*tscr_el_b
+    tscr_r = ω_r*atp/(θtscr+atp)
+    tlr_el = g_max*atp/(θtlr+atp)
+    tlr(rm_x, nx) = @. (1/nx)*res[:rh]*rm_x*tlr_el
+    tlr_r = tlr(res[:rm_r], nr); tlr_a = tlr(res[:rm_a], na); tlr_b = tlr(res[:rm_b], nb);
+    rtca1 = @. (atp*res[:rtca])/(atp+(km_a*res[:rd])) 
+    rtcb1 = @. (atp*res[:rtcb])/(atp+(km_b*res[:rt])) 
+    Vrep = @. krep*rtcb1*res[:rt]
+    Vdam = @. kdam*res[:rh]
+    Vinflux = kin*tlr_el
+    Vtag = @. ktag*rtca1*res[:rd]
+
+
+    p1 = plot(scatter(x=range, y=alpha), Layout(title="alpha"));
+    p2 = plot(scatter(x=range, y=fa), Layout(title="fa"));
+    p3 = plot(scatter(x=range, y=ra), Layout(title="ra"));
+    p4 = plot(scatter(x=range, y=Vinit), Layout(title="Vinit"));
+    p5 = plot(scatter(x=range, y=tscr_a), Layout(title="tscr_a"));
+    p6 = plot(scatter(x=range, y=tscr_b), Layout(title="tscr_b"));
+    p7 = plot(scatter(x=range, y=tlr_r), Layout(title="tlr_r"));
+    p8 = plot(scatter(x=range, y=tlr_a), Layout(title="tlr_a"));
+    p9 = plot(scatter(x=range, y=tlr_b), Layout(title="tlr_b"));
+    p10 = plot(scatter(x=range, y=rtca1), Layout(title="rtca1"));
+    p11 = plot(scatter(x=range, y=rtcb1), Layout(title="rtcb1"));
+    p12 = plot(scatter(x=range, y=Vrep), Layout(title="Vrep"));
+    p13 = plot(scatter(x=range, y=Vdam), Layout(title="Vdam"));
+    p14 = plot(scatter(x=range, y=Vtag), Layout(title="Vtag"));
+    # p15 = plot(scatter(x=range, y=lambda), Layout(title="λ"))
+
+   return [p1 p2 p3; p4 p5 p6; p7 p8 p9; p10 p11 p12; p13 p14 ]
+end
 
 function plot_change_param_sols(range, results, param)
 
