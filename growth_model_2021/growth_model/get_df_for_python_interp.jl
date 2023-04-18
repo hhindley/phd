@@ -1,6 +1,7 @@
 using DifferentialEquations, PyCall, DataFrames, Measures, CSV, DiffEqCallbacks, DataInterpolations, LabelledArrays, Statistics
 using PlotlyJS
 
+
 include("model.jl")
 include("parameters.jl")
 include("functions.jl")
@@ -12,7 +13,7 @@ solu = simple_solve!(odemodel!, init, tspan, params)
 
 
 ssinit = get_ss_init(solu)
-ns = 0.85;
+ns = 5.5; #0.85 
 pop_params = [dm, kb, ku, f, thetar, gmax, thetax, Kt, M, we, Km, vm, nx, Kq, vt, wr, wq, wp, nq, nr, ns, kin, d_s, d_n, sf]
 
 solu_ss = simple_solve!(pop_model!, ssinit, tspan, pop_params)
@@ -31,6 +32,8 @@ lam = @. (Rt*(g_max*a/(k_g+a)))/(M)
 # p_atp1 = plot(scatter(x=solu_ss.t, y=a1), Layout(xaxis_type="log"))
 p_atp = plot(scatter(x=solu_ss.t, y=a), Layout(xaxis_type="log", title="ATP"))
 p_lam = plot(scatter(x=solu_ss.t, y=lam), Layout(xaxis_type="log", title="λ"))
+
+
 open("./atp_growth_model.html", "w") do io
     PlotlyBase.to_html(io, p_atp.plot)
 end
@@ -122,7 +125,6 @@ csv_lam."gr"[csv_lam."gr".< 0] .= 0 #zero(eltype(lam_colD))
 plot(scatter(x=csv_lam."t", y=csv_lam."gr"))
 
 
-
 function extend_gr_curve(csv)
     mean_gr = mean((csv."gr"[Int64((length(csv."t")*2/3)+1):end]))
     df = DataFrame(t=Float64[], gr=Float64[])
@@ -137,7 +139,7 @@ end
 lam_ext, new_df = extend_gr_curve(csv_lam)
 
 lam_ext[lam_ext.< 0] .= 0 #zero(eltype(lam_colD))
-plot(scatter(x=new_df."t", y=lam_ext), Layout(xaxis_type="log"))
+plot(scatter(x=new_df."t", y=lam_ext), Layout(xaxis_range=(0,1000)))
 
 plot(scatter(x=new_df."t", y=new_df."gr"), Layout(xaxis_type="log"))
 
@@ -149,8 +151,8 @@ plot(scatter(x=new_df."t", y=atp_rtc), Layout(xaxis_type="log"))
 
 # CSV.write("colD_gr_data.csv", new_df)
 
-p1 = plot(scatter(x=new_df."t", y=new_df."gr"), Layout(xaxis_type="log", title="λ_data"))
-p2 = plot(scatter(x=solu_ss.t, y=lam), Layout(xaxis_type="log", title="λ_growth_model"))
+p1 = plot(scatter(x=new_df."t", y=new_df."gr"), Layout(xaxis_range=(0,1000), title="λ_data"))
+p2 = plot(scatter(x=solu_ss.t, y=lam), Layout(xaxis_range=(0,1000), title="λ_growth_model"))
 
 [p1;p2]
 
@@ -158,7 +160,7 @@ p2 = plot(scatter(x=solu_ss.t, y=lam), Layout(xaxis_type="log", title="λ_growth
 p = make_subplots(rows=2, cols=1, shared_xaxes=true, vertical_spacing=0.02)
 add_trace!(p, (scatter(x=new_df."t", y=new_df."gr")), row=1, col=1)
 add_trace!(p, (scatter(x=solu_ss.t, y=lam)), row=2, col=1)
-relayout!(p, showlegend=false, xaxis_type="log", xaxis2_type="log")
+relayout!(p, showlegend=false, xaxis_type="", xaxis2_type="")
 p
 
 data_t = new_df."t"[2:end]
@@ -187,7 +189,7 @@ add_trace!(p, (scatter(x=full_t, y=atp_rtc)), row=2, col=2)
 relayout!(p, showlegend=false, xaxis_type="log", xaxis2_type="log", xaxis3_type="log", xaxis4_type="log")
 p
 
-atp_model = DataFrame(atp = atp_rtc)
+atp_lam_data = DataFrame(t = full_t, atp = atp_rtc, lam = full_lam)
 
-CSV.write("atp_for_rtcmodel.csv", atp_model)
+CSV.write("/home/holliehindley/phd/data/atp_for_rtcmodel.csv", atp_lam_data)
 

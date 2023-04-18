@@ -12,16 +12,20 @@ csv_atp = DataFrame(CSV.File("/home/holliehindley/phd/data/atp_for_rtcmodel.csv"
 # set atp and lam curves from files 
 lam_t, new_df = extend_gr_curve(csv_gr)
 lam_t[lam_t.< 0] .= 0 #zero(eltype(lam_colD))
-plot(scatter(x=new_df."t", y=lam_t), Layout(xaxis_type="log"))
+p_lam = plot(scatter(x=new_df."t", y=lam_t), Layout(xaxis_type="log"))
 
+
+lam_t = QuadraticInterpolation(csv_atp."lam",csv_atp."t")
 atp_t = QuadraticInterpolation(csv_atp."atp",csv_atp."t")
-plot(scatter(x=csv_atp."t", y=atp), Layout(xaxis_type="log"))
+p_atp = plot(scatter(x=csv_atp."t", y=atp_t), Layout(xaxis_type="log"))
+p_lam = plot(scatter(x=csv_atp."t", y=lam_t), Layout(xaxis_type="log"))
+[p_lam;p_atp]
 
 # set kin curve  
 rh = 11.29
 kin_model = lam_t*rh/g_max
 plot(scatter(x=new_df."t", y=kin_model), Layout(xaxis_type="log"))
-kin_t = QuadraticInterpolation(kin_model, new_df."t") 
+kin_t = QuadraticInterpolation(kin_model, csv_atp."t") 
 plot(scatter(x=new_df."t", y=kin_t), Layout(xaxis_type="log"))
 
 # nothing varied over time 

@@ -23,11 +23,11 @@ function get_ss_init(solu)
     ssmr = initsolDF[end,:][:mr]
     ssr = initsolDF[end,:][:r]
     ssa = initsolDF[end,:][:a]
-    sset = initsolDF[end,:][:et]
+    # sset = initsolDF[end,:][:et]
     # sss = initsolDF[end,:][:s]
     # ssN = initsolDF[end,:][:N]
 
-    # sset = 1
+    sset = 0.00001#0.1
     return @LArray [sscr, ssem, sscp, sscq, ssct, sset, sscm, ssmt, ssmm, ssq, ssp, sssi, ssmq, ssmp, ssmr, ssr, ssa, s_0, N_0] (:sscr, :ssem, :sscp, :sscq, :ssct, :sset, :sscm, :ssmt, :ssmm, :ssq, :ssp, :sssi, :ssmq, :ssmp, :ssmr, :ssr, :ssa, :s_0, :N_0)
 end
 
