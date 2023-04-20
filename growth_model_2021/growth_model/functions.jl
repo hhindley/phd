@@ -4,7 +4,7 @@ function simple_solve!(model, init, tspan, params)
     return solu
 end
 
-function get_ss_init(solu)
+function get_ss_init(solu, s_0, N_0)
     species = [:cr, :em, :cp, :cq, :ct, :et, :cm, :mt, :mm, :q, :p, :si, :mq, :mp, :mr, :r, :a]
     initsolDF = DataFrame([[j[i] for j in solu.u] for i=1:length(solu.u[1])], species)
     sscr = initsolDF[end,:][:cr]
@@ -23,11 +23,12 @@ function get_ss_init(solu)
     ssmr = initsolDF[end,:][:mr]
     ssr = initsolDF[end,:][:r]
     ssa = initsolDF[end,:][:a]
-    # sset = initsolDF[end,:][:et]
+    sset = initsolDF[end,:][:et]
+    # @show ssr
     # sss = initsolDF[end,:][:s]
     # ssN = initsolDF[end,:][:N]
-
-    sset = 0.00001#0.1
+    # ssa = 1e8
+    sset = 0.0001
     return @LArray [sscr, ssem, sscp, sscq, ssct, sset, sscm, ssmt, ssmm, ssq, ssp, sssi, ssmq, ssmp, ssmr, ssr, ssa, s_0, N_0] (:sscr, :ssem, :sscp, :sscq, :ssct, :sset, :sscm, :ssmt, :ssmm, :ssq, :ssp, :sssi, :ssmq, :ssmp, :ssmr, :ssr, :ssa, :s_0, :N_0)
 end
 

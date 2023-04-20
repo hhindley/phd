@@ -10,11 +10,15 @@ include("functions.jl")
 tspan = (0,1e9)
 
 solu = simple_solve!(odemodel!, init, tspan, params)
+plotly_plot_sol(solu, "", "")
 
+s_0 = 1e8; N_0 = 1;
+ssinit = get_ss_init(solu, s_0, N_0)
+print(ssinit)
 
-ssinit = get_ss_init(solu)
-ns = 5.5; #0.85 
-pop_params = [dm, kb, ku, f, thetar, gmax, thetax, Kt, M, we, Km, vm, nx, Kq, vt, wr, wq, wp, nq, nr, ns, kin, d_s, d_n, sf]
+tspan = (0,1e9)
+ns = 5.5; sf = 22000; Kgamma = 7*sf # change kgamma to change onset of atp/growth rate
+pop_params = [dm, kb, ku, f, thetar, gmax, thetax, Kt, M, we, Km, vm, nx, Kq, vt, wr, wq, wp, nq, nr, ns, kin, d_s, d_n, Kgamma ]
 
 solu_ss = simple_solve!(pop_model!, ssinit, tspan, pop_params)
 plotly_plot_sol_pop(solu_ss, "log", "")
@@ -26,12 +30,12 @@ g_max = 1260
 k_g = 7*sf
 a1 = get_curve(solu_ss, :a)
 SF = 1e6/(6.022e23*1e-15)
-a = a1*SF
+a = a1.*SF
 
 lam = @. (Rt*(g_max*a/(k_g+a)))/(M)
 # p_atp1 = plot(scatter(x=solu_ss.t, y=a1), Layout(xaxis_type="log"))
-p_atp = plot(scatter(x=solu_ss.t, y=a), Layout(xaxis_type="log", title="ATP"))
-p_lam = plot(scatter(x=solu_ss.t, y=lam), Layout(xaxis_type="log", title="λ"))
+p_atp = plot(scatter(x=solu_ss.t, y=a), Layout(xaxis_range=(0,200), xaxis_type="", title="ATP"))
+p_lam = plot(scatter(x=solu_ss.t, y=lam), Layout(xaxis_range=(0,200), xaxis_type="", title="λ"))
 
 
 open("./atp_growth_model.html", "w") do io
@@ -163,33 +167,33 @@ add_trace!(p, (scatter(x=solu_ss.t, y=lam)), row=2, col=1)
 relayout!(p, showlegend=false, xaxis_type="", xaxis2_type="")
 p
 
-data_t = new_df."t"[2:end]
-data_lam = new_df."gr"[2:end]
-start_t = solu_ss.t[1:50]
-start_lam = lam[1:50]
-addon = data_t[1] - start_t[end] -1
-start_t_moved = start_t .+ addon
-beg_range = range(start_t[3], start_t_moved[3], length=50)
-beg_lam = repeat([mean(start_lam[1:3])], outer = 50)
+# data_t = new_df."t"[2:end]
+# data_lam = new_df."gr"[2:end]
+# start_t = solu_ss.t[1:50]
+# start_lam = lam[1:50]
+# addon = data_t[1] - start_t[end] -1
+# start_t_moved = start_t .+ addon
+# beg_range = range(start_t[3], start_t_moved[3], length=50)
+# beg_lam = repeat([mean(start_lam[1:3])], outer = 50)
 
-full_t = [start_t; data_t]
-full_lam = [start_lam; data_lam]
+# full_t = [start_t; data_t]
+# full_lam = [start_lam; data_lam]
 
 
 
-plot(scatter(x=full_t, y=full_lam), Layout(xaxis_type="log"))
+# plot(scatter(x=full_t, y=full_lam), Layout(xaxis_type="log"))
 
-atp_rtc = atp_interp(full_t, full_lam)
+# atp_rtc = atp_interp(full_t, full_lam)
 
 p = make_subplots(rows=2, cols=2, shared_xaxes=true, vertical_spacing=0.08, subplot_titles=["Model λ" "Model ATP"; "Data λ" "Inferred ATP"])
 add_trace!(p, (scatter(x=solu_ss.t, y=lam)), row=1, col=1)
 add_trace!(p, (scatter(x=solu_ss.t, y=a)), row=2, col=1)
-add_trace!(p, (scatter(x=full_t, y=full_lam)), row=1, col=2)
-add_trace!(p, (scatter(x=full_t, y=atp_rtc)), row=2, col=2)
+add_trace!(p, (scatter(x=new_df.t, y=csv_lam.gr)), row=1, col=2)
+add_trace!(p, (scatter(x=new_df.t, y=atp_rtc)), row=2, col=2)
 relayout!(p, showlegend=false, xaxis_type="log", xaxis2_type="log", xaxis3_type="log", xaxis4_type="log")
 p
 
-atp_lam_data = DataFrame(t = full_t, atp = atp_rtc, lam = full_lam)
+atp_lam_data = DataFrame(t = new_df.t, atp = atp_rtc, lam = new_df.gr)
 
 CSV.write("/home/holliehindley/phd/data/atp_for_rtcmodel.csv", atp_lam_data)
 

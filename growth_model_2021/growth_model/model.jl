@@ -1,5 +1,5 @@
 function odemodel!(dydt, initial, params, t)
-    b, dm, kb, ku, f, thetar, k_cm, s0, gmax, cl, thetax, Kt, M, we, Km, vm, nx, Kq, Kp, vt, wr, wq, wp, hq, nr, ns, Kgamma = params
+    b, dm, kb, ku, f, thetar, k_cm, s0, gmax, cl, thetax, Kt, M, we, Km, vm, nx, Kq, Kp, vt, wr, wq, wp, nq, nr, ns, Kgamma = params
     cr, em, cp, cq, ct, et, cm, mt, mm, q, p, si, mq, mp, mr, r, a = initial
 
     dcr, dem, dcp, dcq, dct, det, dcm, dmt, dmm, dq, dp, dsi, dmq, dmp, dmr, dr, da = zeros(length(dydt))
@@ -23,7 +23,7 @@ function odemodel!(dydt, initial, params, t)
     dydt[10] = - lam*q + gamma/nx*cq
     dydt[11] =  - lam*p + gamma/nx*cp
     dydt[12] = - lam*si + vimp - nucat
-    dydt[13] =   +(wq*a/(thetax+a)/(1+(q/Kq)^hq)) - mq*dm - mq*lam - r*mq*kb + cq*ku + gamma/nx*cq
+    dydt[13] =   +(wq*a/(thetax+a)/(1+(q/Kq)^nq)) - mq*dm - mq*lam - r*mq*kb + cq*ku + gamma/nx*cq
     dydt[14] = +(wp*a/(thetax+a)) - mp*dm - mp*lam - r*mp*kb + cp*ku + gamma/nx*cp
     dydt[15] =   +(wr*a/(thetar+a)) - mr*dm - mr*lam - r*mr*kb + cr*ku + gamma/nr*cr
     dydt[16] =  - lam*r - r*mr*kb - r*mt*kb - r*mm*kb - r*mq*kb - r*mp*kb + cr*ku + ct*ku + cm*ku + cq*ku + cp*ku + gamma/nr*cr + gamma/nr*cr + gamma/nx*ct + gamma/nx*cm + gamma/nx*cq + gamma/nx*cp
@@ -68,7 +68,7 @@ function odemodelfull!(dydt, initial, params, t)
 end
 
 function pop_model!(dydt, initial, params, t)
-    dm, kb, ku, f, thetar, gmax, thetax, Kt, M, we, Km, vm, nx, Kq, vt, wr, wq, wp, hq, nr, ns, kin, d_s, d_n, Kgamma = params
+    dm, kb, ku, f, thetar, gmax, thetax, Kt, M, we, Km, vm, nx, Kq, vt, wr, wq, wp, nq, nr, ns, kin, d_s, d_n, Kgamma = params
     cr, em, cp, cq, ct, et, cm, mt, mm, q, p, si, mq, mp, mr, r, a, s, N = initial
 
     dcr, dem, dcp, dcq, dct, det, dcm, dmt, dmm, dq, dp, dsi, dmq, dmp, dmr, dr, da, ds, dN = zeros(length(dydt))
@@ -92,7 +92,7 @@ function pop_model!(dydt, initial, params, t)
     dydt[10] = - lam*q + gamma/nx*cq
     dydt[11] =  - lam*p + gamma/nx*cp
     dydt[12] = - lam*si + vimp - nucat
-    dydt[13] =   +(wq*a/(thetax+a)/(1+(q/Kq)^hq)) - mq*dm - mq*lam - r*mq*kb + cq*ku + gamma/nx*cq
+    dydt[13] =   +(wq*a/(thetax+a)/(1+(q/Kq)^nq)) - mq*dm - mq*lam - r*mq*kb + cq*ku + gamma/nx*cq
     dydt[14] = +(wp*a/(thetax+a)) - mp*dm - mp*lam - r*mp*kb + cp*ku + gamma/nx*cp
     dydt[15] =   +(wr*a/(thetar+a)) - mr*dm - mr*lam - r*mr*kb + cr*ku + gamma/nr*cr
     dydt[16] =  - lam*r - r*mr*kb - r*mt*kb - r*mm*kb - r*mq*kb - r*mp*kb + cr*ku + ct*ku + cm*ku + cq*ku + cp*ku + gamma/nr*cr + gamma/nr*cr + gamma/nx*ct + gamma/nx*cm + gamma/nx*cq + gamma/nx*cp
