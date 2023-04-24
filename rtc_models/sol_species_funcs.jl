@@ -189,7 +189,8 @@ function plotly_plot_sol(sol, log, log1, title)
     rh_curve = scatter(x=sol.t, y=rh, name="Rh")
     rt_curve = scatter(x=sol.t, y=rt, name="Rt")
     rd_curve = scatter(x=sol.t, y=rd, name="Rd")
-    return (plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve] ,Layout(xaxis_type=log, yaxis_type=log1, title=title)))
+    rtot = scatter(x=sol.t, y=rh+rd+rt, name="rtot")
+    return (plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve, rtot] ,Layout(xaxis_type=log, yaxis_type=log1, title=title)))
 end
 
 function plotly_plot_sol_atp(sol, log, log1, title, show_leg, atp_end)

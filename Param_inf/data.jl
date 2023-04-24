@@ -1,4 +1,4 @@
-using CSV, TotalLeastSquares, Statistics, BayesOpt, BlackBoxOptim, PyCall
+using CSV, TotalLeastSquares, Statistics, BayesOpt, BlackBoxOptim, PyCall, StaticArrays
 include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
 include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
 include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
@@ -12,6 +12,11 @@ t = [4,6,8,10,12,24]
 csv_a_std = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_conc_a_sd.csv"))  
 csv_b_std = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_conc_b_sd.csv"))  
 
+csv_a_copy = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_copy_a.csv"))
+csv_b_copy = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_copy_b.csv"))
+csv_a_std_copy = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_copy_a_sd.csv"))  
+csv_b_std_copy = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_copy_b_sd.csv"))  
+
 p = make_subplots(rows=4, cols=1, shared_xaxes=true, vertical_spacing=0.06, y_title="Concentration (μM)", x_title="Time (hours)", subplot_titles=["RtcA" "RtcB" "RtcR" "OmpA"])
 add_trace!(p, (scatter(x=t, y=csv_a.RtcA, error_y=attr(type="data", array=csv_a_std.RtcA))), row=1, col=1)
 add_trace!(p, (scatter(x=t, y=csv_a.RtcB, error_y=attr(type="data", array=csv_a_std.RtcB))), row=2, col=1)
@@ -19,7 +24,7 @@ add_trace!(p, (scatter(x=t, y=csv_a.RtcR, error_y=attr(type="data", array=csv_a_
 add_trace!(p, (scatter(x=t, y=csv_a.OmpA, error_y=attr(type="data", array=csv_a_std.OmpA))), row=4, col=1)
 relayout!(p, showlegend=false, title_text="Dataset A")
 p
-# savefig(p, "dataset_a.svg")
+savefig(p, "dataset_a.svg")
 
 p1 = make_subplots(rows=4, cols=1, shared_xaxes=true, vertical_spacing=0.06, y_title="Concentration (μM)", x_title="Time (hours)", subplot_titles=["RtcA" "RtcB" "RtcR" "OmpA"])
 add_trace!(p1, (scatter(x=t, y=csv_b.RtcA, error_y=attr(type="data", array=csv_b_std.RtcA))), row=1, col=1)
@@ -28,7 +33,49 @@ add_trace!(p1, (scatter(x=t, y=csv_b.RtcR, error_y=attr(type="data", array=csv_b
 add_trace!(p1, (scatter(x=t, y=csv_b.OmpA, error_y=attr(type="data", array=csv_b_std.OmpA))), row=4, col=1)
 relayout!(p1, showlegend=false, title_text="Dataset B")
 p1
-# savefig(p1, "dataset_b.svg")
+savefig(p1, "dataset_b.svg")
+
+p = make_subplots(rows=4, cols=1, shared_xaxes=true, vertical_spacing=0.06, y_title="Copy number", x_title="Time (hours)", subplot_titles=["RtcA" "RtcB" "RtcR" "OmpA"])
+add_trace!(p, (scatter(x=t, y=csv_a_copy.RtcA, error_y=attr(type="data", array=csv_a_std_copy.RtcA))), row=1, col=1)
+add_trace!(p, (scatter(x=t, y=csv_a_copy.RtcB, error_y=attr(type="data", array=csv_a_std_copy.RtcB))), row=2, col=1)
+add_trace!(p, (scatter(x=t, y=csv_a_copy.RtcR, error_y=attr(type="data", array=csv_a_std_copy.RtcR))), row=3, col=1)
+add_trace!(p, (scatter(x=t, y=csv_a_copy.OmpA, error_y=attr(type="data", array=csv_a_std_copy.OmpA))), row=4, col=1)
+relayout!(p, showlegend=false, title_text="Dataset A")
+p
+savefig(p, "dataset_a_copy.svg")
+
+p1 = make_subplots(rows=4, cols=1, shared_xaxes=true, vertical_spacing=0.06, y_title="Copy number", x_title="Time (hours)", subplot_titles=["RtcA" "RtcB" "RtcR" "OmpA"])
+add_trace!(p1, (scatter(x=t, y=csv_b_copy.RtcA, error_y=attr(type="data", array=csv_b_std_copy.RtcA))), row=1, col=1)
+add_trace!(p1, (scatter(x=t, y=csv_b_copy.RtcB, error_y=attr(type="data", array=csv_b_std_copy.RtcB))), row=2, col=1)
+add_trace!(p1, (scatter(x=t, y=csv_b_copy.RtcR, error_y=attr(type="data", array=csv_b_std_copy.RtcR))), row=3, col=1)
+add_trace!(p1, (scatter(x=t, y=csv_b_copy.OmpA, error_y=attr(type="data", array=csv_b_std_copy.OmpA))), row=4, col=1)
+relayout!(p1, showlegend=false, title_text="Dataset B")
+p1
+savefig(p1, "dataset_b_copy.svg")
+
+
+plot(
+    [
+        scatter(x=t, y=csv_a.RtcA, name="yaxis data"),
+        scatter(x=t, y=csv_a_copy.RtcA, name="yaxis2 data", yaxis="y2")
+    ],
+    Layout(
+        title_text="Double Y Axis Example",
+        xaxis_title_text="xaxis title",
+        yaxis_title_text="yaxis title",
+        yaxis2=attr(
+            title="yaxis2 title",
+            overlaying="y",
+            side="right"
+        )
+    )
+)
+
+
+
+
+
+
 
 
 rtca_a = csv_a.RtcA
@@ -39,7 +86,7 @@ rtcb_a = csv_a.RtcB
 rtcb_b = csv_b.RtcB
 rtcb_a_sd = csv_a_std.RtcB
 rtcb_b_sd = csv_b_std.RtcB
-rtcr_a = csv_a.RtcR
+rtcr_a = csv_a.Rtc,
 rtcr_b = csv_b.RtcR
 rtcr_a_sd = csv_a_std.RtcR
 rtcr_b_sd = csv_b_std.RtcR
