@@ -24,16 +24,16 @@ kin = 0.054; #2.381
 ω_r = 0.0019*6 #70.53; #0.0019*6#79.43865871861044; #0.0019*6;  
 ω_a = 4; 
 ω_b = 4;
-kdam = 0.000147;#0.05; 
+kdam = 0#0.000147;#0.05; 
 k = 2; # carrying capacity - changes depending on the data?
 
-rtca_0 = 1e-35 #0.00894; 
-rtcb_0 = 1e-32 #0.0216; 
+rtca_0 = 0.00894; 
+rtcb_0 = 0.0216; 
 rh_0 = 11.29; #69.56; #69.4
-rtcr_0 = 1e-33#0.04; # 8.67e-3; # change this based on keeping steady state level the whole time course (levels shouldn't really change)
+rtcr_0 = 0.0131 #0.04; # 8.67e-3; # change this based on keeping steady state level the whole time course (levels shouldn't really change)
 rm_a_0 = 0; 
 rm_b_0 = 0; 
-rm_r_0 = 0.04 # 0; 
+rm_r_0 = 0.0131#0.04 # 0; 
 rd_0 = 0; 
 rt_0 = 0;
 
