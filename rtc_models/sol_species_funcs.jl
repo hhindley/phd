@@ -26,6 +26,56 @@ function get_ssval(sol, species)
     return species
 end
 
+function sweep_paramx2_few_t(model, tspan, t, lam, atp, kin, species, func, param1, param2, param_range1, param_range2)
+    all_res = []
+    params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+    for i in param_range1
+        params[param1] = i
+        res1 = []
+        for val in param_range2 
+            params[param2] = val
+            solu = sol_with_t(model, initial, params, tspan, t)
+            push!(res1, func(solu, species))
+        end
+        push!(all_res, res1)
+
+    end
+    # @show size(all_res)
+    vec = []
+    for i in (1:length(param_range1))
+        append!(vec, values(all_res[i]))
+    end
+    # @show (vec)
+    vec = reshape(vec, (length(param_range1),length(param_range1)))
+    @show (vec)
+    return plot(contour(x=param_range1, y=param_range2, z=vec, colorbar=attr(title="$species", titleside="right")), Layout(xaxis_title="$param1", yaxis_title="$param2", title="$func of $species"))
+end
+
+function sweep_paramx2_new(model, lam, atp, kin, species, func, param1, param2, param_range1, param_range2)
+    all_res = []
+    params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+    for i in param_range1
+        params[param1] = i
+        res1 = []
+        for val in param_range2 
+            params[param2] = val
+            solu = sol(model, initial, tspan, params)
+            push!(res1, func(solu, species))
+        end
+        push!(all_res, res1)
+
+    end
+    # @show size(all_res)
+    vec = []
+    for i in (1:length(param_range1))
+        append!(vec, values(all_res[i]))
+    end
+    # @show (vec)
+    vec = reshape(vec, (length(param_range1),length(param_range1)))
+    @show (vec)
+    return plot(contour(x=param_range1, y=param_range2, z=vec, colorbar=attr(title="$species", titleside="right")), Layout(xaxis_title="$param1", yaxis_title="$param2", title="$func of $species"))
+end
+
 function check_get_ssval(sol, species, n=3)
     df = DataFrame(sol)
     if length(sol[1]) == 9
@@ -107,10 +157,10 @@ end
 function sol(model, init, tspan, params)
     # params, init = choose_param_vector(model)
     prob = ODEProblem(model, init, tspan, params)
-    # solu = solve(prob, alg_hints=[:auto])
-    # solu = solve(prob, Rodas5(), isoutofdomain=(y,p,t)->any(x->x<0,y))#, abstol=1e-15, reltol=1e-12);
+    solu = solve(prob, Rodas4())
+    # solu = solve(prob, Rodas5(), isoutofdomain=(y,p,t)->any(x->x<0,y), abstol=1e-15, reltol=1e-12);
 
-    solu = solve(prob, alg_hints=[:auto], isoutofdomain=(y,p,t)->any(x->x<0,y))#, abstol=1e-15, reltol=1e-12);
+    # solu = solve(prob, alg_hints=[:auto], isoutofdomain=(y,p,t)->any(x->x<0,y))#, abstol=1e-15, reltol=1e-12);
 
     return solu
 end
@@ -197,7 +247,7 @@ function plotly_plot_sol(sol, log, log1, title)
     alpha = @. rt/kr 
     fa = @. (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
     ra = scatter(x=sol.t, y=fa.*rtcr, name="A_RtcR")
-    return (plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve, rtot] ,Layout(xaxis_type=log, yaxis_type=log1, title=title, xaxis_range=(0,1320))))
+    return (plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve, rtot] ,Layout(xaxis_type=log, yaxis_type=log1, title=title)))#, xaxis_range=(0,1320))))
 end
 
 function plotly_plot_sol_atp(sol, log, log1, title, show_leg, atp_end)
