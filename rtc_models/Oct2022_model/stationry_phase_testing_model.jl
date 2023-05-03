@@ -43,7 +43,11 @@ kin_model = @. lam_t*rh/g_max
 kin_t = QuadraticInterpolation(kin_model, csv_atp."t") 
 p_kin = plot(scatter(x=csv_atp."t", y=kin_t), Layout(xaxis_type="", xaxis_range=(0,1500)));
 
-
+p1_atp = scatter(x=csv_atp.t, y=atp_t, name="ATP")
+p1_lam = scatter(x=csv_atp.t, y=lam_t, name="λ")
+p1_kin = scatter(x=csv_atp.t, y=kin_t, name="kin")
+p_all_vars = plot([p1_atp, p1_lam, p1_kin], Layout(xaxis_title="time (minutes)", yaxis_type="log", xaxis_range=(0,1440)))
+savefig(p_all_vars, "p_all_vars.svg")
 # plot all variables over time 
 function plot_time_vars(lam, atp, kin)
     if atp == "atp_t"
@@ -73,6 +77,7 @@ add_trace!(p, (scatter(x=csv_atp."t", y=atp_t)), row=2, col=1)
 add_trace!(p, (scatter(x=csv_atp."t", y=kin_t)), row=3, col=1)
 relayout!(p, showlegend=false, xaxis_range=(0,1500))
 p
+savefig(p, "time_vars.svg")
 
 open("./rtc_model_figs/variables_atp_growth_model.html", "w") do io
     PlotlyBase.to_html(io, p.plot)
@@ -155,7 +160,11 @@ end
 
 
 #all 
-p_all = solvePlot_time(rtc_all_t!, lam_t, atp_t, kin_t, "λ, ATP and kin varied over time", "log")
+tspan = (0,1440)
+p_all = solvePlot_time(rtc_all_t!, lam_t, atp_t, kin_t, "λ, ATP and kin varied over time", "")
+
+savefig(p_all,"p_all.svg")
+
 
 open("./rtc_model_figs/all.html", "w") do io
     PlotlyBase.to_html(io, p_all.plot)

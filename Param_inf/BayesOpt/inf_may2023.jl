@@ -117,12 +117,12 @@ function sse(model, initial, params, tspan2, t_2)
     
     error = 0
     for rtc in collect(1:2)
-        error_a = sum([abs2((i-j)/k) for (i,j,k) in zip(dataset_a[rtc], model_data_a[rtc], dataset_a_var[rtc])])
-        error_b = sum([abs2((i-j)/k) for (i,j,k) in zip(dataset_b[rtc], model_data_b[rtc], dataset_b_var[rtc])])
+        error_a = sum([(abs2(i-j))*k for (i,j,k) in zip(dataset_a[rtc], model_data_a[rtc], dataset_a_var[rtc])])
+        error_b = sum([(abs2(i-j))*k for (i,j,k) in zip(dataset_b[rtc], model_data_b[rtc], dataset_b_var[rtc])])
         tot_error = error_a + error_b
         error += tot_error
     end
-    @show error
+    return error
 end
 
 function wmse(model, initial, params, tspan2, t_2)
@@ -142,12 +142,12 @@ function wmse(model, initial, params, tspan2, t_2)
         tot_error = error_a + error_b
         error += tot_error
     end
-    @show error
+    return error
 end
 
 
 function bo_sse(;ω_ab, ω_r)
-    obj = sse(rtc_all_t!, initial, [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin_t, atp_t, na, nb, nr, lam_t], tspan2, t_2)
+    obj = sse(rtc_all_t!, initial, [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin_t, atp, na, nb, nr, lam_t], tspan2, t_2)
     return -obj/216
 end
 
@@ -165,27 +165,29 @@ param_range_ω = {'ω_ab': (0, 1), 'ω_r': (0, 1)}
 bayes_opt = pyimport("bayes_opt")
 
 # setting the optimizer 
-optimizer_sse = bayes_opt.BayesianOptimization(f=bo_sse, pbounds=py"param_range_ω", random_state=27, verbose=2) # verbose = 1 prints only when a maximum is observed (pink)
+optimizer_sse = bayes_opt.BayesianOptimization(f=bo_sse, pbounds=py"param_range_ω")#, random_state=27, verbose=2) # verbose = 1 prints only when a maximum is observed (pink)
 optimizer_wmse = bayes_opt.BayesianOptimization(f=bo_wmse, pbounds=py"param_range_ω")#, random_state=27, verbose=2) # verbose = 1 prints only when a maximum is observed (pink)
 
 # timing the process and maximising the optimizer 
 function timer()
-    optimizer_wmse.maximize(init_points=2, n_iter=1000, acq="ei", xi=0) #kappa=2, xi = 0.0 (prefer exploitation), xi = 0.1 (prefer exploration)
+    optimizer_sse.maximize(init_points=2, n_iter=100, acq="ei", xi=0.01) #kappa=2, xi = 0.0 (prefer exploitation), xi = 0.1 (prefer exploration)
 end
 
 @time timer()
-print(optimizer_wmse.max)
+print(optimizer_sse.max)
 
 
 
 using BlackBoxOptim
 function rtc_bo_ω(x)
-    obj = wmse(rtc_all_t!, initial, [L, c, kr, Vmax_init, Km_init, x[1], x[2], θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin_t, atp_t, na, nb, nr, lam_t], tspan2, t_2)
+    # obj = wmse(rtc_all_t!, initial, [L, c, kr, Vmax_init, Km_init, x[1], x[2], θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin_t, atp_t, na, nb, nr, lam_t], tspan2, t_2)
+
+    obj = sse(rtc_model1!, initial, [L, c, kr, Vmax_init, Km_init, x[1], x[2], θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam_t], tspan2, t_2)
 
     return (obj)
 end
 
-res = bboptimize(rtc_bo_ω; SearchRange = [(0, 0.1), (0, 0.1)], Method = :adaptive_de_rand_1_bin_radiuslimited, MaxSteps = 50000)
+res = bboptimize(rtc_bo_ω; SearchRange = [(0, 1), (0, 1)], Method = :adaptive_de_rand_1_bin, MaxSteps = 1000)
 
 
 print("ω_ab = ", best_candidate(res)[1])
@@ -194,12 +196,59 @@ print("error = ", best_fitness(res))
 
 
 
+using BayesOpt
+
+config = ConfigParameters()         # initiates parameters 
+
+config.n_iterations = 300
+config.n_iter_relearn = 50
+config.n_init_samples = 500     # how to change parameter values from original
+config.noise = 1e-14
+
+optimizer, optimum = bayes_optimization(rtc_bo_ω, [0,0], [1,1], config)
+
+optimum
+
+using BayesianOptimization, GaussianProcesses, Distributions
+
+# Choose as a model an elastic GP with input dimensions 2.
+# The GP is called elastic, because data can be appended efficiently.
+model = ElasticGPE(2,                            # 2 input dimensions
+                   mean = MeanConst(0.),         
+                   kernel = SEArd([0., 0.], 5.),
+                   logNoise = 0.,
+                   capacity = 3000)              # the initial capacity of the GP is 3000 samples.
+set_priors!(model.mean, [Normal(1, 2)])
+
+# Optimize the hyperparameters of the GP using maximum a posteriori (MAP) estimates every 50 steps
+modeloptimizer = NoModelOptimizer()#every = 50, noisebounds = [-4, 3],       # bounds of the logNoise
+                                # kernbounds = [[-1, -1, 0], [4, 4, 10]],  # bounds of the 3 parameters GaussianProcesses.get_param_names(model.kernel)
+                                # maxeval = 40)
+opt = BOpt(rtc_bo_ω,
+           model,
+           ExpectedImprovement(),                   # type of acquisition
+           modeloptimizer,                        
+           [0,0], [1,1],                     # lowerbounds, upperbounds         
+           repetitions = 1,                          # evaluate the function for each input 5 times
+           maxiterations = 300,                      # evaluate at 100 input positions
+           sense = Min,                              # minimize the function
+           acquisitionoptions = (method = :LD_LBFGS, # run optimization of acquisition function with NLopts :LD_LBFGS method
+                                 restarts = 5,       # run the NLopt method from 5 random initial conditions each time.
+                                 maxtime = 0.1,      # run the NLopt method for at most 0.1 second each time
+                                 maxeval = 1000),    # run the NLopt methods for at most 1000 iterations (for other options see https://github.com/JuliaOpt/NLopt.jl)
+            verbosity = Progress)
+
+result = boptimize!(opt)
 
 
 
 
 
-function plot_data_vs_model(solu, log)
+
+
+
+
+function plot_data_vs_model(solu, log, vary)
     rm_a = get_curve(solu, :rm_a)
     rm_b = get_curve(solu, :rm_b)
     rm_r = get_curve(solu, :rm_r)
@@ -215,17 +264,47 @@ function plot_data_vs_model(solu, log)
     rtcr_conc_b = scatter(x=t[2:6]*60, y=csv_b_conc.RtcR[2:6], error_y=attr(type="data", array=csv_b_std_conc.RtcR[2:6]), name="RtcR_b")
 
 
-    return plot([model_rtca, model_rtcb, model_rtcr, rtca_conc_b, rtcb_conc_b, rtcr_conc_b, rtca_conc_a, rtcb_conc_a, rtcr_conc_a], Layout(title="Data vs. model", xaxis_title="Time (mins)", yaxis_title="Concentration (μM)", yaxis_type=log))
+    return plot([model_rtca, model_rtcb, model_rtcr, rtca_conc_b, rtcb_conc_b, rtcr_conc_b, rtca_conc_a, rtcb_conc_a, rtcr_conc_a], Layout(title="Data vs. model - $vary", xaxis_title="Time (mins)", yaxis_title="Concentration (μM)", yaxis_type=log))
 end
 
+
+
+function rtc_bo_ω(x)
+    # obj = wmse(rtc_all_t!, initial, [L, c, kr, Vmax_init, Km_init, x[1], x[2], θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin_t, atp_t, na, nb, nr, lam_t], tspan2, t_2)
+
+    obj = sse(rtc_model1!, initial, [L, c, kr, Vmax_init, Km_init, x[1], x[2], θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam_t], tspan2, t_2)
+
+    return (obj)
+end
+
+res = bboptimize(rtc_bo_ω; SearchRange = [(0, 1), (0, 1)], Method = :adaptive_de_rand_1_bin, MaxSteps = 1000)
+
+
+print("ω_ab = ", best_candidate(res)[1])
+print("ω_r = ", best_candidate(res)[2])
+print("error = ", best_fitness(res))
+
 ω_ab = best_candidate(res)[1]; ω_r = best_candidate(res)[2];
-params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin_t, atp_t, na, nb, nr, lam_t] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
-solu = sol_with_t(rtc_all_t!, initial, params, tspan2, t_2)
-# plotly_plot_sol(solu, "", "", "sol")
 
-data_vs_model = plot_data_vs_model(solu, "log")
+ω_ab = 0.00032; ω_r = 0.00012;
+lam = 0.033; kin = 0.054; atp = 4000;
 
-open("./data_figs/data_vs_model.html", "w") do io
+include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
+
+param = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin_t, atp, na, nb, nr, lam_t] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+solu = sol_with_t(rtc_all_t!, initial, param, tspan2, t_2)
+
+tspan=(0,1e9)
+solu = sol(lam_kin_t, initial, tspan, param)
+
+plotly_plot_sol(solu, "log", "", "sol")
+
+data_vs_model = plot_data_vs_model(solu, "log", "all_t")
+
+savefig(data_vs_model, "data_vs_model.svg")
+
+
+sopen("./data_figs/data_vs_model.html", "w") do io
     PlotlyBase.to_html(io, data_vs_model.plot)
 end
 
