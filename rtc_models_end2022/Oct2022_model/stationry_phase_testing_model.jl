@@ -49,24 +49,7 @@ p1_kin = scatter(x=csv_atp.t, y=kin_t, name="kin")
 p_all_vars = plot([p1_atp, p1_lam, p1_kin], Layout(xaxis_title="time (minutes)", yaxis_type="log", xaxis_range=(0,1440)))
 savefig(p_all_vars, "p_all_vars.svg")
 # plot all variables over time 
-function plot_time_vars(lam, atp, kin)
-    if atp == "atp_t"
-        p = make_subplots(rows=3, cols=1, shared_xaxes=true, vertical_spacing=0.08, subplot_titles=["λ" "ATP" "kin"])
-        add_trace!(p, (scatter(x=csv_atp."t", y=lam)), row=1, col=1)
-        add_trace!(p, (scatter(x=csv_atp."t", y=atp)), row=2, col=1)
-        add_trace!(p, (scatter(x=csv_atp."t", y=kin)), row=3, col=1)
-        relayout!(p, showlegend=false, xaxis_type="log", xaxis2_type="log", xaxis3_type="log")
-        return p
-    else
-        p = make_subplots(rows=3, cols=1, shared_xaxes=true, vertical_spacing=0.08, subplot_titles=["λ" "ATP from gr data" "kin"])
-        add_trace!(p, (scatter(x=csv_atp."t", y=lam)), row=1, col=1)
-        add_trace!(p, (scatter(x=csv_atp."t", y=atp)), row=2, col=1)
-        add_trace!(p, (scatter(x=csv_atp."t", y=kin)), row=3, col=1)
-        relayout!(p, showlegend=false, xaxis_type="log", xaxis2_type="log", xaxis3_type="log")
-        return p
-    end
 
-end
 
 p = plot_time_vars(lam_t, atp_t, kin_t)
 # p2 = plot_time_vars(lam_t, atp_t_data, kin_t)
@@ -89,18 +72,6 @@ end
 
 tspan = (0, lam_t[end])
 # lam = 0.033; atp = 4000; kin = 0.054;
-function tot_ribo(solu)
-    rh = get_curve(solu, :rh); rd = get_curve(solu, :rd); rt = get_curve(solu, :rt)
-    rtot = @. rh+rd+rt
-    return plot(scatter(x=solu.t,y=rtot), Layout(xaxis_type="log"))
-end
-
-function solvePlot_time(rtc_model, lam, atp, kin, title, log) 
-    params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
-    solu = sol(rtc_model, initial, tspan, params)
-    print(solu.retcode)
-    return plotly_plot_sol(solu, log, "", "$title")
-end
 
 
 # nothing varied over time 
