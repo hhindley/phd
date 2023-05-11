@@ -1,7 +1,8 @@
 # using StaticArrays, LabelledArrays, DifferentialEquations
 
 module SolvingModule
-export sol
+using DataFrames
+export sol, solcb, sol_with_t, get_all_curves, check_get_ssval, get_curve, get_ssval, ss_init_vals
 include("/home/holliehindley/phd/may23_rtc/functions/solving.jl")
 end
 

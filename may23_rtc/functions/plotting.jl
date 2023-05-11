@@ -1,10 +1,10 @@
 using LabelledArrays
 
-function solvePlot_time(rtc_model, kin, atp, lam, title, log) 
+function solvePlot_time(rtc_model, init, tspan, title, log, logy) 
     params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
     solu = sol(rtc_model, init, tspan, params)
     print(solu.retcode)
-    return plotly_plot_sol(solu, log, "", "$title")
+    return plotly_plot_sol(solu, log, logy, "$title")
 end
 
 function plotly_plot_sol(sol, log, log1, title)
@@ -134,21 +134,7 @@ function plotly_plot_sol_withdata(sol)
     return display(plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve, data_plot]))
 end
 
-function plotly_plot_sol_OD(sol, log)
-    rm_a = get_curve(sol, :rm_a); rm_b = get_curve(sol, :rm_b); rm_r = get_curve(sol, :rm_r); rtca = get_curve(sol, :rtca); rtcb = get_curve(sol, :rtcb); rtcr = get_curve(sol, :rtcr); rh = get_curve(sol, :rh); rt = get_curve(sol, :rt); rd = get_curve(sol, :rd); OD = get_curve(sol, :OD)
 
-    rma_curve = scatter(x=sol.t, y=rm_a, name="mRNA RtcA")
-    rmb_curve = scatter(x=sol.t, y=rm_b, name="mRNA RtcB")
-    rmr_curve = scatter(x=sol.t, y=rm_r, name="mRNA RtcR")
-    rtca_curve = scsatter(x=sol.t, y=rtca, name="RtcA")
-    rtcb_curve = scatter(x=sol.t, y=rtcb, name="RtcB")
-    rtcr_curve = scatter(x=sol.t, y=rtcr, name="RtcR")
-    rh_curve = scatter(x=sol.t, y=rh, name="Rh")
-    rt_curve = scatter(x=sol.t, y=rt, name="Rt")
-    rd_curve = scatter(x=sol.t, y=rd, name="Rd")
-    OD_curve = scatter(x=sol.t, y=OD, name="OD")
-    return display(plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve, OD_curve], Layout(xaxis_type=log)))
-end
 
 function plot_from_dict(dict, sol)
     rma_curve = scatter(x=sol.t, y=dict[:rm_a], name="mRNA RtcA")

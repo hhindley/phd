@@ -117,3 +117,17 @@ function get_ssval(sol, species)
 end
 
 # end
+
+function ss_init_vals(sol)
+    rm_a = get_ssval(sol, :rm_a)
+    rm_b = get_ssval(sol, :rm_b)
+    rm_r = get_ssval(sol, :rm_r)
+    rtca = get_ssval(sol, :rtca)
+    rtcb = get_ssval(sol, :rtcb)
+    rtcr = get_ssval(sol, :rtcr)
+    rh = get_ssval(sol, :rh)
+    rt = get_ssval(sol, :rt)
+    rd = get_ssval(sol, :rd)
+
+    return [rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt]
+end

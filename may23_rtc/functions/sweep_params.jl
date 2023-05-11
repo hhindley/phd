@@ -83,11 +83,12 @@ function change_param(param_range, parameter, model, init, species, lam, atp, ki
     # param_dict = OrderedDict("L"=>L, "c"=>c, "kr"=>kr, "Vmax_init"=>Vmax_init, "Km_init"=>Km_init, "ω_ab"=>ω_ab, "ω_r"=>ω_r, "θtscr"=>θtscr, "g_max"=>g_max, "θtlr"=>θtlr, "km_a"=>km_a, "km_b"=>km_b, "gr_c"=>gr_c, "d"=>d, "krep"=>krep, "kdam"=>kdam, "ktag"=>ktag, "kdeg"=>kdeg, "kin"=>kin, "atp"=>atp, "na"=>na, "nb"=>nb, "nr"=>nr, "k"=>k)
     dict_res = OrderedDict(name => [] for name in species)
     params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+    # println(params)
     for val in param_range  
         params[parameter] = val
-        param = values(params)
-        # @show params[:kdam]
-        solu = sol(model, init, tspan, param)
+        # param = values(params)
+        # @show params
+        solu = sol(model, init, tspan, params)
         for (i,j) in zip(values(dict_res), species)
             push!(i, get_ssval(solu, j))
         end
@@ -103,7 +104,7 @@ function sweep_paramx2_new(model, lam, atp, kin, species, func, param1, param2, 
         res1 = []
         for val in param_range2 
             params[param2] = val
-            solu = sol(model, init, tspan, params)
+            solu = sol(model, initial, tspan, params)
             push!(res1, func(solu, species))
         end
         push!(all_res, res1)
