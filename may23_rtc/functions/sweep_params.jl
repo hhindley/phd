@@ -145,3 +145,56 @@ function sweep_paramx2_few_t(model, tspan, t, lam, atp, kin, species, func, para
     @show (vec)
     return plot(contour(x=param_range1, y=param_range2, z=vec, colorbar=attr(title="$species", titleside="right")), Layout(xaxis_title="$param1", yaxis_title="$param2", title="$func of $species"))
 end
+
+
+
+function save_1x_plots(range, param)
+    # print(params)
+    results = change_param(range, param, rtc_model, initial, all_species, lam, atp, kin)
+    p = (plot_change_param_sols(range, results, "$param", ""))
+    open("/home/holliehindley/phd/may23_rtc/analysis/results/1x_param_sweep/$param.html", "w") do io
+        PlotlyBase.to_html(io, p.plot)
+    end
+end
+
+function save_2x_plots(param1, param2, param1_range, param2_range, folder)
+    for i in all_species
+        p = display(sweep_paramx2_new(rtc_model, lam, atp, kin, i, get_ssval, param1, param2, param1_range, param2_range))
+        # open("/home/holliehindley/phd/may23_rtc/analysis/results/2x_param_sweep/$folder/$i.html", "w") do io
+        #     PlotlyBase.to_html(io, p.plot)
+        # end
+    end
+end
+
+
+
+function solve_plot_param_comparison(rtc_model, initial, tspan, params, species, param, param_list, other_param, log)
+    curves=[]
+    for i in param_list
+        params[param] = i
+        solu = sol(rtc_model, initial, tspan, params)
+        specie = get_curve(solu, species)
+        push!(curves, scatter(x=solu.t, y=specie, name="$i"))
+    end
+    display(plot([i for i in curves], Layout(xaxis_type=log, yaxis_title="$species", xaxis_title="time", title="changing $param, $other_param")))
+end
+
+function solve_plot_param_comparison2(rtc_model, initial, tspan, params, species, param, param_list, log)
+    curves=[]
+    for (i,j) in zip(param_list[1], param_list[2])
+        params[param[1]] = i
+        params[param[2]] = j
+        solu = sol(rtc_model, initial, tspan, params)
+        specie = get_curve(solu, species)
+        push!(curves, scatter(x=solu.t, y=specie, name="$i,$j"))
+    end
+    display(plot([i for i in curves], Layout(xaxis_type=log, yaxis_title="$species", xaxis_title="time", title="changing $param")))
+end
+
+function param_comparison(rtc_model, initial, tspan, params, species, param, param_list, other_param, log)
+    if length(param_list) == 2
+        solve_plot_param_comparison2(rtc_model, initial, tspan, params, species, param, param_list, log)
+    else
+        solve_plot_param_comparison(rtc_model, initial, tspan, params, species, param, param_list, other_param, log)
+    end
+end

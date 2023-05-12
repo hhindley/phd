@@ -55,17 +55,8 @@ kin_range = collect(0:0.1:10)
 lam_range = collect(0.1:0.01:1.1)
 kdam_range = collect(0:0.01:1)
 
-all_species[1:2]
 
 
-function save_2x_plots(param1, param2, param1_range, param2_range, folder)
-    for i in all_species
-        p = sweep_paramx2_new(rtc_model, lam, atp, kin, i, get_ssval, param1, param2, param1_range, param2_range)
-        open("/home/holliehindley/phd/may23_rtc/analysis/results/2x_param_sweep/$folder/$i.html", "w") do io
-            PlotlyBase.to_html(io, p.plot)
-        end
-    end
-end
 
 
 

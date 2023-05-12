@@ -27,7 +27,7 @@ include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/hom
     ω_r = 2e-7 #0.0019*6 #70.53; #0.0019*6#79.43865871861044; #0.0019*6;  
     ω_a = 4; 
     ω_b = 4;
-    kdam =  0#0.000147;#0.05; 
+    kdam = 0;#0.000147;#0.05; 
     k = 2; # carrying capacity - changes depending on the data?
     lam = 0.033;
 
@@ -46,53 +46,6 @@ end
 params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 initial = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0]
 
-
-
-
-L_range = 10 .^(range(1,stop=3,length=2))
-c_range = collect(0:0.6:1)
-wab_range = collect(0:0.01:1)
-wr_range = collect(0:0.01:1)
 atp_range = collect(0:50:5000)
-kin_range = collect(0:0.1:10)
-lam_range = collect(0.1:0.01:1.1)
 kdam_range = collect(0:0.01:1)
 
-param_change = [:L, :c, :ω_ab, :ω_r, :atp, :kin, :lam, :kdam]
-param_ranges = [L_range, c_range, wab_range, wr_range, atp_range, kin_range, lam_range, kdam_range]
-
-
-for (i, j) in zip(param_change, param_ranges)
-    save_1x_plots(j, i)
-end
-
-
-
-# c_range = collect(0:0.01:1)
-# # c_results = change_param(c_range, :c, rtc_model, initial, all_species, lam, atp, kin)
-# # plot_change_param_sols(c_range, c_results, "c", "")
-# # # plot_all_change_param(c_range, c_results)
-
-# wab_range = collect(0:0.01:1)
-# # wab_results = change_param(wab_range, :ω_ab, rtc_model, initial, all_species, lam, atp, kin)
-# # plot_change_param_sols(wab_range, wab_results, "ω_ab", "")
-
-# wr_range = collect(0:0.01:1)
-# # wr_results = change_param(wr_range, :ω_r, rtc_model, initial, all_species, lam, atp, kin)
-# # plot_change_param_sols(wr_range, wr_results, "ω_r", "")
-
-# atp_range = collect(0:50:5000)
-# # atp_results = change_param(atp_range, :atp, rtc_model, initial, all_species, lam, atp, kin)
-# # plot_change_param_sols(atp_range, atp_results, "ATP", "")
-
-# kin_range = collect(0:0.1:10)
-# # kin_results = change_param(kin_range, :kin, rtc_model, initial, all_species, lam, atp, kin)
-# # plot_change_param_sols(kin_range, kin_results, "kin", "")
-
-# lam_range = collect(0.1:0.01:1.1)
-# # lam_results = change_param(lam_range, :lam, rtc_model, initial, all_species, lam, atp, kin)
-# # plot_change_param_sols(lam_range, lam_results, "λ", "")
-
-# kdam_range = collect(0:0.01:1)
-# kdam_results = change_param(kdam_range, :kdam, rtc_model, initial, all_species, lam, atp, kin)
-# plot_change_param_sols(kdam_range, kdam_results, "kdam", "")
