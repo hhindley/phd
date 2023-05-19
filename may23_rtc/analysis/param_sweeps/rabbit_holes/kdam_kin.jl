@@ -27,7 +27,7 @@ include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/hom
     ω_r = 2e-7 #0.0019*6 #70.53; #0.0019*6#79.43865871861044; #0.0019*6;  
     ω_a = 4; 
     ω_b = 4;
-    kdam = 0;#0.000147;#0.05; 
+    kdam = 0.0;#0.000147;#0.05; 
     k = 2; # carrying capacity - changes depending on the data?
     lam = 0.033;
 
@@ -43,6 +43,7 @@ include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/hom
 
     tspan = (0, 1e9);
 end
+
 params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 initial = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0]
 
@@ -50,42 +51,48 @@ kin_range = collect(0:0.1:10)
 kdam_range = collect(0:0.01:1)
 
 
-params[:kin] = 3
-kdam_list = collect(0:0.1:1)#[0.6,0.68,0.75,0.8,1]
-param_comparison(rtc_model, initial, tspan, params, :rh, :kdam, kdam_list, "kin=$(params[:kin])", "log")
-param_comparison(rtc_model, initial, tspan, params, :rt, :kdam, kdam_list, "kin=$(params[:kin])", "log")
-param_comparison(rtc_model, initial, tspan, params, :rd, :kdam, kdam_list, "kin=$(params[:kin])", "log")
-param_comparison(rtc_model, initial, tspan, params, :rm_a, :kdam, kdam_list, "kin=$(params[:kin])", "log")
-param_comparison(rtc_model, initial, tspan, params, :rtca, :kdam, kdam_list, "kin=$(params[:kin])", "log")
-param_comparison(rtc_model, initial, tspan, params, :rtcr, :kdam, kdam_list, "kin=$(params[:kin])", "log")
+params[:kin] = 0.054#3
+kdam_list = collect(0:0.01:0.1)#[0.6,0.68,0.75,0.8,1]
+for i in all_species
+    open("/home/holliehindley/phd/may23_rtc/analysis/results/rabbit_holes/kdam_kin/$(i)_change_kdam.html", "w") do io
+        PlotlyBase.to_html(io, param_comparison(rtc_model, initial, tspan, params, i, :kdam, kdam_list, "kin=$(params[:kin])", "log").plot)
+    end
+    
+end
 
-
-params[:kdam] = 0.71
+params[:kdam] = 0.01#0.71
 kin_list = collect(2.5:0.2:4.5)
-param_comparison(rtc_model, initial, tspan, params, :rh, :kin, kin_list, "kdam=$(params[:kdam])", "log")
-param_comparison(rtc_model, initial, tspan, params, :rt, :kin, kin_list, "kdam=$(params[:kdam])", "log")
-param_comparison(rtc_model, initial, tspan, params, :rd, :kin, kin_list, "kdam=$(params[:kdam])", "log")
-param_comparison(rtc_model, initial, tspan, params, :rm_a, :kin, kin_list, "kdam=$(params[:kdam])", "log")
-param_comparison(rtc_model, initial, tspan, params, :rtca, :kin, kin_list, "kdam=$(params[:kdam])", "log")
-param_comparison(rtc_model, initial, tspan, params, :rtcr, :kin, kin_list, "kdam=$(params[:kdam])", "log")
+for i in all_species
+    open("/home/holliehindley/phd/may23_rtc/analysis/results/rabbit_holes/kdam_kin/$(i)_change_kin.html", "w") do io
+        PlotlyBase.to_html(io, param_comparison(rtc_model, initial, tspan, params, i, :kin, kin_list, "kdam=$(params[:kdam])", "log").plot)
+    end
+end
 
 # changing both parameters to match the border of rh plot 
 param_list = [[0.95,0.73,0.56,0.1],[5,3.6,2.7,1]]
 param = [:kdam, :kin]
-param_comparison(rtc_model, initial, tspan, params, :rh, param, param_list, "", "log")
-param_comparison(rtc_model, initial, tspan, params, :rt, param, param_list, "", "log")
-param_comparison(rtc_model, initial, tspan, params, :rd, param, param_list, "", "log")
-param_comparison(rtc_model, initial, tspan, params, :rm_a, param, param_list, "", "log")
-param_comparison(rtc_model, initial, tspan, params, :rtca, param, param_list, "", "log")
-param_comparison(rtc_model, initial, tspan, params, :rtcr, param, param_list, "", "log")
+for i in all_species
+    open("/home/holliehindley/phd/may23_rtc/analysis/results/rabbit_holes/kdam_kin/$(i)_change_both.html", "w") do io
+        PlotlyBase.to_html(io, param_comparison(rtc_model, initial, tspan, params, i, param, param_list, "kin=$(params[:kin]), kdam=$(params[:kdam])", "log").plot)
+    end
+end
 
+    
 
-kdam_range = collect(0:0.001:0.04)
+kdam_range = collect(0:0.01:1)
 params[:kin] = 0.054#4
 params
-results = change_param(kdam_range, :kdam, rtc_model, initial, all_species, lam, atp, params[:kin])
+results = change_param(kdam_range, :kdam, rtc_model, initial, all_species, params)
 p = (plot_change_param_sols(kdam_range, results, "kdam", ""))
 
+params[:kdam] = 0.01
+params[:kdam]
+params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+results = change_param(kin_range, :kin, rtc_model, initial, all_species, params)
+p = (plot_change_param_sols(kin_range, results, "kin", ""))
+
+params[:kdam] = 0.1
+save_1x_plots(kin_range, :kin)
 
 
 

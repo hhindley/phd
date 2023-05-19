@@ -27,7 +27,7 @@ include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/hom
     ω_r = 2e-7 #0.0019*6 #70.53; #0.0019*6#79.43865871861044; #0.0019*6;  
     ω_a = 4; 
     ω_b = 4;
-    kdam =  0#0.000147;#0.05; 
+    kdam =  0.01#0.000147;#0.05; 
     k = 2; # carrying capacity - changes depending on the data?
     lam = 0.033;
 
@@ -46,123 +46,145 @@ end
 params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 initial = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0]
 
+
 L_range = 10 .^(range(1,stop=3,length=101))
-c_range = collect(0:0.01:1)
-wab_range = collect(0:0.01:1)
-wr_range = collect(0:0.01:1)
-atp_range = collect(0:50:5000)
-kin_range = collect(0:0.1:10)
-lam_range = collect(0.1:0.01:1.1)
-kdam_range = collect(0:0.01:1)
-
-
-
-
-
-
+c_range = 10 .^(range(-4,stop=0,length=101))
+wab_range = 10 .^range(-8,stop=-1,length=101)
+wr_range = 10 .^(range(-7,stop=-2,length=101))
+atp_range = range(500,stop=5000,length=101)
+kin_range = range(0,stop=0.2,length=101)
+lam_range = range(0.001,stop=0.04,length=101)
+kdam_range = 10 .^ range(-4,stop=0,length=101)
 
 
 #L and c
-save_2x_plots(:L, :c, L_range, c_range, "L_c")
+save_2x_plots(:L, :c, L_range, c_range, "L_c", "log", "log") 
 
 
 #L and wab 
-save_2x_plots(:L, :ω_ab, L_range, wab_range, "L_wab")
+save_2x_plots(:L, :ω_ab, L_range, wab_range, "L_wab", "log", "log")
 
 
 #L and wr
-save_2x_plots(:L, :ω_r, L_range, wr_range, "L_wr")
+save_2x_plots(:L, :ω_r, L_range, wr_range, "L_wr", "log", "log")
 
 
 #L and atp
-save_2x_plots(:L, :atp, L_range, atp_range, "L_atp")
+save_2x_plots(:L, :atp, L_range, atp_range, "L_atp", "log", "")
 
 
 #L and kin 
-save_2x_plots(:L, :kin, L_range, kin_range, "L_kin")
+save_2x_plots(:L, :kin, L_range, kin_range, "L_kin", "log", "")
 
 
 #L and lam
-save_2x_plots(:L, :lam, L_range, lam_range, "L_lam")
+save_2x_plots(:L, :lam, L_range, lam_range, "L_lam", "log", "")
  
 
 
 #L and kdam 
-save_2x_plots(:L, :kdam, L_range, kdam_range, "L_kdam")
+save_2x_plots(:L, :kdam, L_range, kdam_range, "L_kdam", "log", "log")
 
 
 #c and wab 
-save_2x_plots(:c, :ω_ab, c_range, wab_range, "c_wab")
+save_2x_plots(:c, :ω_ab, c_range, wab_range, "c_wab", "log", "log")
 
 
 #c and wr 
-save_2x_plots(:c, :ω_r, c_range, wr_range, "c_wr")
+save_2x_plots(:c, :ω_r, c_range, wr_range, "c_wr", "log", "log")
 
 
 #c and atp
-save_2x_plots(:c, :atp, c_range, atp_range, "c_atp")
+save_2x_plots(:c, :atp, c_range, atp_range, "c_atp", "log", "")
 
 #c and kin 
-save_2x_plots(:c, :kin, c_range, kin_range, "c_kin")
+save_2x_plots(:c, :kin, c_range, kin_range, "c_kin", "log", "")
 
 
 #c and lam 
-save_2x_plots(:c, :lam, c_range, lam_range, "c_lam")
+save_2x_plots(:c, :lam, c_range, lam_range, "c_lam", "log", "")
 
 #c and kdam 
-save_2x_plots(:c, :kdam, c_range, kdam_range, "c_kdam")
+save_2x_plots(:c, :kdam, c_range, kdam_range, "c_kdam", "log", "log")
 
 #wab and wr 
-save_2x_plots(:ω_ab, :ω_r, wab_range, wr_range, "wab_wr")
+save_2x_plots(:ω_ab, :ω_r, wab_range, wr_range, "wab_wr", "log", "log")
 
 #wab and atp 
-save_2x_plots(:ω_ab, :atp, wab_range, atp_range, "wab_atp")
+save_2x_plots(:ω_ab, :atp, wab_range, atp_range, "wab_atp", "log", "")
 
 #wab and kin
-save_2x_plots(:ω_ab, :kin, wab_range, kin_range, "wab_kin")
+save_2x_plots(:ω_ab, :kin, wab_range, kin_range, "wab_kin", "log", "")
 
 #wab and lam 
-save_2x_plots(:ω_ab, :lam, wab_range, lam_range, "wab_lam")
+save_2x_plots(:ω_ab, :lam, wab_range, lam_range, "wab_lam", "log", "")
 
 #wab and kdam 
-save_2x_plots(:ω_ab, :kdam, wab_range, kdam_range, "wab_kdam")
+save_2x_plots(:ω_ab, :kdam, wab_range, kdam_range, "wab_kdam", "log", "log")
 
 
 #wr and atp 
-save_2x_plots(:ω_r, :atp, wr_range, atp_range, "wr_atp")
+save_2x_plots(:ω_r, :atp, wr_range, atp_range, "wr_atp", "log", "")
 
 #wr and kin 
-save_2x_plots(:ω_r, :kin, wr_range, kin_range, "wr_kin")
+save_2x_plots(:ω_r, :kin, wr_range, kin_range, "wr_kin", "log", "")
 
 #wr and lam 
-save_2x_plots(:ω_r, :lam, wr_range, lam_range, "wr_lam")
+save_2x_plots(:ω_r, :lam, wr_range, lam_range, "wr_lam", "log", "")
 
 #wr and kdam 
-save_2x_plots(:ω_r, :kdam, wr_range, kdam_range, "wr_kdam")
+save_2x_plots(:ω_r, :kdam, wr_range, kdam_range, "wr_kdam", "log", "log")
 
 
 #atp and kin 
-save_2x_plots(:atp, :kin, atp_range, kin_range, "atp_kin")
+save_2x_plots(:atp, :kin, atp_range, kin_range, "atp_kin", "", "")
 
 #atp and lam 
-save_2x_plots(:atp, :lam, atp_range, lam_range, "atp_lam")
+save_2x_plots(:atp, :lam, atp_range, lam_range, "atp_lam", "", "")
 
 #atp and kdam 
-save_2x_plots(:atp, :kdam, atp_range, kdam_range, "atp_kdam")
+save_2x_plots(:atp, :kdam, atp_range, kdam_range, "atp_kdam", "", "log")
 
 
 #kin and lam 
-save_2x_plots(:kin, :lam, kin_range, lam_range, "kin_lam")
+save_2x_plots(:kin, :lam, kin_range, lam_range, "kin_lam", "", "")
 
 #kin and kdam 
-save_2x_plots(:kin, :kdam, kin_range, kdam_range, "kin_kdam")
+save_2x_plots(:kin, :kdam, kin_range, kdam_range, "kin_kdam", "", "log")
 
 
 #lam and kdam 
-save_2x_plots(:lam, :kdam, lam_range, kdam_range, "lam_kdam")
+save_2x_plots(:lam, :kdam, lam_range, kdam_range, "lam_kdam", "", "log")
+
+
+sweep_paramx2_new(rtc_model, :rt, get_ssval, :atp, :lam, atp_range, lam_range)
+
+
+atp_range = range(1000,stop=5000,length=101)
+kdam_range = 10 .^ range(-4,stop=0,length=101)
+
+sweep_paramx2_new(rtc_model, :rm_a, get_ssval, :kin, :kdam, kin_range, kdam_range)
+sweep_paramx2_new(rtc_model, :rt, get_ssval, :kin, :kdam, kin_range, kdam_range)
+
+
+
+sweep_paramx2_new(rtc_model, :rm_a, get_ssval, :atp, :kdam, atp_range, kdam_range)
+sweep_paramx2_new(rtc_model, :rtca, get_ssval, :atp, :kdam, atp_range, kdam_range)
+sweep_paramx2_new(rtc_model, :rt, get_ssval, :atp, :kdam, atp_range, kdam_range)
+sweep_paramx2_new(rtc_model, :rh, get_ssval, :atp, :kdam, atp_range, kdam_range)
 
 
 
 
+L_range = (range(0,stop=400,length=101))
+c_range = 10 .^(range(-4,stop=0,length=101))
+sweep_paramx2_new(rtc_model, :rm_a, get_ssval, :L, :c, L_range, c_range)
+sweep_paramx2_new(rtc_model, :rt, get_ssval, :L, :c, L_range, c_range)
 
 
+sweep_paramx2_new(rtc_model, :rt, get_ssval, :lam, :atp, lam_range, atp_range)
+sweep_paramx2_new(rtc_model, :rm_a, get_ssval, :lam, :atp, lam_range, atp_range)
+
+
+
+sweep_paramx2_new(rtc_model, :rm_r, get_ssval, :ω_r, :kdam, wr_range, kdam_range)

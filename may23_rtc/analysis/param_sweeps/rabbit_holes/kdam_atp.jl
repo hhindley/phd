@@ -1,3 +1,4 @@
+
 using Parameters, LabelledArrays, StaticArrays, CSV, DataFrames, DifferentialEquations, BenchmarkTools, OrderedCollections, DataInterpolations, PlotlyJS, Statistics
 include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); include("/home/holliehindley/phd/may23_rtc/analysis/t_param_setup.jl");
 
@@ -27,7 +28,7 @@ include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/hom
     ω_r = 2e-7 #0.0019*6 #70.53; #0.0019*6#79.43865871861044; #0.0019*6;  
     ω_a = 4; 
     ω_b = 4;
-    kdam = 0;#0.000147;#0.05; 
+    kdam = 0.01;#0.000147;#0.05; 
     k = 2; # carrying capacity - changes depending on the data?
     lam = 0.033;
 
@@ -46,6 +47,34 @@ end
 params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 initial = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0]
 
-atp_range = collect(0:50:5000)
+atp_range = range(0.1,5000, length=100)
 kdam_range = collect(0:0.01:1)
+kdam_range1 = 10 .^range(-4,0, length=5)
 
+
+
+kdam_atp_rt = param2x_plot_same_species(kdam_range1, :kdam, atp_range, :atp, :rt)
+save_plot(kdam_atp_rt, "kdam_atp_rt")
+
+kdam_atp_rd = param2x_plot_same_species(kdam_range1, :kdam, atp_range, :atp, :rd)
+save_plot(kdam_atp_rd, "kdam_atp_rd")
+
+kdam_atp_rh = param2x_plot_same_species(kdam_range1, :kdam, atp_range, :atp, :rh)
+save_plot(kdam_atp_rh, "kdam_atp_rh")
+
+kdam_atp_rtca = param2x_plot_same_species(kdam_range1, :kdam, atp_range, :atp, :rtca)
+save_plot(kdam_atp_rtca, "kdam_atp_rtca")
+
+kdam_atp_rma = param2x_plot_same_species(kdam_range1, :kdam, atp_range, :atp, :rm_a)
+save_plot(kdam_atp_rma, "kdam_atp_rma")
+
+kdam_atp_rtcr = param2x_plot_same_species(kdam_range1, :kdam, atp_range, :atp, :rtcr)
+save_plot(kdam_atp_rtcr, "kdam_atp_rtcr")
+
+all_species_atp = save_1x_plots(atp_range, :atp, "kdam=0.01")
+save_plot(all_species_atp, "all_species_atp")
+
+
+
+solu = sol(rtc_model, initial, tspan, params)
+p = plotly_plot_sol(solu, "log", "", "kdam = 0.01")

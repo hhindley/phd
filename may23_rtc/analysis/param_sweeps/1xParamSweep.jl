@@ -27,7 +27,7 @@ include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/hom
     ω_r = 2e-7 #0.0019*6 #70.53; #0.0019*6#79.43865871861044; #0.0019*6;  
     ω_a = 4; 
     ω_b = 4;
-    kdam =  0#0.000147;#0.05; 
+    kdam =  0.0#0.000147;#0.05; 
     k = 2; # carrying capacity - changes depending on the data?
     lam = 0.033;
 
@@ -43,31 +43,48 @@ include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/hom
 
     tspan = (0, 1e9);
 end
-params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+params_kdam = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+params_kdam = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, 0, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+
 initial = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0]
 
 
 
 
-L_range = 10 .^(range(1,stop=3,length=2))
-c_range = collect(0:0.6:1)
-wab_range = collect(0:0.01:1)
-wr_range = collect(0:0.01:1)
-atp_range = collect(0:50:5000)
-kin_range = collect(0:0.1:10)
-lam_range = collect(0.1:0.01:1.1)
-kdam_range = collect(0:0.01:1)
+L_range = 10 .^(range(1,stop=3,length=101))
+c_range = 10 .^(range(-4,stop=0,length=101))
+wab_range = 10 .^range(-8,stop=-1,length=101)
+wr_range = 10 .^(range(-7,stop=-2,length=101))
+atp_range = range(500,stop=5000,length=101)
+kin_range = range(0,stop=0.2,length=101)
+lam_range = range(0.001,stop=0.04,length=101)
+kdam_range = 10 .^ range(-4,stop=0,length=101)
+
 
 param_change = [:L, :c, :ω_ab, :ω_r, :atp, :kin, :lam, :kdam]
 param_ranges = [L_range, c_range, wab_range, wr_range, atp_range, kin_range, lam_range, kdam_range]
 
 
 for (i, j) in zip(param_change, param_ranges)
-    save_1x_plots(j, i)
+    save_1x_plots(j, i, "kdam = 0.0", "log")
 end
 
+kdam_range1 = range(0, stop=1, length=10)
+all_curves = []
+for j in all_species
+    curves = []
+    for i in kdam_range1
+        params[:kdam] = i
+        solu = sol(rtc_model, initial, tspan, params)
+        specie = get_curve(solu, j)
+        push!(curves, scatter(x=solu.t, y=specie))
+    end
+    push!(all_curves, curves)
+end
 
-
+for curve in all_curves
+    display(plot([i for i in curve], Layout(xaxis_type="log")))
+end
 # c_range = collect(0:0.01:1)
 # # c_results = change_param(c_range, :c, rtc_model, initial, all_species, lam, atp, kin)
 # # plot_change_param_sols(c_range, c_results, "c", "")

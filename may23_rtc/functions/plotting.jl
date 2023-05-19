@@ -265,7 +265,7 @@ function plot_all_change_param(range, res)
    return [p1 p2 p3; p4 p5 p6; p7 p8 p9; p10 p11 p12; p13 p14 ]
 end
 
-function plot_change_param_sols(range, results, param, log)
+function plot_change_param_sols(range, results, param, title, log)
 
     rma = scatter(x=range, y=results[:rm_a], name="rm_a");
     rmb = scatter(x=range, y=results[:rm_b], name="rm_b");
@@ -277,7 +277,7 @@ function plot_change_param_sols(range, results, param, log)
     rd = scatter(x=range, y=results[:rd], name="rd");
     rt = scatter(x=range, y=results[:rt], name="rt");
 
-    return plot([rma, rmb, rmr, rtca, rtcb, rtcr, rh, rd, rt], Layout(xaxis_title="$param", yaxis_title="species (μM)", xaxis_type=log))
+    return plot([rma, rmb, rmr, rtca, rtcb, rtcr, rh, rd, rt], Layout(xaxis_title="$param", yaxis_title="species (μM)", xaxis_type=log, title=title))
 end
 
 function plot_change_param_sols_atp(range, results, param, log, log1)
