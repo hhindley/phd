@@ -56,36 +56,51 @@ kin_range = range(0,stop=0.2,length=101)
 lam_range = range(0.001,stop=0.04,length=101)
 kdam_range = 10 .^ range(-4,stop=0,length=101)
 
-
-results = change_param(kdam_range, :kdam, rtc_model, initial, all_species, params)
-params[:kdam]
-
-plot(scatter(x=kdam_range, y=results[:rm_a]), Layout(xaxis_title="kdam", yaxis_title="rm_a"))
-
-
-results = change_param(lam_range, :lam, rtc_model, initial, all_species, params)
-
-
-
-
-
-sweep_paramx2_new(rtc_model, :rh, get_ssval, :atp, :ω_r, atp_range, wr_range, "", "log")
+L_range1 = 10 .^(range(1,stop=3,length=10))
+c_range1 = 10 .^(range(-4,stop=0,length=10))
+wab_range1 = range(0,stop=2,length=10)
 wr_range1 = 10 .^(range(-7,stop=-2,length=10))
-param2x_plot_same_species(wr_range1, :ω_r, atp_range, :atp, :rh)
+atp_range1 = range(500,stop=5000,length=10)
+kin_range1 = range(0,stop=0.2,length=10)
+lam_range1 = range(0.001,stop=0.04,length=10)
+kdam_range1 = 10 .^ range(-4,stop=0,length=10)
 
 
-sweep_paramx2_new(rtc_model, :rh, get_ssval, :kin, :ω_r, kin_range, wr_range, "", "log")
-param2x_plot_same_species(wr_range1, :ω_r, kin_range, :kin, :rh)
+sweep_paramx2_new(rtc_model, :rt, get_ssval, :ω_r, :ω_ab, wr_range, wab_range, "", "log")
+param2x_plot_same_species(wr_range1, :ω_r, wab_range, :ω_ab, :rt)
 
 
-sweep_paramx2_new(rtc_model, :rh, get_ssval, :kdam, :ω_r, kdam_range, wr_range, "", "log")
-param2x_plot_same_species(wr_range1, :ω_r, kdam_range, :kdam, :rh)
+sweep_paramx2_new(rtc_model, :rt, get_ssval, :ω_r, :lam, wr_range, lam_range, "", "log")
+param2x_plot_same_species(wr_range1, :ω_r, lam_range, :lam, :rt)
 
 
-sweep_paramx2_new(rtc_model, :rh, get_ssval, :kdam, :lam, kdam_range, lam_range, "", "")
-lam_range1 = range(0.005, stop=0.04, length=10)
-param2x_plot_same_species(lam_range1, :lam, kdam_range, :kdam, :rh)
+sweep_paramx2_new(rtc_model, :rt, get_ssval, :ω_ab, :lam, wab_range, lam_range, "", "log")
+param2x_plot_same_species(lam_range1, :lam, wab_range, :ω_ab, :rt)
 
 
+sweep_paramx2_new(rtc_model, :rt, get_ssval, :atp, :lam, atp_range, lam_range, "", "log")
+param2x_plot_same_species(lam_range1, :lam, atp_range, :atp, :rt)
 
 
+sweep_paramx2_new(rtc_model, :rt, get_ssval, :ω_r, :kin, wr_range, kin_range, "", "log")
+param2x_plot_same_species(wr_range1, :ω_r, kin_range, :kin, :rt)
+
+
+sweep_paramx2_new(rtc_model, :rt, get_ssval, :ω_ab, :kdam, wab_range, kdam_range, "", "log")
+param2x_plot_same_species(kdam_range1, :kdam, wab_range, :ω_ab, :rt)
+
+
+sweep_paramx2_new(rtc_model, :rt, get_ssval, :ω_r, :kdam, wr_range, kdam_range, "", "log")
+param2x_plot_same_species(kdam_range1, :kdam, wr_range, :ω_r, :rt)
+
+
+sweep_paramx2_new(rtc_model, :rt, get_ssval, :atp, :kdam, atp_range, kdam_range, "", "log")
+param2x_plot_same_species(atp_range1, :atp, kdam_range, :kdam, :rt)
+
+
+sweep_paramx2_new(rtc_model, :rt, get_ssval, :lam, :kdam, lam_range, kdam_range, "", "log")
+param2x_plot_same_species(lam_range1, :lam, kdam_range, :kdam, :rt)
+
+
+sweep_paramx2_new(rtc_model, :rt, get_ssval, :kin, :kdam, kin_range, kdam_range, "", "log")
+param2x_plot_same_species(kin_range1, :kin, kdam_range, :kdam, :rt)

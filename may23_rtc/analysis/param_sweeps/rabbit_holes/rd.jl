@@ -57,35 +57,26 @@ lam_range = range(0.001,stop=0.04,length=101)
 kdam_range = 10 .^ range(-4,stop=0,length=101)
 
 
-results = change_param(kdam_range, :kdam, rtc_model, initial, all_species, params)
-params[:kdam]
-
-plot(scatter(x=kdam_range, y=results[:rm_a]), Layout(xaxis_title="kdam", yaxis_title="rm_a"))
-
-
-results = change_param(lam_range, :lam, rtc_model, initial, all_species, params)
+sweep_paramx2_new(rtc_model, :rd, get_ssval, :lam, :ω_ab, lam_range, wab_range, "", "log")
+lam_range1 = range(0.001,stop=0.04,length=10)
+param2x_plot_same_species(lam_range1, :lam, wab_range, :ω_ab, :rd)
 
 
+sweep_paramx2_new(rtc_model, :rd, get_ssval, :lam, :atp, lam_range, atp_range, "", "log")
+atp_range1 = range(500,stop=5000,length=10)
+param2x_plot_same_species(atp_range1, :atp, lam_range, :lam, :rd)
 
 
+sweep_paramx2_new(rtc_model, :rd, get_ssval, :kin, :atp, kin_range, atp_range, "", "")
+param2x_plot_same_species(atp_range1, :atp, kin_range, :kin, :rd)
 
-sweep_paramx2_new(rtc_model, :rh, get_ssval, :atp, :ω_r, atp_range, wr_range, "", "log")
+sweep_paramx2_new(rtc_model, :rd, get_ssval, :kin, :lam, kin_range, lam_range, "", "")
+param2x_plot_same_species(lam_range1, :lam, kin_range, :kin, :rd)
+
+sweep_paramx2_new(rtc_model, :rd, get_ssval, :kin, :ω_r, kin_range, wr_range, "", "")
 wr_range1 = 10 .^(range(-7,stop=-2,length=10))
-param2x_plot_same_species(wr_range1, :ω_r, atp_range, :atp, :rh)
+param2x_plot_same_species(wr_range1, :ω_r, kin_range, :kin, :rd)
 
-
-sweep_paramx2_new(rtc_model, :rh, get_ssval, :kin, :ω_r, kin_range, wr_range, "", "log")
-param2x_plot_same_species(wr_range1, :ω_r, kin_range, :kin, :rh)
-
-
-sweep_paramx2_new(rtc_model, :rh, get_ssval, :kdam, :ω_r, kdam_range, wr_range, "", "log")
-param2x_plot_same_species(wr_range1, :ω_r, kdam_range, :kdam, :rh)
-
-
-sweep_paramx2_new(rtc_model, :rh, get_ssval, :kdam, :lam, kdam_range, lam_range, "", "")
-lam_range1 = range(0.005, stop=0.04, length=10)
-param2x_plot_same_species(lam_range1, :lam, kdam_range, :kdam, :rh)
-
-
-
-
+sweep_paramx2_new(rtc_model, :rd, get_ssval, :kin, :ω_ab, kin_range, wab_range, "", "")
+wab_range1 = range(0.001,stop=2,length=10)
+param2x_plot_same_species(wab_range1, :ω_ab, kin_range, :kin, :rd)

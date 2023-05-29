@@ -21,9 +21,9 @@ function plotly_plot_sol(sol, log, log1, title)
     rt_curve = scatter(x=sol.t, y=rt, name="Rt")
     rd_curve = scatter(x=sol.t, y=rd, name="Rd")
     rtot = scatter(x=sol.t, y=rh+rd+rt, name="rtot")
-    alpha = @. rt/kr 
-    fa = @. (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = scatter(x=sol.t, y=fa.*rtcr, name="A_RtcR")
+    # alpha = @. rt/kr 
+    # fa = @. (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
+    # ra = scatter(x=sol.t, y=fa.*rtcr, name="A_RtcR")
     return (plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve, rtot] ,Layout(xaxis_type=log, yaxis_type=log1, title=title)))#, xaxis_range=(0,1320))))
 end
 

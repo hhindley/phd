@@ -56,79 +56,21 @@ kin_range = range(0,stop=0.2,length=101)
 lam_range = range(0.001,stop=0.04,length=101)
 kdam_range = 10 .^ range(-4,stop=0,length=101)
 
-
 results = change_param(kdam_range, :kdam, rtc_model, initial, all_species, params)
-plot(scatter(x=kdam_range, y=results[:rm_a]), Layout(xaxis_title="kdam", yaxis_title="rm_a"))
+plot(scatter(x=kdam_range, y=results[:rtca]), Layout(xaxis_title="kdam", yaxis_title="rtca"))
 
+sweep_paramx2_new(rtc_model, :rtca, get_ssval, :atp, :kdam, atp_range, kdam_range, "", "log")
+kdam_range1 = 10 .^ range(-4,stop=0,length=10)
+param2x_plot_same_species(kdam_range1, :kdam, atp_range, :atp, :rtca)
 
-# peaks
-sweep_paramx2_new(rtc_model, :rm_a, get_ssval, :atp, :kdam, atp_range, kdam_range, "", "log")
-sweep_paramx2_new(rtc_model, :rm_a, get_ssval, :ω_ab, :kdam, wab_range, kdam_range, "", "log")
-sweep_paramx2_new(rtc_model, :rm_a, get_ssval, :kin, :kdam, kin_range, kdam_range, "", "log")
-
-range1 = range(500, stop=5000, length=5)
-param2x_plot_same_species(range1, :atp, kdam_range, :kdam, :rm_a)
-res_atp = param2x_same_species(range1, :atp, kdam_range, :kdam, :rm_a)
+atp_range1 = range(500,stop=5000,length=10)
+param2x_plot_same_species(atp_range1, :atp, kdam_range, :kdam, :rtca)
+res_atp = param2x_same_species(atp_range1, :atp, kdam_range, :kdam, :rtca)
 max_atp = [(argmax(i)) for i in res_atp]
 
 
-wab_range1 = range(0.001, stop=2, length=10)
-param2x_plot_same_species(wab_range1, :ω_ab, kdam_range, :kdam, :rm_a)
-res_wab = param2x_same_species(wab_range1, :ω_ab, kdam_range, :kdam, :rm_a)
-max_wab = [(argmax(i)) for i in res_wab]
-
-
-kin_range1 = range(0.0001, stop=0.2, length=10)
-param2x_plot_same_species(kin_range1, :kin, kdam_range, :kdam, :rm_a)
-res_kin = param2x_same_species(kin_range1, :kin, kdam_range, :kdam, :rm_a)
+sweep_paramx2_new(rtc_model, :rtca, get_ssval, :kin, :kdam, kin_range, kdam_range, "", "log")
+kin_range1 = range(0,stop=0.2,length=10)
+param2x_plot_same_species(kin_range1, :kin, kdam_range, :kdam, :rtca)
+res_kin = param2x_same_species(kin_range1, :kin, kdam_range, :kdam, :rtca)
 max_kin = [(argmax(i)) for i in res_kin]
-
-
-kdam_range1 = 10 .^range(-3, stop=0, length=10)
-param2x_plot_same_species(kdam_range1, :kdam, lam_range, :lam, :rm_a)
-
-
-
-solu = sol(rtc_model, initial, tspan, params)
-plotly_plot_sol(solu, "log", "", "")
-
-params1 = deepcopy(params)
-
-ss_init = ss_init_vals(solu)
-ss_init
-tspan1 = (0,1000)
-solu1 = sol(rtc_model, ss_init, tspan1, params)
-plotly_plot_sol(solu1, "", "", "")
-
-# params1[:c] = 0.01
-params1[:kdam] = 0.0
-solu2 = sol(rtc_model, ss_init, tspan, params1)
-plotly_plot_sol(solu2, "log", "", "")
-
-
-
-
-
-L_range = 10 .^(range(1,stop=3,length=10))
-c_range = 10 .^(range(-4,stop=0,length=10))
-wab_range = range(0,stop=2,length=10)
-wr_range = 10 .^(range(-7,stop=-2,length=10))
-atp_range = range(500,stop=5000,length=10)
-kin_range = range(0,stop=0.2,length=10)
-lam_range = range(0.001,stop=0.04,length=10)
-kdam_range = 10 .^ range(-4,stop=0,length=10)
-
-param_change = [:L, :c, :ω_ab, :ω_r, :atp, :kin, :lam, :kdam]
-param_ranges = [L_range, c_range, wab_range, wr_range, atp_range, kin_range, lam_range, kdam_range]
-
-for (i, j) in zip(param_change, param_ranges)
-    cuv = []
-    params1 = deepcopy(params)
-    for param in j
-        params1[i] = param
-        solu = sol(rtc_model, ss_init, (180,1440), params1)
-        push!(cuv, scatter(x=solu.t/60, y=get_curve(solu, :rm_a), name="$i = $param"))
-    end
-    display(plot([i for i in cuv], Layout(title="rm_a", yaxis_tickformat=".2e")))
-end
-

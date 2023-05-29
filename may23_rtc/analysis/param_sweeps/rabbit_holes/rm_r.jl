@@ -57,35 +57,13 @@ lam_range = range(0.001,stop=0.04,length=101)
 kdam_range = 10 .^ range(-4,stop=0,length=101)
 
 
-results = change_param(kdam_range, :kdam, rtc_model, initial, all_species, params)
-params[:kdam]
+sweep_paramx2_new(rtc_model, :rm_r, get_ssval, :lam, :ω_r, lam_range, wr_range, "", "log")
+lam_range1 = range(0.001, stop=0.04, length=10)
+param2x_plot_same_species(lam_range1, :lam, wr_range, :ω_r, :rm_r)
 
-plot(scatter(x=kdam_range, y=results[:rm_a]), Layout(xaxis_title="kdam", yaxis_title="rm_a"))
-
-
-results = change_param(lam_range, :lam, rtc_model, initial, all_species, params)
-
-
-
-
-
-sweep_paramx2_new(rtc_model, :rh, get_ssval, :atp, :ω_r, atp_range, wr_range, "", "log")
-wr_range1 = 10 .^(range(-7,stop=-2,length=10))
-param2x_plot_same_species(wr_range1, :ω_r, atp_range, :atp, :rh)
-
-
-sweep_paramx2_new(rtc_model, :rh, get_ssval, :kin, :ω_r, kin_range, wr_range, "", "log")
-param2x_plot_same_species(wr_range1, :ω_r, kin_range, :kin, :rh)
-
-
-sweep_paramx2_new(rtc_model, :rh, get_ssval, :kdam, :ω_r, kdam_range, wr_range, "", "log")
-param2x_plot_same_species(wr_range1, :ω_r, kdam_range, :kdam, :rh)
-
-
-sweep_paramx2_new(rtc_model, :rh, get_ssval, :kdam, :lam, kdam_range, lam_range, "", "")
-lam_range1 = range(0.005, stop=0.04, length=10)
-param2x_plot_same_species(lam_range1, :lam, kdam_range, :kdam, :rh)
-
+sweep_paramx2_new(rtc_model, :rm_r, get_ssval, :lam, :atp, atp_range, wr_range, "", "log")
+lam_range1 = range(0.001, stop=0.04, length=10)
+param2x_plot_same_species(lam_range1, :lam, atp_range, :atp, :rm_r)
 
 
 

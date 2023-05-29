@@ -1,6 +1,21 @@
 using Parameters, LabelledArrays, StaticArrays, CSV, DataFrames, DifferentialEquations, BenchmarkTools, OrderedCollections, DataInterpolations, PlotlyJS, Statistics
 include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); include("/home/holliehindley/phd/may23_rtc/analysis/t_param_setup.jl");
 
+
+
+# include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl")
+# using DifferentialEquations, PlotlyJS, DataFrames, Parameters
+# params = (L = 10, c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250, θtscr = 160.01, θtlr = 255.73, na = 338, nb = 408, nr = 532*6, d = 0.2, krep = 137, ktag = 9780, atp = 4000, km_a = 20, km_b = 16, g_max = 2.0923, gr_c = 0.0008856, kdeg = 0.001, kin = 0.054, ω_ab = 4, ω_r = 2e-7, ω_a = 4, ω_b = 4, kdam =  0.01, k = 2, lam = 0.033)
+# initial = [0, 0, 0, 0, 0, 0, 11.29, 0, 0]
+# tspan=(0,1e9)
+# solu = sol(rtc_model, initial, tspan, params)
+# plotly_plot_sol(solu, "log", "", "")
+
+
+
+
+
+
 @consts begin   
     L = 10; #10 
     c = 0.001; 
@@ -56,9 +71,13 @@ kin_range = range(0,stop=0.2,length=101)
 lam_range = range(0.001,stop=0.04,length=101)
 kdam_range = 10 .^ range(-4,stop=0,length=101)
 
+solu = sol(rtc_model, initial, tspan, params)
+ss_init = ss_init_vals(solu)
+
+all_species = [:rm_a, :rh, :rd, :rt]
 
 #L and c
-save_2x_plots(:L, :c, L_range, c_range, "L_c", "log", "log") 
+save_2x_plots(:L, :c, L_range, c_range, "L_c", ss_init, "log", "log") 
 
 
 #L and wab 
@@ -107,54 +126,56 @@ save_2x_plots(:c, :lam, c_range, lam_range, "c_lam", "log", "")
 #c and kdam 
 save_2x_plots(:c, :kdam, c_range, kdam_range, "c_kdam", "log", "log")
 
+
+
 #wab and wr 
-save_2x_plots(:ω_ab, :ω_r, wab_range, wr_range, "wab_wr", "log", "log")
+save_2x_plots(:ω_ab, :ω_r, wab_range, wr_range, "wab_wr", ss_init,"log", "log")
 
 #wab and atp 
-save_2x_plots(:ω_ab, :atp, wab_range, atp_range, "wab_atp", "log", "")
+save_2x_plots(:ω_ab, :atp, wab_range, atp_range, "wab_atp", ss_init,"log", "")
 
 #wab and kin
-save_2x_plots(:ω_ab, :kin, wab_range, kin_range, "wab_kin", "log", "")
+save_2x_plots(:ω_ab, :kin, wab_range, kin_range, "wab_kin", ss_init,"log", "")
 
 #wab and lam 
-save_2x_plots(:ω_ab, :lam, wab_range, lam_range, "wab_lam", "log", "")
+save_2x_plots(:ω_ab, :lam, wab_range, lam_range, "wab_lam", ss_init,"log", "")
 
 #wab and kdam 
-save_2x_plots(:ω_ab, :kdam, wab_range, kdam_range, "wab_kdam", "log", "log")
+save_2x_plots(:ω_ab, :kdam, wab_range, kdam_range, "wab_kdam",ss_init, "log", "log")
 
 
 #wr and atp 
-save_2x_plots(:ω_r, :atp, wr_range, atp_range, "wr_atp", "log", "")
+save_2x_plots(:ω_r, :atp, wr_range, atp_range, "wr_atp",ss_init, "log", "")
 
 #wr and kin 
-save_2x_plots(:ω_r, :kin, wr_range, kin_range, "wr_kin", "log", "")
+save_2x_plots(:ω_r, :kin, wr_range, kin_range, "wr_kin",ss_init, "log", "")
 
 #wr and lam 
-save_2x_plots(:ω_r, :lam, wr_range, lam_range, "wr_lam", "log", "")
+save_2x_plots(:ω_r, :lam, wr_range, lam_range, "wr_lam",ss_init, "log", "")
 
 #wr and kdam 
-save_2x_plots(:ω_r, :kdam, wr_range, kdam_range, "wr_kdam", "log", "log")
+save_2x_plots(:ω_r, :kdam, wr_range, kdam_range, "wr_kdam",ss_init, "log", "log")
 
 
 #atp and kin 
-save_2x_plots(:atp, :kin, atp_range, kin_range, "atp_kin", "", "")
+save_2x_plots(:atp, :kin, atp_range, kin_range, "atp_kin", ss_init,"", "")
 
 #atp and lam 
-save_2x_plots(:atp, :lam, atp_range, lam_range, "atp_lam", "", "")
+save_2x_plots(:atp, :lam, atp_range, lam_range, "atp_lam", ss_init,"", "")
 
 #atp and kdam 
-save_2x_plots(:atp, :kdam, atp_range, kdam_range, "atp_kdam", "", "log")
+save_2x_plots(:atp, :kdam, atp_range, kdam_range, "atp_kdam",ss_init, "", "log")
 
 
 #kin and lam 
-save_2x_plots(:kin, :lam, kin_range, lam_range, "kin_lam", "", "")
+save_2x_plots(:kin, :lam, kin_range, lam_range, "kin_lam",ss_init, "", "")
 
 #kin and kdam 
-save_2x_plots(:kin, :kdam, kin_range, kdam_range, "kin_kdam", "", "log")
+save_2x_plots(:kin, :kdam, kin_range, kdam_range, "kin_kdam",ss_init, "", "log")
 
 
 #lam and kdam 
-save_2x_plots(:lam, :kdam, lam_range, kdam_range, "lam_kdam", "", "log")
+save_2x_plots(:lam, :kdam, lam_range, kdam_range, "lam_kdam", ss_init,"", "log")
 
 
 sweep_paramx2_new(rtc_model, :rt, get_ssval, :atp, :lam, atp_range, lam_range)

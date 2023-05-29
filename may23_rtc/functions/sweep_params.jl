@@ -84,13 +84,14 @@ function change_param(param_range, parameter, model, init, species, params)#, pa
     dict_res = OrderedDict(name => [] for name in species)
     # params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
     # println(params)
-    for val in param_range  
-        params[parameter] = val
-        @show params[parameter]
-        @show params[:kdam]
+    new_params = deepcopy(params)
+    for val in param_range
+        new_params[parameter] = val
+        # @show params[parameter]
+        @show new_params[:kdam]
         # param = values(params)
         # @show params
-        solu = sol(model, init, tspan, params)
+        solu = sol(model, init, tspan, new_params)
         for (i,j) in zip(values(dict_res), species)
             push!(i, get_ssval(solu, j))
         end
@@ -98,18 +99,19 @@ function change_param(param_range, parameter, model, init, species, params)#, pa
     return dict_res
 end
 
-function sweep_paramx2_new(model, species, func, param1, param2, param_range1, param_range2, xlog, ylog)
+function sweep_paramx2_new(model, species, func, param1, param2, param_range1, param_range2, initial, xlog, ylog)
     all_res = []
     params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+    new_params = deepcopy(params)
     for i in param_range1
-        params[param1] = i
+        new_params[param1] = i
         # @show params[:kdam]
 
         res1 = []
         for val in param_range2 
-            params[param2] = val
+            new_params[param2] = val
             # @show params[:kin]
-            solu = sol(model, initial, tspan, params)
+            solu = sol(model, initial, tspan, new_params)
             push!(res1, func(solu, species))
         end
         push!(all_res, res1)
@@ -152,23 +154,23 @@ end
 
 
 
-function save_1x_plots(range, param, title, log)
+function save_1x_plots(range, param, title, log, initial)
     # print(params)
     params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
     results = change_param(range, param, rtc_model, initial, all_species, params)
-    p = (plot_change_param_sols(range, results, "$param", title, log))
+    p = display(plot_change_param_sols(range, results, "$param", title, log))
     # return p 
-    open("/home/holliehindley/phd/may23_rtc/analysis/results/1x_param_sweep/without_damage/$param.html", "w") do io
-        PlotlyBase.to_html(io, p.plot)
-    end
+    # open("/home/holliehindley/phd/may23_rtc/analysis/results/1x_param_sweep/without_damage/$param.html", "w") do io
+    #     PlotlyBase.to_html(io, p.plot)
+    # end
 end
 
-function save_2x_plots(param1, param2, param1_range, param2_range, folder, xlog, ylog)
+function save_2x_plots(param1, param2, param1_range, param2_range, folder, ss_init, xlog, ylog)
     for i in all_species
-        p = (sweep_paramx2_new(rtc_model, i, get_ssval, param1, param2, param1_range, param2_range, xlog, ylog))
-        open("/home/holliehindley/phd/may23_rtc/analysis/results/2x_param_sweep/with_damage/$folder/$i.html", "w") do io
-            PlotlyBase.to_html(io, p.plot)
-        end
+        p = display(sweep_paramx2_new(rtc_model, i, get_ssval, param1, param2, param1_range, param2_range, ss_init, xlog, ylog))
+        # open("/home/holliehindley/phd/may23_rtc/analysis/results/2x_param_sweep/with_damage/$folder/$i.html", "w") do io
+        #     PlotlyBase.to_html(io, p.plot)
+        # end
     end
 end
 
