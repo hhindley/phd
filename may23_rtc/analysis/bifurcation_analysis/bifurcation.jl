@@ -1,6 +1,8 @@
-using Revise, ForwardDiff, Parameters, Setfield, Plots, LinearAlgebra, DataFrames
+using Plots
+using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, DataFrames
 using BifurcationKit
 const BK = BifurcationKit
+
 
 # sup norm
 norminf(x) = norm(x, Inf)
@@ -67,7 +69,11 @@ krep = 137., ktag = 9780., km_a = 20., km_b = 16., g_max = 2.0923, kdeg = 0.001,
 kdam =  0.01,
 ω_ab = 2., ω_r = 0.0089, atp = 3000., kin = 0.022222, lam = 0.04)
 
-				
+params1 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
+θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
+krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
+kdeg = 0.001, kin = 0.022222222, ω_ab = 1, ω_r = 0.0001, 
+kdam =  0.01, lam = 0.014) 		
 
 
 # initial condition
@@ -81,320 +87,139 @@ initial = [0., 0., 0., 0., 0., 0., 11.29, 0., 0.]
 
 rtc_mod(z, p) = rtc_mod!(similar(z), z, p, 0)
 
-# Bifurcation Problem
-prob = BifurcationProblem(rtc_mod, initial, setproperties(params; kdam=0.0), (@lens _.kdam);
-recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-
-# # continuation options
-# opts_br = ContinuationPar(pMin = 0., pMax = 1.,
-# # parameters to have a smooth result
-# ds = 0.001, dsmax = 0.05,)
-
-opts_br = ContinuationPar(pMin = 0., pMax = 1.0,  dsmax = 0.01, ds = 0.001,
-	# options to detect bifurcations
-	detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25,
-	# number of eigenvalues
-	nev = 2,
-	# maximum number of continuation steps
-	maxSteps = 1000,)
-
-
-# continuation of equilibria
-br = continuation(prob, PALC(), opts_br;
-plot = false, bothside=true, normC = norminf)
-
-
-
-
-plot(br, plotfold=true, plotspecialpoints=true, markersize=3, legend=:best)
-
-plot(br, vars = (:param, :rh))
-plot(br, vars = (:param, :rt))
-plot(br, vars = (:param, :rd))
-plot(br, vars = (:param, :rm_r))
-
-
-# cont2 = continuation(br, 1, (@lens _.lam), ContinuationPar(opts_br, pMax = 0.04, dsmax=0.05);
-# normC = norminf, detectCodim2Bifurcation=2, updateMinAugEveryStep=1, bothside=true)
-
-wab_range = 10 .^range(-5,stop=0,length=10)
-wr_range = 10 .^(range(-7,stop=0,length=10))
-
-atp_range = range(500,stop=5000,length=10)
-kin_range = range(0,stop=0.2,length=10)
-lam_range = range(0.001,stop=0.04,length=10)
-
-wr_range = (range(0.0001,stop=0.001,length=10)) # use this range with the above 3 ranges and get ~3000 combos that give bistability
-wab_range = range(0.01, stop=1., length=10)
-
-function run_param_search(atp_range, kin_range, lam_range, wr_range, wab_range, params)
-    bistab1_df=DataFrame(wab = Float64[], wr = Float64[], kin = Float64[], lam = Float64[], bs_type = Symbol[])
-    bistab1 = []
-    for i in wab_range
-        params = merge(params, (ω_ab=i,))
-        for j in wr_range
-            params = merge(params, (ω_r=j,))
-            # for k in atp_range 
-            #     params = merge(params, (atp=k,))
-                for l in kin_range
-                    params = merge(params, (kin=l,))
-
-                    for m in lam_range
-                        params = merge(params, (lam=m,))
-                        # println("lam = $m")
-                        # println("kin = $l, lam = $m")
-                        # println("atp = $k, kin = $l, lam = $m")
-                        # println("wr = $j, atp = $k, kin = $l, lam = $m")
-                        # println("wab = $i, wr = $j, atp = $k, kin = $l, lam = $m")
-
-                        prob = BifurcationProblem(rtc_mod, initial, setproperties(params; kdam=0.), (@lens _.kdam);
-                        recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-                        opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-                        br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-                        for b in range(1,length(br.specialpoint))
-                            if br.specialpoint[b].type == :endpoint
-                                Nothing
-                            else
-                                # push!(bistab, ("lam = $m", br.specialpoint[b].type))
-                                # push!(bistab, ("kin = $l, lam = $m", br.specialpoint[b].type))
-                                # push!(bistab, ("atp = $k, kin = $l, lam = $m", br.specialpoint[b].type))
-                                # push!(bistab, ("wr = $j, atp = $k, kin = $l, lam = $m", br.specialpoint[b].type))
-                                # push!(bistab1, ("wab = $i, wr = $j, kin = $l, lam = $m", br.specialpoint[b].type))
-                                # push!(bistab1, ("wab = $i, wr = $j, atp = $k, kin = $l, lam = $m", br.specialpoint[b].type))
-
-                                push!(bistab1_df, (i, j, l, m, br.specialpoint[b].type))
-                            end
-                        end                     
-                    end
-                end
-            # end
-        end
-    end
-    return bistab1_df
-end
-bistab1_df = @time run_param_search(atp_range, kin_range, lam_range, wr_range, wab_range, params)
-
-
-bistab1_df = bistab1_df[1:2:end,:]
-
-CSV.write("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/param_sweep_bs.csv", bistab1_df)
-
-bistab # big 7000 element vector for bistab values using these ranges - atp_range = range(500,stop=5000,length=20), kin_range = range(0,stop=0.2,length=20), lam_range = range(0.001,stop=0.04,length=20), wr_range = (range(0.00001,stop=0.01,length=20))
-
-bistab_5 = bistab[1:2:end]
-
-bistab_5[1][1]
-
-
-param_combos_bs = bistab_5[1000]
-bistab_5[1000:1200]
-
-[println(i) for i in bistab[1:2:end]]
-lam_bi = [0.005578947368421052, 0.006, 0.0063236842105263156, 0.006394736842105263, 0.0074444444444444445, 0.007902105263157894, 0.00796842105263158, 0.009480526315789474, 0.009542105263157895, 0.01, 0.010105105105105105]
-
-function bifu1()
-    # params = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
-    #     θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
-    #     krep = 137., ktag = 9780., atp = 500., km_a = 20., km_b = 16., g_max = 2.0923, 
-    #     kdeg = 0.001, kin = 0.010526315789473684, ω_ab = 4., ω_r = 2e-7, 
-    #     kdam =  0.01, lam = 0.01)
-
-    params = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
-    θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
-    krep = 137., ktag = 9780., atp = 4000., km_a = 20., km_b = 16., g_max = 2.0923, 
-    kdeg = 0.001, kin = 0.054, ω_ab = 4., ω_r = 1e-6, 
-    kdam =  0.01, lam = 0.01)
-
-    initial = [0., 0., 0., 0., 0., 0., 11.29, 0., 0.]
-
-    rtc_mod(z, p) = rtc_mod!(similar(z), z, p, 0)
-
+function get_br(params, initial)
+    # Bifurcation Problem
     prob = BifurcationProblem(rtc_mod, initial, setproperties(params; kdam=0.), (@lens _.kdam);
     recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-    opts_br = ContinuationPar(pMin = 0., pMax = 1., ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
+    # # continuation options
+    # opts_br = ContinuationPar(pMin = 0., pMax = 1.,
+    # # parameters to have a smooth result
+    # ds = 0.001, dsmax = 0.05,)
+    opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, 
+    # options to detect bifurcations
+    detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, 
+    # number of eigenvalues
+    nev = 2, 
+    # maximum number of continuation steps
+    maxSteps = 1000,)
+    # continuation of equilibria
     br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-
-    scene = plot(br, plotfold=true, plotspecialpoints=true, markersize=3, legend=:best)
+    return br
 end
-# plot(br, vars = (:param, :rh))
-bifu1()
+
+br = get_br(params1, initial)
+
+
+plot(br, vars=(:param, :rh), putspecialptlegend=false, label="rfw")
+
+p_rh = plot(br, vars = (:param, :rh), label="Healthy ribosomes", c=:palevioletred, putspecialptlegend = false)
+p_rh1 = plot!(twinx(), br, vars = (:param, :rtca), c=:grey60, label="RtcBA")
+
+savefig(p_rm_a, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/p_rma.svg")
+savefig(p_rh, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/p_rh.svg")
+savefig(p_rh1, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/p_both.svg")
 
 
 
-# params_wab = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
-#     θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
-#     krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
-#     kdeg = 0.001, kin = 0.010526315789473684, ω_ab = 0.00022342342342342343, ω_r = 1e-5, 
-#     kdam =  0.01, lam = 0.009210526315789473)
+# wab_range = 10 .^range(-5,stop=0,length=10)
+# wr_range = 10 .^(range(-7,stop=0,length=10))
 
+# atp_range = range(500,stop=5000,length=10)
+# kin_range = range(0,stop=0.2,length=10)
+# lam_range = range(0.001,stop=0.04,length=10)
 
-# wab_range = range(1, stop=4, length=100)
+# wr_range = (range(0.0001,stop=0.001,length=10)) # use this range with the above 3 ranges and get ~3000 combos that give bistability
+# wab_range = range(0.01, stop=1., length=10)
 
-# df=DataFrame(wab = Float64[], kdam1 = Float64[], kdam2 = Float64[])
+# function run_param_search(atp_range, kin_range, lam_range, wr_range, wab_range, params)
+#     bistab1_df=DataFrame(wab = Float64[], wr = Float64[], kin = Float64[], lam = Float64[], bs_type = Symbol[])
+#     bistab1 = []
+#     params = deepcopy(params1)
+#     for i in wab_range
+#         params = merge(params, (ω_ab=i,))
+#         for j in wr_range
+#             params = merge(params, (ω_r=j,))
+#             # for k in atp_range 
+#             #     params = merge(params, (atp=k,))
+#                 for l in kin_range
+#                     params = merge(params, (kin=l,))
 
-# for i in wab_range
-#     # @show parameter
-#     params = merge(params_wab, (ω_ab=i,))
-#     println("wab = $i")
-#     prob = BifurcationProblem(rtc_mod, initial, setproperties(params; kdam=0.), (@lens _.kdam);
-#     recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-#     opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-#     br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-#     for b in range(1,length(br.specialpoint))
-#         if br.specialpoint[b].type == :endpoint
-#             Nothing
-#             # push!(df_none, (i, br.specialpoint[1].param, br.specialpoint[2].param))
-#         else
-#             push!(df, (i, br.specialpoint[2].param, br.specialpoint[3].param))
+#                     for m in lam_range
+#                         params = merge(params, (lam=m,))
+#                         # println("lam = $m")
+#                         # println("kin = $l, lam = $m")
+#                         # println("atp = $k, kin = $l, lam = $m")
+#                         # println("wr = $j, atp = $k, kin = $l, lam = $m")
+#                         # println("wab = $i, wr = $j, atp = $k, kin = $l, lam = $m")
+
+#                         br = get_br(params, initial)
+#                         for b in range(1,length(br.specialpoint))
+#                             if br.specialpoint[b].type == :endpoint
+#                                 Nothing
+#                             else
+#                                 # push!(bistab, ("lam = $m", br.specialpoint[b].type))
+#                                 # push!(bistab, ("kin = $l, lam = $m", br.specialpoint[b].type))
+#                                 # push!(bistab, ("atp = $k, kin = $l, lam = $m", br.specialpoint[b].type))
+#                                 # push!(bistab, ("wr = $j, atp = $k, kin = $l, lam = $m", br.specialpoint[b].type))
+#                                 # push!(bistab1, ("wab = $i, wr = $j, kin = $l, lam = $m", br.specialpoint[b].type))
+#                                 # push!(bistab1, ("wab = $i, wr = $j, atp = $k, kin = $l, lam = $m", br.specialpoint[b].type))
+
+#                                 push!(bistab1_df, (i, j, l, m, br.specialpoint[b].type))
+#                             end
+#                         end                     
+#                     end
+#                 end
+#             # end
 #         end
 #     end
+#     return bistab1_df
 # end
-# p = scatter(df.wab, df.kdam1, xlabel="wab", ylabel="kdam")
-# p = scatter!(df.wab, df.kdam2)
+# bistab1_df = @time run_param_search(atp_range, kin_range, lam_range, wr_range, wab_range, params)
 
 
+# bistab1_df = bistab1_df[1:2:end,:]
 
-params1 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
-θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
-krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
-kdeg = 0.001, kin = 0.022222222, ω_ab = 1, ω_r = 0.0001, 
-kdam =  0.01, lam = 0.014)
+# CSV.write("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/param_sweep_bs.csv", bistab1_df)
 
 
-atp_range = range(500,stop=5000,length=100)
-
-df_atp=DataFrame(atp = Float64[], kdam1 = Float64[], kdam2 = Float64[])
-
-for i in atp_range
-    # @show parameter
-    params = merge(params_atp, (atp=i,))
-    println("atp = $i")
-    prob = BifurcationProblem(rtc_mod, initial, setproperties(params; kdam=0.), (@lens _.kdam);
-    recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-    opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-    br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-    for b in range(1,length(br.specialpoint))
-        if br.specialpoint[b].type == :endpoint
-            Nothing
-            # push!(df_none, (i, br.specialpoint[1].param, br.specialpoint[2].param))
-        else
-            push!(df_atp, (i, br.specialpoint[2].param, br.specialpoint[3].param))
+function plot_bf_against_kdam(param_range, param)
+    df=DataFrame(param = Float64[], kdam1 = Float64[], kdam2 = Float64[])
+    paramscopy = deepcopy(params1)
+    for i in param_range
+        params = merge(paramscopy, (param=>i,))
+        # println("$param = $i")
+        br = get_br(params, initial)
+        for b in range(1,length(br.specialpoint))
+            if br.specialpoint[b].type == :endpoint
+                Nothing
+                # push!(df_none, (i, br.specialpoint[1].param, br.specialpoint[2].param))
+            else
+                push!(df, (i, br.specialpoint[2].param, br.specialpoint[3].param))
+            end
         end
     end
+    df = df[1:2:end, :]
+    p = plot(df.param, df.kdam1, xlabel="$param", ylabel="kdam", ylims=(0,1), label="bf1")
+    p = plot!(df.param, df.kdam2, label="bf2")
+
 end
-df_atp = df_atp[1:2:end, :]
-p = scatter(df_atp.atp, df_atp.kdam1, xlabel="ATP", ylabel="kdam")
-p = scatter!(df_atp.atp, df_atp.kdam2)
 
-
-
+atp_range = range(500,stop=5000,length=500)
 kin_range = range(0,stop=0.2,length=500)
-
-df_kin=DataFrame(kin = Float64[], kdam1 = Float64[], kdam2 = Float64[])
-
-for i in kin_range
-    # @show parameter
-    params = merge(params_atp, (kin=i,))
-    println("kin = $i")
-    prob = BifurcationProblem(rtc_mod, initial, setproperties(params; kdam=0.), (@lens _.kdam);
-    recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-    opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-    br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-    for b in range(1,length(br.specialpoint))
-        if br.specialpoint[b].type == :endpoint
-            Nothing
-            # push!(df_none, (i, br.specialpoint[1].param, br.specialpoint[2].param))
-        else
-            push!(df_kin, (i, br.specialpoint[2].param, br.specialpoint[3].param))
-        end
-    end
-end
-df_kin = df_kin[1:2:end, :]
-p = scatter(df_kin.kin, df_kin.kdam1, xlabel="kin", ylabel="kdam")
-p = scatter!(df_kin.kin, df_kin.kdam2)
-
-
-
 lam_range = range(0.001,stop=0.04,length=500)
-
-df_lam=DataFrame(lam = Float64[], kdam1 = Float64[], kdam2 = Float64[])
-
-for i in lam_range
-    # @show parameter
-    params = merge(params_atp, (lam=i,))
-    println("lam = $i")
-    prob = BifurcationProblem(rtc_mod, initial, setproperties(params; kdam=0.), (@lens _.kdam);
-    recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-    opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-    br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-    for b in range(1,length(br.specialpoint))
-        if br.specialpoint[b].type == :endpoint
-            Nothing
-            # push!(df_none, (i, br.specialpoint[1].param, br.specialpoint[2].param))
-        else
-            push!(df_lam, (i, br.specialpoint[2].param, br.specialpoint[3].param))
-        end
-    end
-end
-df_lam = df_lam[1:2:end, :]
-p = scatter(df_lam.lam, df_lam.kdam1, xlabel="lam", ylabel="kdam")
-p = scatter!(df_lam.lam, df_lam.kdam2)
-
-
-
-
-wab_range = range(0.01, stop=4, length=100)
-
-df_wab=DataFrame(wab = Float64[], kdam1 = Float64[], kdam2 = Float64[])
-
-for i in wab_range
-    params = merge(params_atp, (ω_ab=i,))
-    println("wab = $i")
-    prob = BifurcationProblem(rtc_mod, initial, setproperties(params; kdam=0.), (@lens _.kdam);
-    recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-    opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-    br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-    for b in range(1,length(br.specialpoint))
-        if br.specialpoint[b].type == :endpoint
-            Nothing
-        else
-            push!(df_wab, (i, br.specialpoint[2].param, br.specialpoint[3].param))
-        end
-    end
-end
-df_wab = df_wab[1:2:end, :]
-p = scatter(df_wab.wab, df_wab.kdam1, xlabel="wab", ylabel="kdam")
-p = scatter!(df_wab.wab, df_wab.kdam2)
-
-
-
+wab_range = range(0.01, stop=4, length=500)
 wr_range = (range(0.00001,stop=0.001,length=200))
-df_wr=DataFrame(wr = Float64[], kdam1 = Float64[], kdam2 = Float64[])
 
-for i in wr_range
-    # @show parameter
-    params = merge(params_atp, (ω_r=i,))
-    println("wr = $i")
-    prob = BifurcationProblem(rtc_mod, initial, setproperties(params; kdam=0.), (@lens _.kdam);
-    recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-    opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-    br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-    for b in range(1,length(br.specialpoint))
-        if br.specialpoint[b].type == :endpoint
-            Nothing
-            # push!(df_none, (i, br.specialpoint[1].param, br.specialpoint[2].param))
-        else
-            push!(df_wr, (i, br.specialpoint[2].param, br.specialpoint[3].param))
-        end
-    end
-end
-df_wr = df_wr[1:2:end, :]
-p = scatter(df_wr.wr, df_wr.kdam1, xlabel="wr", ylabel="kdam")
-p = scatter!(df_wr.wr, df_wr.kdam2)
+p_atp = plot_bf_against_kdam(atp_range, :atp)
+p_kin = plot_bf_against_kdam(kin_range, :kin)
+p_lam = plot_bf_against_kdam(lam_range, :lam)
+p_wab = plot_bf_against_kdam(wab_range, :ω_ab)
+p_wr = plot_bf_against_kdam(wr_range, :ω_r)
 
 
-
-
+l = @layout [a b; c d; e]
+all_bf = plot(p_atp, p_kin, p_lam, p_wab, p_wr, layout=l, size=(1200,800), left_margin=4Plots.mm, right_margin=2Plots.mm, plot_title="Bifurcation points for kdam vs. parameter")
+savefig(all_bf, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_bf.svg")
 
 
 
@@ -402,273 +227,91 @@ p = scatter!(df_wr.wr, df_wr.kdam2)
 
 
 atp_range = range(500,stop=5000,length=100)
-kin_range = range(0,stop=0.2,length=100)
+kin_range = range(0.001,stop=0.2,length=100)
 lam_range = range(0.001,stop=0.04,length=100)
 wr_range = (range(0.00001,stop=0.001,length=100))
 wab_range = range(0.01, stop=4, length=100)
 
-# atp vs wab 
-df = DataFrame(atp = Float64[], wab = Float64[], kdam1 = Float64[], kdam2 = Float64[], bs = Symbol[])
-for i in atp_range
-    params_atp = deepcopy(params1)
-    params_atp = merge(params_atp, (atp=i,))
-    # println("atp = $i")
-    for j in wab_range
-        params_atp = merge(params_atp, (ω_ab=j,))
-        prob = BifurcationProblem(rtc_mod, initial, setproperties(params_atp; kdam=0.), (@lens _.kdam);
-        recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-        opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-        br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-        if length(br.specialpoint) == 2
-            push!(df, (i, j, br.specialpoint[1].param, br.specialpoint[2].param, br.specialpoint[1].type))
-        else
-            push!(df, (i, j, br.specialpoint[2].param, br.specialpoint[3].param, br.specialpoint[2].type))
-        end
-    end    
+
+function double_param_vary(param_range1, param1, param_range2, param2)
+    df = DataFrame(atp = Float64[], wab = Float64[], kdam1 = Float64[], kdam2 = Float64[], bs = Symbol[])
+    params = deepcopy(params1)
+    for i in param_range1
+        params = merge(params, (param1=>i,))
+        for j in param_range2
+            params = merge(params, (param2=>j,))
+            br = get_br(params, initial)
+            if length(br.specialpoint) == 2
+                push!(df, (i, j, br.specialpoint[1].param, br.specialpoint[2].param, br.specialpoint[1].type))
+            else
+                push!(df, (i, j, br.specialpoint[2].param, br.specialpoint[3].param, br.specialpoint[2].type))
+            end
+        end    
+    end
+    return df
 end
-scatter(df[df.bs .== :bp, :].atp, df[df.bs .== :bp, :].wab, xlabel="ATP", ylabel="wab", label="bistable region")
-scatter!(df[df.bs .== :endpoint, :].atp, df[df.bs .== :endpoint, :].wab, label="no bistability")
-
-plot(df[df.bs .== :bp, :].atp, df[df.bs .== :bp, :].wab)
-scatter!(df[df.bs .== :bp, :].atp, df[df.bs .== :bp, :].wab)
-
-function plot_bistable_region(df, param_range, param1, param2 )
+function plot_bistable_region(param_range1, param1, param_range2, param2)
+    df = double_param_vary(param_range1, param1, param_range2, param2)
     bsp = df[df.bs .== :bp, :]
     max_wab = []
     min_wab = []
-    for i in param_range
+    for i in param_range1
         push!(max_wab, maximum(bsp[bsp[:,1] .== i, :][:,2]))
         push!(min_wab, minimum(bsp[bsp[:,1] .== i, :][:,2]))
     end
-
-    return display(plot(param_range, [min_wab, max_wab], fillrange = (max_wab.-0), fillalpha = 0.35, linecolor=:lightblue, legend=false, xlabel="$param1", ylabel="$param2"))
+    p = plot(param_range1, fill(maximum(param_range2),length(param_range1)); fillrange=(minimum(param_range2)), fillcolor=:lightblue2, linecolor=:lightblue, label="", xlabel="$param1", ylabel="$param2")
+    p = plot!(param_range1, max_wab; fillrange=(minimum(param_range2)), fillcolor=:cyan4, linecolor=:lightblue, label="bistable region", legend=false)
+    p = plot!(param_range1, min_wab; fillrange=(minimum(param_range2)), fillcolor=:lightblue2, linecolor=:lightblue, label="")
+    return p
 end
 
-plot_bistable_region(df, atp_range, "atp", "wab")
-
-
-
+# atp vs wab
+atp_wab = plot_bistable_region(atp_range, :atp, wab_range, :ω_ab)
 # atp vs wr 
-df1 = DataFrame(atp = Float64[], wr = Float64[], kdam1 = Float64[], kdam2 = Float64[], bs = Symbol[])
-for i in atp_range
-    params_atp = deepcopy(params1)
-    params_atp = merge(params_atp, (atp=i,))
-    # println("atp = $i")
-    for j in wr_range
-        params_atp = merge(params_atp, (ω_r=j,))
-        prob = BifurcationProblem(rtc_mod, initial, setproperties(params_atp; kdam=0.), (@lens _.kdam);
-        recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-        opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-        br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-        if length(br.specialpoint) == 2
-            push!(df1, (i, j, br.specialpoint[1].param, br.specialpoint[2].param, br.specialpoint[1].type))
-        else
-            push!(df1, (i, j, br.specialpoint[2].param, br.specialpoint[3].param, br.specialpoint[2].type))
-        end
-    end    
-end
-scatter(df1[df1.bs .== :bp, :].atp, df1[df1.bs .== :bp, :].wr, xlabel="ATP", ylabel="wr", label="bistable region")
-scatter!(df1[df1.bs .== :endpoint, :].atp, df1[df1.bs .== :endpoint, :].wr, label="no bistability")
-plot_bistable_region(df1, atp_range, "atp", "wr")
-
-
+atp_wr = plot_bistable_region(atp_range, :atp, wr_range, :ω_r)
 # atp vs kin
-df2 = DataFrame(atp = Float64[], kin = Float64[], kdam1 = Float64[], kdam2 = Float64[], bs = Symbol[])
-for i in atp_range
-    params_atp = deepcopy(params1)
-    params_atp = merge(params_atp, (atp=i,))
-    # println("atp = $i")
-    for j in kin_range
-        params_atp = merge(params_atp, (kin=j,))
-        prob = BifurcationProblem(rtc_mod, initial, setproperties(params_atp; kdam=0.), (@lens _.kdam);
-        recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-        opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-        br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-        if length(br.specialpoint) == 2
-            push!(df2, (i, j, br.specialpoint[1].param, br.specialpoint[2].param, br.specialpoint[1].type))
-        else
-            push!(df2, (i, j, br.specialpoint[2].param, br.specialpoint[3].param, br.specialpoint[2].type))
-        end
-    end    
-end
-scatter(df2[df2.bs .== :bp, :].atp, df2[df2.bs .== :bp, :].kin, xlabel="ATP", ylabel="kin", label="bistable region")
-scatter!(df2[df2.bs .== :endpoint, :].atp, df2[df2.bs .== :endpoint, :].kin, label="no bistability")
-plot_bistable_region(df2, atp_range, "atp", "kin")
-
-
+atp_kin = plot_bistable_region(atp_range, :atp, kin_range, :kin)
 # atp vs lam
-df3 = DataFrame(atp = Float64[], lam = Float64[], kdam1 = Float64[], kdam2 = Float64[], bs = Symbol[])
-for i in atp_range
-    params_atp = deepcopy(params1)
-    params_atp = merge(params_atp, (atp=i,))
-    # println("atp = $i")
-    for j in lam_range
-        params_atp = merge(params_atp, (lam=j,))
-        prob = BifurcationProblem(rtc_mod, initial, setproperties(params_atp; kdam=0.), (@lens _.kdam);
-        recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-        opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-        br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-        if length(br.specialpoint) == 2
-            push!(df3, (i, j, br.specialpoint[1].param, br.specialpoint[2].param, br.specialpoint[1].type))
-        else
-            push!(df3, (i, j, br.specialpoint[2].param, br.specialpoint[3].param, br.specialpoint[2].type))
-        end
-    end    
-end
-scatter(df3[df3.bs .== :bp, :].atp, df3[df3.bs .== :bp, :].lam, xlabel="ATP", ylabel="lam", label="bistable region")
-scatter!(df3[df3.bs .== :endpoint, :].atp, df3[df3.bs .== :endpoint, :].lam, label="no bistability")
-plot_bistable_region(df3, atp_range, "atp", "lam")
-
-
+atp_lam = plot_bistable_region(atp_range, :atp, lam_range, :lam)
 # wr vs wab
-df4 = DataFrame(wr = Float64[], wab = Float64[], kdam1 = Float64[], kdam2 = Float64[], bs = Symbol[])
-for i in wr_range
-    params_atp = deepcopy(params1)
-    params_atp = merge(params_atp, (ω_r=i,))
-    # println("atp = $i")
-    for j in wab_range
-        params_atp = merge(params_atp, (ω_ab=j,))
-        prob = BifurcationProblem(rtc_mod, initial, setproperties(params_atp; kdam=0.), (@lens _.kdam);
-        recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-        opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-        br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-        if length(br.specialpoint) == 2
-            push!(df4, (i, j, br.specialpoint[1].param, br.specialpoint[2].param, br.specialpoint[1].type))
-        else
-            push!(df4, (i, j, br.specialpoint[2].param, br.specialpoint[3].param, br.specialpoint[2].type))
-        end
-    end    
-end
-scatter(df4[df4.bs .== :bp, :].wr, df4[df4.bs .== :bp, :].wab, xlabel="wr", ylabel="wab", label="bistable region")
-scatter!(df4[df4.bs .== :endpoint, :].wr, df4[df4.bs .== :endpoint, :].wab, label="no bistability")
-plot_bistable_region(df4, wr_range, "wr", "wab")
-
-
+wr_wab = plot_bistable_region(wr_range, :ω_r, wab_range, :ω_ab)
 # wr vs kin
-df5 = DataFrame(wr = Float64[], kin = Float64[], kdam1 = Float64[], kdam2 = Float64[], bs = Symbol[])
-for i in wr_range
-    params_atp = deepcopy(params1)
-    params_atp = merge(params_atp, (ω_r=i,))
-    # println("atp = $i")
-    for j in kin_range
-        params_atp = merge(params_atp, (kin=j,))
-        prob = BifurcationProblem(rtc_mod, initial, setproperties(params_atp; kdam=0.), (@lens _.kdam);
-        recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-        opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-        br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-        if length(br.specialpoint) == 2
-            push!(df5, (i, j, br.specialpoint[1].param, br.specialpoint[2].param, br.specialpoint[1].type))
-        else
-            push!(df5, (i, j, br.specialpoint[2].param, br.specialpoint[3].param, br.specialpoint[2].type))
-        end
-    end    
-end
-scatter(df5[df5.bs .== :bp, :].wr, df5[df5.bs .== :bp, :].kin, xlabel="wr", ylabel="kin", label="bistable region")
-scatter!(df5[df5.bs .== :endpoint, :].wr, df5[df5.bs .== :endpoint, :].kin, label="no bistability")
-plot_bistable_region(df5, wr_range, "wr", "kin")
-
-
+wr_kin = plot_bistable_region(wr_range, :ω_r, kin_range, :kin)
 # wr vs lam 
-df6 = DataFrame(wr = Float64[], lam = Float64[], kdam1 = Float64[], kdam2 = Float64[], bs = Symbol[])
-for i in wr_range
-    params_atp = deepcopy(params1)
-    params_atp = merge(params_atp, (ω_r=i,))
-    # println("atp = $i")
-    for j in lam_range
-        params_atp = merge(params_atp, (lam=j,))
-        prob = BifurcationProblem(rtc_mod, initial, setproperties(params_atp; kdam=0.), (@lens _.kdam);
-        recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-        opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-        br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-        if length(br.specialpoint) == 2
-            push!(df6, (i, j, br.specialpoint[1].param, br.specialpoint[2].param, br.specialpoint[1].type))
-        else
-            push!(df6, (i, j, br.specialpoint[2].param, br.specialpoint[3].param, br.specialpoint[2].type))
-        end
-    end    
-end
-scatter(df6[df6.bs .== :bp, :].wr, df6[df6.bs .== :bp, :].lam, xlabel="wr", ylabel="lam", label="bistable region")
-scatter!(df6[df6.bs .== :endpoint, :].wr, df6[df6.bs .== :endpoint, :].lam, label="no bistability")
-plot_bistable_region(df6, wr_range, "wr", "lam")
-
-
+wr_lam = plot_bistable_region(wr_range, :ω_r, lam_range, :lam)
 # wab vs kin
-df7 = DataFrame(wab = Float64[], kin = Float64[], kdam1 = Float64[], kdam2 = Float64[], bs = Symbol[])
-for i in wab_range
-    params_atp = deepcopy(params1)
-    params_atp = merge(params_atp, (ω_ab=i,))
-    # println("atp = $i")
-    for j in kin_range
-        params_atp = merge(params_atp, (kin=j,))
-        prob = BifurcationProblem(rtc_mod, initial, setproperties(params_atp; kdam=0.), (@lens _.kdam);
-        recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-        opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-        br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-        if length(br.specialpoint) == 2
-            push!(df7, (i, j, br.specialpoint[1].param, br.specialpoint[2].param, br.specialpoint[1].type))
-        else
-            push!(df7, (i, j, br.specialpoint[2].param, br.specialpoint[3].param, br.specialpoint[2].type))
-        end
-    end    
-end
-scatter(df7[df7.bs .== :bp, :].wab, df7[df7.bs .== :bp, :].kin, xlabel="wab", ylabel="kin", label="bistable region")
-scatter!(df7[df7.bs .== :endpoint, :].wab, df7[df7.bs .== :endpoint, :].kin, label="no bistability")
-plot_bistable_region(df7, wab_range, "wab", "kin")
-
-
+wab_kin = plot_bistable_region(wab_range, :ω_ab, kin_range, :kin)
 # wab vs lam 
-df8 = DataFrame(wab = Float64[], lam = Float64[], kdam1 = Float64[], kdam2 = Float64[], bs = Symbol[])
-for i in wab_range
-    params_atp = deepcopy(params1)
-    params_atp = merge(params_atp, (ω_ab=i,))
-    # println("atp = $i")
-    for j in lam_range
-        params_atp = merge(params_atp, (lam=j,))
-        prob = BifurcationProblem(rtc_mod, intial, setproperties(params_atp; kdam=0.), (@lens _.kdam);
-        recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-        opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-        br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-        if length(br.specialpoint) == 2
-            push!(df8, (i, j, br.specialpoint[1].param, br.specialpoint[2].param, br.specialpoint[1].type))
-        else
-            push!(df8, (i, j, br.specialpoint[2].param, br.specialpoint[3].param, br.specialpoint[2].type))
+wab_lam = plot_bistable_region(wab_range, :ω_ab, lam_range, :lam)
+# kin vs lam - get instability here 
+kin_lam = plot_bistable_region(kin_range, :kin, lam_range, :lam)
+
+l = @layout [a b c; d e f; g h i j]
+all_ranges = plot(kin_lam, wab_lam, wab_kin, wr_lam, wr_wab, wr_kin, atp_kin, atp_lam, atp_wab, atp_wr, layout=l, size=(1200,800), left_margin=4Plots.mm, right_margin=2Plots.mm, plot_title="Parameter spaces where bistability is present (dark area = bs)")
+
+savefig(all_ranges, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_ranges.svg")
+savefig(atp_wab, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/wab_atp_bigger_range.svg")
+
+function plot_triple_param_vary(param_range1, param1, param_range2, param2, param_range3, param3)
+    copyparams=deepcopy(params1)
+    p = plot();
+    for i in param_range3
+        params = merge(copyparams, (param3=>i,))
+        df = double_param_vary(param_range1, param1, param_range2, param2, params)
+        bsp = df[df.bs .== :bp, :]
+        max_wab = []
+        min_wab = []
+        for i in param_range1
+            push!(max_wab, maximum(bsp[bsp[:,1] .== i, :][:,2]))
+            push!(min_wab, minimum(bsp[bsp[:,1] .== i, :][:,2]))
         end
-    end    
+        plot!(p, param_range1, max_wab, linecolor=:lightblue, label="$param3 = $i", xlabel="$param1", ylabel="$param2")
+        plot!(p, param_range1, min_wab, linecolor=:lightblue, label="$param3 = $i")
+    end
+    return p 
 end
-scatter(df8[df8.bs .== :bp, :].wab, df8[df8.bs .== :bp, :].lam, xlabel="wab", ylabel="lam", label="bistable region")
-scatter!(df8[df8.bs .== :endpoint, :].wab, df8[df8.bs .== :endpoint, :].lam, label="no bistability")
-plot_bistable_region(df8, wab_range, "wab", "lam")
 
-
-# kin vs lam 
-df9 = DataFrame(kin = Float64[], lam = Float64[], kdam1 = Float64[], kdam2 = Float64[], bs = Symbol[])
-for i in kin_range
-    params_atp = deepcopy(params1)
-    params_atp = merge(params_atp, (kin=i,))
-    # println("atp = $i")
-    for j in lam_range
-        params_atp = merge(params_atp, (lam=j,))
-        prob = BifurcationProblem(rtc_mod, initial, setproperties(params_atp; kdam=0.), (@lens _.kdam);
-        recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-        opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-        br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-        if length(br.specialpoint) == 2
-            push!(df9, (i, j, br.specialpoint[1].param, br.specialpoint[2].param, br.specialpoint[1].type))
-        else
-            push!(df9, (i, j, br.specialpoint[2].param, br.specialpoint[3].param, br.specialpoint[2].type))
-        end
-    end    
-end
-scatter(df9[df9.bs .== :bp, :].kin, df9[df9.bs .== :bp, :].lam, xlabel="wab", ylabel="lam", label="bistable region")
-scatter!(df9[df9.bs .== :endpoint, :].kin, df9[df9.bs .== :endpoint, :].lam, label="no bistability")
-plot_bistable_region(df9, kin_range, "kin", "lam")
-
-
-
-
-
-
-
+plot_triple_param_vary(atp_range, :atp, kin_range, :kin, wab_range, :ω_ab)
 
 
 
@@ -678,54 +321,151 @@ lam_range = range(0.001,stop=0.04,length=10)
 wr_range = (range(0.00001,stop=0.001,length=10))
 wab_range = range(0.01, stop=4, length=10)
 
-p1 = plot()
-for i in atp_range
-    params = merge(params_atp, (atp=i,))
-    prob = BifurcationProblem(rtc_mod, initial, setproperties(params; kdam=0.), (@lens _.kdam);
-    recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-    opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-    br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-    display(plot!(p1, br, legend=false))
+function plot_different_bp_lines(param_range, params1, param, specie)
+    p = plot();
+    copyparams = deepcopy(params1)
+    for i in param_range
+        params = merge(copyparams, (param=>i,))
+        br = get_br(params, initial)
+        plot!(p, br, vars = (:param, specie), legend=false)#, label="$param = $i", putspecialptlegend=false)
+    end
+    return p
 end
 
 
-p1 = plot()
-for i in kin_range
-    params = merge(params_atp, (kin=i,))
-    prob = BifurcationProblem(rtc_mod, initial, setproperties(params; kdam=0.), (@lens _.kdam);
-    recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-    opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-    br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-    display(plot!(p1, br, legend=false))
-end
+
+p1_rma = plot_different_bp_lines(atp_range, params1, :atp, :rm_a)
+p2_rma = plot_different_bp_lines(kin_range, params1, :kin, :rm_a)
+p3_rma = plot_different_bp_lines(lam_range, params1, :lam, :rm_a)
+p4_rma = plot_different_bp_lines(wab_range, params1, :ω_ab, :rm_a)
+p5_rma = plot_different_bp_lines(wr_range, params1, :ω_r, :rm_a)
+
+l = @layout [a b; c d; e]
+all_rma = plot(p1_rma, p2_rma, p3_rma, p4_rma, p5_rma, layout=l, size=(1200,800), left_margin=4Plots.mm, right_margin=2Plots.mm, plot_title="Vary param bistability plot")
+savefig(all_rma, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_rma.svg")
+
+p1_rmr = plot_different_bp_lines(atp_range, params1, :atp, :rm_r)
+p2_rmr = plot_different_bp_lines(kin_range, params1, :kin, :rm_r)
+p3_rmr = plot_different_bp_lines(lam_range, params1, :lam, :rm_r)
+p4_rmr = plot_different_bp_lines(wab_range, params1, :ω_ab, :rm_r)
+p5_rmr = plot_different_bp_lines(wr_range, params1, :ω_r, :rm_r)
+
+all_rmr = plot(p1_rmr, p2_rmr, p3_rmr, p4_rmr, p5_rmr, layout=l, size=(1200,800), left_margin=4Plots.mm, right_margin=2Plots.mm, plot_title="Vary param bistability plot")
+savefig(all_rmr, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_rmr.svg")
+
+p1_rtca = plot_different_bp_lines(atp_range, params1, :atp, :rtca)
+p2_rtca = plot_different_bp_lines(kin_range, params1, :kin, :rtca)
+p3_rtca = plot_different_bp_lines(lam_range, params1, :lam, :rtca)
+p4_rtca = plot_different_bp_lines(wab_range, params1, :ω_ab, :rtca)
+p5_rtca = plot_different_bp_lines(wr_range, params1, :ω_r, :rtca)
+
+all_rtca = plot(p1_rtca, p2_rtca, p3_rtca, p4_rtca, p5_rtca, layout=l, size=(1200,800), left_margin=4Plots.mm, right_margin=2Plots.mm, plot_title="Vary param bistability plot")
+savefig(all_rtca, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_rtca.svg")
+
+p1_rtcr = plot_different_bp_lines(atp_range, params1, :atp, :rtcr)
+p2_rtcr = plot_different_bp_lines(kin_range, params1, :kin, :rtcr)
+p3_rtcr = plot_different_bp_lines(lam_range, params1, :lam, :rtcr)
+p4_rtcr = plot_different_bp_lines(wab_range, params1, :ω_ab, :rtcr)
+p5_rtcr = plot_different_bp_lines(wr_range, params1, :ω_r, :rtcr)
+
+all_rtcr = plot(p1_rtcr, p2_rtcr, p3_rtcr, p4_rtcr, p5_rtcr, layout=l, size=(1200,800), left_margin=4Plots.mm, right_margin=2Plots.mm, plot_title="Vary param bistability plot")
+savefig(all_rtcr, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_rtcr.svg")
+
+p1_rh = plot_different_bp_lines(atp_range, params1, :atp, :rh)
+p2_rh = plot_different_bp_lines(kin_range, params1, :kin, :rh)
+p3_rh = plot_different_bp_lines(lam_range, params1, :lam, :rh)
+p4_rh = plot_different_bp_lines(wab_range, params1, :ω_ab, :rh)
+p5_rh = plot_different_bp_lines(wr_range, params1, :ω_r, :rh)
+
+all_rh = plot(p1_rh, p2_rh, p3_rh, p4_rh, p5_rh, layout=l, size=(1200,800), left_margin=4Plots.mm, right_margin=2Plots.mm, plot_title="Vary param bistability plot")
+savefig(all_rh, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_rh.svg")
+
+p1_rt = plot_different_bp_lines(atp_range, params1, :atp, :rt)
+p2_rt = plot_different_bp_lines(kin_range, params1, :kin, :rt)
+p3_rt = plot_different_bp_lines(lam_range, params1, :lam, :rt)
+p4_rt = plot_different_bp_lines(wab_range, params1, :ω_ab, :rt)
+p5_rt = plot_different_bp_lines(wr_range, params1, :ω_r, :rt)
+
+all_rt = plot(p1_rt, p2_rt, p3_rt, p4_rt, p5_rt, layout=l, size=(1200,800), left_margin=4Plots.mm, right_margin=2Plots.mm, plot_title="Vary param bistability plot")
+savefig(all_rt, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_rt.svg")
+
+p1_rd = plot_different_bp_lines(atp_range, params1, :atp, :rd)
+p2_rd = plot_different_bp_lines(kin_range, params1, :kin, :rd)
+p3_rd = plot_different_bp_lines(lam_range, params1, :lam, :rd)
+p4_rd = plot_different_bp_lines(wab_range, params1, :ω_ab, :rd)
+p5_rd = plot_different_bp_lines(wr_range, params1, :ω_r, :rd)
+
+all_rd = plot(p1_rd, p2_rd, p3_rd, p4_rd, p5_rd, layout=l, size=(1200,800), left_margin=4Plots.mm, right_margin=2Plots.mm, plot_title="Vary param bistability plot")
+savefig(all_rd, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_rd.svg")
 
 
-p1 = plot()
-for i in lam_range
-    params = merge(params_atp, (lam=i,))
-    prob = BifurcationProblem(rtc_mod, initial, setproperties(params; kdam=0.), (@lens _.kdam);
-    recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-    opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-    br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-    display(plot!(p1, br, legend=false))
+l = @layout [a b; c d; e f h]
+atp_plots = plot(p1_rma, p1_rtca, p1_rmr, p1_rtcr, p1_rh, p1_rt, p1_rd, layout=l, size=(1200,800), plot_title="ATP = $([round.(i; digits=4) for i in atp_range])", titlefontsize=6, left_margin=4Plots.mm)
+kin_plots = plot(p2_rma, p2_rtca, p2_rmr, p2_rtcr, p2_rh, p2_rt, p2_rd, layout=l, size=(1200,800), plot_title="kin = $([round.(i; digits=4) for i in kin_range])", titlefontsize=6, left_margin=4Plots.mm)
+lam_plots = plot(p3_rma, p3_rtca, p3_rmr, p3_rtcr, p3_rh, p3_rt, p3_rd, layout=l, size=(1200,800), plot_title="λ = $([round.(i; digits=4) for i in lam_range])", titlefontsize=6, left_margin=4Plots.mm)
+wab_plots = plot(p4_rma, p4_rtca, p4_rmr, p4_rtcr, p4_rh, p4_rt, p4_rd, layout=l, size=(1200,800), plot_title="ω_ab = $([round.(i; digits=4) for i in wab_range])", titlefontsize=6, left_margin=4Plots.mm)
+wr_plots = plot(p5_rma, p5_rtca, p5_rmr, p5_rtcr, p5_rh, p5_rt, p5_rd, layout=l, size=(1200,800), plot_title="ω_r = $([round.(i; digits=4) for i in wr_range])", titlefontsize=6, left_margin=4Plots.mm)
+
+savefig(atp_plots, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/atp_plots.svg")
+savefig(kin_plots, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/kin_plots.svg")
+savefig(lam_plots, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/lam_plots.svg")
+savefig(wab_plots, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/wab_plots.svg")
+savefig(wr_plots, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/wr_plots.svg")
+
+
+
+using PlotlyJS
+p1 = PlotlyJS.scatter(
+    bsp,
+    x=:atp, y=:wab, z=:kdam1,
+    type="scatter3d", mode="markers", name="bf1"
+)
+p2 = PlotlyJS.scatter(
+    bsp,
+    x=:atp, y=:wab, z=:kdam2,
+    type="scatter3d", mode="markers"
+)
+
+layout = Layout(
+    scene=attr(
+        zaxis=attr(
+            range=[0,1],
+            title="kdam"),
+        xaxis=attr(
+            title="ATP"),    
+        yaxis=attr(
+            title="ω_ab"),)
+)
+plot([p1,p2], layout)
+
+
+
+
+function plot_3d_bf_against_kdam(param_range1, param1, param_range2, param2)
+    df = double_param_vary(atp_range, :atp, kin_range, :kin)
+    bsp = df[df.bs .== :bp, :]
+    p1 = PlotlyJS.scatter(
+        bsp,
+        x=:atp, y=:wab, z=:kdam1,
+        type="scatter3d", mode="markers", label="bf1"
+    )
+    p2 = PlotlyJS.scatter(
+        bsp,
+        x=:atp, y=:wab, z=:kdam2,
+        type="scatter3d", mode="markers"
+    )
+    
+    layout = Layout(
+        scene=attr(
+            zaxis=attr(
+                range=[0,1],
+                title="kdam"),
+            xaxis=attr(
+                title="ATP"),    
+            yaxis=attr(
+                title="ω_ab"),)
+    )
+    plot([p1,p2], layout)
+
 end
 
-p1 = plot()
-for i in wab_range
-    params = merge(params_atp, (ω_ab=i,))
-    prob = BifurcationProblem(rtc_mod, initial, setproperties(params; kdam=0.), (@lens _.kdam);
-    recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-    opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-    br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-    display(plot!(p1, br, legend=false))
-end
-
-p1 = plot()
-for i in wr_range
-    params = merge(params_atp, (ω_r=i,))
-    prob = BifurcationProblem(rtc_mod, initial, setproperties(params; kdam=0.), (@lens _.kdam);
-    recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-    opts_br = ContinuationPar(pMin = 0., pMax = 1.0, ds = 0.001, dsmax = 0.01, detectBifurcation = 3, nInversion = 8, maxBisectionSteps = 25, nev = 2, maxSteps = 1000,)
-    br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
-    display(plot!(p1, br, legend=false))
-end
