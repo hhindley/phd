@@ -184,28 +184,37 @@ end
 
 lam_ext, new_df = extend_gr_curve(csv_lam)
 
+# lam_ext = QuadraticInterpolation(csv_lam."gr",csv_lam."t")
 lam_ext[lam_ext.< 0] .= csv_lam.gr[28]
 plot(scatter(x=new_df."t", y=lam_ext), Layout(xaxis_range=(0,10000)))
 
+# dlam = csv_lam.gr
 # split data growth rate 
 dlam = new_df."gr"
 first_dlam = dlam[1:argmax(dlam)]
 last_dlam = dlam[argmax(dlam):end]
 lam1 = scatter(x=new_df.t[1:argmax(dlam)], y=first_dlam)
 lam2 = scatter(x=new_df.t[argmax(dlam):end], y=last_dlam)
-plot([lam1,lam2], Layout(xaxis_range=(0,1300)))
+plot([lam1,lam2])#, Layout(xaxis_range=(0,1300)))
 
+plot(scatter(x=new_df.t,y=dlam), Layout(xaxis_range=(0,1400)))
+plot(scatter(x=new_df.t,y=[first_dlam; last_dlam[2:end]]), Layout(xaxis_range=(0,1400)))
 
 # interpolate to get new atp values 
 atp_rtc_first = int_first(first_dlam)
 atp_rtc_last = int_last(last_dlam)
+
+plot([(scatter(x=atp_rtc_first,y=first_dlam)),
+(scatter(x=atp_rtc_last,y=last_dlam))])
+plot(scatter(x=new_atp, y=[first_dlam;last_dlam]))
+plot(scatter(x=new_atp, y=[first_dlam; last_dlam[2:end]]))
 
 atp1 = scatter(x=new_df.t[1:argmax(dlam)], y=atp_rtc_first)
 atp2 = scatter(x=new_df.t[argmax(dlam)+1:end], y=atp_rtc_last)
 plot([atp1,atp2], Layout(xaxis_range=(0,1000)))
 
 # rejoin sections for full atp array 
-new_atp = [atp_rtc_first; atp_rtc_last]
+new_atp = [atp_rtc_first; atp_rtc_last[2:end]]
 plot(scatter(x=new_df.t, y=new_atp), Layout(xaxis_range=(0,10000)))
 
 # CSV.write("colD_gr_data.csv", new_df)
@@ -219,7 +228,48 @@ relayout!(p, showlegend=false, xaxis_range=(0,1300), xaxis2_range=(0,1300), xaxi
 p
 
 
-atp_lam_data = DataFrame(t = new_df.t, atp = new_atp[1:end-1], gr = new_df.gr)
+atp_lam_data = DataFrame(t = new_df.t, atp = new_atp, gr = new_df.gr)
+# atp_lam_data = DataFrame(t = new_df.t, atp = new_atp[1:end-1], gr = [first_dlam; last_dlam][1:end-1])
 
 CSV.write("/home/holliehindley/phd/data/atp_for_rtcmodel.csv", atp_lam_data)
 
+
+# csv_atp = DataFrame(CSV.File("/home/holliehindley/phd/data/atp_for_rtcmodel.csv"))
+# # csv_atp = DataFrame(CSV.File("/home/holliehindley/phd/data/atp_for_rtcmodel_OLD.csv"))
+
+# csv_atp.atp = csv_atp.atp/5
+
+# lam_t = QuadraticInterpolation(csv_atp."gr",csv_atp."t")
+# atp_t = QuadraticInterpolation(csv_atp."atp",csv_atp."t")
+
+# # set kin curve  
+# rh = 11.29; g_max = 2.0923;
+# kin_model = @. lam_t*rh/g_max
+# kin_t = QuadraticInterpolation(kin_model, csv_atp."t") 
+
+# time_df = DataFrame(t = csv_atp.t)
+# time_vars_atp_lam = DataFrame(lam = lam_t, atp = atp_t)
+# time_vars_kin = DataFrame(kin = kin_t)
+
+# p = make_subplots(rows=3, cols=1, shared_xaxes=true, vertical_spacing=0.08, subplot_titles=["λ" "ATP" "kin"])
+# add_trace!(p, (scatter(x=time_df.t, y=time_vars_atp_lam.lam)), row=1, col=1)
+# add_trace!(p, (scatter(x=time_df.t, y=time_vars_atp_lam.atp)), row=2, col=1)
+# add_trace!(p, (scatter(x=time_df.t, y=time_vars_kin.kin)), row=3, col=1)
+# relayout!(p, showlegend=false, xaxis_range=(0,1500))
+# p
+
+# CSV.write("/home/holliehindley/phd/data/time_vars_atp_lam.csv", time_vars_atp_lam)
+# CSV.write("/home/holliehindley/phd/data/time_vars_kin.csv", time_vars_kin)
+# CSV.write("/home/holliehindley/phd/data/time.csv", time_df)
+
+
+# atp_lam = DataFrame(CSV.File("/home/holliehindley/phd/data/time_vars_atp_lam.csv"))
+# kin = DataFrame(CSV.File("/home/holliehindley/phd/data/time_vars_kin.csv"))
+# t = DataFrame(CSV.File("/home/holliehindley/phd/data/time.csv"))
+
+# p = make_subplots(rows=3, cols=1, shared_xaxes=true, vertical_spacing=0.08, subplot_titles=["λ" "ATP" "kin"])
+# add_trace!(p, (scatter(x=t, y=atp_lam.lam)), row=1, col=1)
+# add_trace!(p, (scatter(x=t, y=atp_lam.atp)), row=2, col=1)
+# add_trace!(p, (scatter(x=t, y=kin.kin)), row=3, col=1)
+# relayout!(p, showlegend=false, xaxis_range=(0,1500))
+# p

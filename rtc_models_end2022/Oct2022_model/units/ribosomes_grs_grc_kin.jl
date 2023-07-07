@@ -3,7 +3,7 @@ using Statistics, PlotlyJS, DataInterpolations
 include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
 
 SF = 1e6/(6.022e23*1e-15)
-
+1/SF
 4000*SF
 
 # ribosomes

@@ -1,3 +1,4 @@
+using LabelledArrays
 function simple_solve!(model, init, tspan, params)
     prob = ODEProblem(model, init, tspan, params);
     solu = solve(prob, Rodas4(), isoutofdomain=(y,p,t)->any(x->x<0,y))#, abstol=1e-15, reltol=1e-12);

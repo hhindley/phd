@@ -1,14 +1,15 @@
 using CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, PlotlyJS, Statistics
-include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
-include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
-include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
+include("/home/holliehindley/phd/rtc_models_end2022/Oct2022_model/rtc_model.jl")
+include("/home/holliehindley/phd/rtc_models_end2022/sol_species_funcs.jl")
+include("/home/holliehindley/phd/rtc_models_end2022/params_init_tspan.jl")
 include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
-
+# include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl")
 
 # load csv for growth rate and atp curves 
 # csv_gr = DataFrame(CSV.File("/home/holliehindley/phd/data/results_colD_grfit.csv")) # read csv to a datafram
 # csv_gr = select!(csv_gr, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
 csv_atp = DataFrame(CSV.File("/home/holliehindley/phd/data/atp_for_rtcmodel.csv"))
+# csv_atp = DataFrame(CSV.File("/home/holliehindley/phd/data/atp_for_rtcmodel_OLD.csv"))
 
 csv_atp.atp = csv_atp.atp/5
 
@@ -46,7 +47,7 @@ p_kin = plot(scatter(x=csv_atp."t", y=kin_t), Layout(xaxis_type="", xaxis_range=
 p1_atp = scatter(x=csv_atp.t, y=atp_t, name="ATP")
 p1_lam = scatter(x=csv_atp.t, y=lam_t, name="λ")
 p1_kin = scatter(x=csv_atp.t, y=kin_t, name="kin")
-p_all_vars = plot([p1_atp, p1_lam, p1_kin], Layout(xaxis_title="time (minutes)", yaxis_type="log", xaxis_range=(0,1440)))
+p_all_vars = plot([p1_atp, p1_lam, p1_kin], Layout(xaxis_title="time (minutes)", yaxis_type="log"))#, xaxis_range=(0,1440)))
 savefig(p_all_vars, "p_all_vars.svg")
 # plot all variables over time 
 
@@ -73,7 +74,12 @@ end
 tspan = (0, lam_t[end])
 # lam = 0.033; atp = 4000; kin = 0.054;
 
-
+function solvePlot_time(rtc_model, lam, atp, kin, title, log) 
+    params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+    solu = sol(rtc_model, initial, tspan, params)
+    print(solu.retcode)
+    return plotly_plot_sol(solu, log, "", "$title")
+end
 # nothing varied over time 
 p_none = solvePlot_time(rtc_model, 0.033, 4000, 0.054, "nothing varied over time", "")
 

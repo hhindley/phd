@@ -24,8 +24,8 @@ kin = 0.054; #2.381
 ω_r = 0.0019*6 #70.53; #0.0019*6#79.43865871861044; #0.0019*6;  
 ω_a = 4; 
 ω_b = 4;
-kdam = 0.00001# 0#0.000147;#0.05; 
-k = 2; # carrying capacity - changes depending on the data?
+kdam = 0.#0.000147;#0.05; 
+k = 2; # carrying capacity - changes depending on the data
 
 rtca_0 = 0#0.00894; 
 rtcb_0 = 0#0.0216; 
