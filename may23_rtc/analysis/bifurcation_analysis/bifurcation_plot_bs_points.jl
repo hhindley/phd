@@ -3,9 +3,9 @@ using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, DataFrames
 include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/bf_funcs.jl")
 
 
-br = get_br(params1, initial)
+br = get_br(rtc_mod, params1, initial, 1.)
 
-plot(br, vars=(:param, :rh), putspecialptlegend=false, label="rfw")
+plot(br, vars=(:param, :rh), putspecialptlegend=false)
 
 p_rh = plot(br, vars = (:param, :rh), label="Healthy ribosomes", c=:palevioletred, putspecialptlegend = false)
 p_rh1 = plot!(twinx(), br, vars = (:param, :rtca), c=:grey60, label="RtcBA")
@@ -16,13 +16,13 @@ p_rh1 = plot!(twinx(), br, vars = (:param, :rtca), c=:grey60, label="RtcBA")
 
 
 
-function plot_bf_against_kdam(param_range, param)
+function plot_bf_against_kdam(param_range, param, kdam_max)
     df=DataFrame(param = Float64[], kdam1 = Float64[], kdam2 = Float64[])
     paramscopy = deepcopy(params1)
     for i in param_range
         params = merge(paramscopy, (param=>i,))
         # println("$param = $i")
-        br = get_br(params, initial)
+        br = get_br(rtc_mod, params, initial, kdam_max)
         for b in range(1,length(br.specialpoint))
             if br.specialpoint[b].type == :endpoint
                 Nothing
@@ -44,16 +44,16 @@ lam_range = range(0.001,stop=0.04,length=500)
 wab_range = range(0.01, stop=4, length=500)
 wr_range = (range(0.00001,stop=0.001,length=200))
 
-p_atp = plot_bf_against_kdam(atp_range, :atp);
-p_kin = plot_bf_against_kdam(kin_range, :kin);
-p_lam = plot_bf_against_kdam(lam_range, :lam);
-p_wab = plot_bf_against_kdam(wab_range, :ω_ab);
-p_wr = plot_bf_against_kdam(wr_range, :ω_r);
+p_atp = plot_bf_against_kdam(atp_range, :atp, 5.);
+p_kin = plot_bf_against_kdam(kin_range, :kin, 5.);
+p_lam = plot_bf_against_kdam(lam_range, :lam, 5.);
+p_wab = plot_bf_against_kdam(wab_range, :ω_ab, 5.);
+p_wr = plot_bf_against_kdam(wr_range, :ω_r, 5.);
 
 
 l = @layout [a b; c d; e];
 all_bf = plot(p_atp, p_kin, p_lam, p_wab, p_wr, layout=l, size=(1200,800), left_margin=4Plots.mm, right_margin=2Plots.mm, plot_title="Bifurcation points for kdam vs. parameter")
-savefig(all_bf, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_bf.svg")
+savefig(all_bf, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_bf_kdam5.svg")
 
 
 

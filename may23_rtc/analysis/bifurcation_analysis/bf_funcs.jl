@@ -55,6 +55,7 @@ function rtc_mod!(dz, z, p, t)
     dz[7] = Vrep - Vdam + Vinflux - dil(rh)
     dz[8] = Vdam - Vtag - kdeg*rd - dil(rd)
     dz[9] = Vtag - Vrep - dil(rt)
+    
     dz
     
 end
