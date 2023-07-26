@@ -10,16 +10,44 @@ krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_m
 kdeg = 0.001, kin = 0.022222222, ω_ab = 1, ω_r = 0.0001, 
 kdam =  0.01, lam = 0.014) 	
 
-params1 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
+params2 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
 θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
 krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
 kdeg = 0.001, kin = 0.022222222, ω_ab = 0.05623413251903491, ω_r = 0.010000000000000002, 
 kdam =  0.01, lam = 0.014) 	
 
-br = get_br(rtc_mod, params1, initial, 3.)
 
-plot(br)
+br = get_br(rtc_mod, params1, initial, 1.)
+br2 = get_br(rtc_mod, params2, initial, 3.)
 
+plot(br, br2, vars = (:param, :rh), linewidthstable=2.5)
+plot(br, br2, vars = (:param, :rd), linewidthstable=2.5)
+plot(br, br2, vars = (:param, :rt), linewidthstable=2.5)
+plot(br, br2, vars = (:param, :rm_a), linewidthstable=2.5)
+plot(br, br2, vars = (:param, :rm_r), linewidthstable=2.5)
+plot(br, br2, vars = (:param, :rtca), linewidthstable=2.5)
+plot(br, br2, vars = (:param, :rtcr), linewidthstable=2.5)
+
+p1 = plot(br2, vars=(:param, :rh), label="Rh")
+p1 = plot!(br2, vars=(:param, :rt), label="Rt")
+p1 = plot(br2, vars=(:param, :rd), label="Rd")
+
+savefig(p1, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/ribo_bf_plot.svg")
+
+plot(br, vars=(:param, :rh))
+plot!(br, vars=(:param, :rt))
+plot!(br, vars=(:param, :rd))
+
+plot(br, vars=(:param, :rm_a))
+plot!(br, vars=(:param, :rm_r))
+plot!(br, vars=(:param, :rtca))
+plot!(br, vars=(:param, :rtcr))
+
+p2 = plot(br2, vars=(:param, :rm_a), label="RtcBA mRNA", c="")
+p2 = plot!(br2, vars=(:param, :rtca), label="RtcA")
+p2 = plot!(br2, vars=(:param, :rtcr), label="RtcR")
+
+savefig(p2, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/mrnaprotein_bf_plot.svg")
 
 
 
