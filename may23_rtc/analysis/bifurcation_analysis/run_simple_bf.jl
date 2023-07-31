@@ -28,27 +28,146 @@ plot(br, br2, vars = (:param, :rm_r), linewidthstable=2.5)
 plot(br, br2, vars = (:param, :rtca), linewidthstable=2.5)
 plot(br, br2, vars = (:param, :rtcr), linewidthstable=2.5)
 
-p1 = plot(br2, vars=(:param, :rh), label="Rh")
-p1 = plot!(br2, vars=(:param, :rt), label="Rt")
-p1 = plot(br2, vars=(:param, :rd), label="Rd")
+p1 = Plots.plot(br2, vars=(:param, :rh), label="Rh")
+p1 = Plots.plot!(br2, vars=(:param, :rt), label="Rt")
+p1 = Plots.plot!(br2, vars=(:param, :rd), label="Rd")
 
 savefig(p1, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/ribo_bf_plot.svg")
 
-plot(br, vars=(:param, :rh))
-plot!(br, vars=(:param, :rt))
-plot!(br, vars=(:param, :rd))
+Plots.plot(br, vars=(:param, :rh))
+Plots.plot!(br, vars=(:param, :rt))
+Plots.plot!(br, vars=(:param, :rd))
 
-plot(br, vars=(:param, :rm_a))
-plot!(br, vars=(:param, :rm_r))
-plot!(br, vars=(:param, :rtca))
-plot!(br, vars=(:param, :rtcr))
+Plots.plot(br, vars=(:param, :rm_a))
+Plots.plot!(br, vars=(:param, :rm_r))
+Plots.plot!(br, vars=(:param, :rtca))
+Plots.plot!(br, vars=(:param, :rtcr))
+ 
 
-p2 = plot(br2, vars=(:param, :rm_a), label="RtcBA mRNA", c="")
-p2 = plot!(br2, vars=(:param, :rtca), label="RtcA")
-p2 = plot!(br2, vars=(:param, :rtcr), label="RtcR")
+p2 = Plots.plot(br2, vars=(:param, :rm_a), label="mRNA RtcBA")
+p2 = Plots.plot!(br2, vars=(:param, :rtca), label="RtcA")
+p2 = Plots.plot!(br2, vars=(:param, :rtcb), label="RtcB")
+p2 = Plots.plot!(br2, vars=(:param, :rtcr), label="RtcR")
 
 savefig(p2, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/mrnaprotein_bf_plot.svg")
 
+p = Plots.plot(p2,p1,p3,p4,  size=(900,700), layout=@layout [a b; c d])
+Plots.savefig(p, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/solve_vs_bfplot.svg")
+
+function create_br_df(br)
+    df = DataFrame(rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[],kdam=[])
+    for i in eachcol(df)
+        println(i)
+    end
+    for i in range(1,length(br.sol))
+        for (s,d) in zip(range(1,9), eachcol(df))
+            push!(d, br.sol[i][1][s])
+        end
+        push!(df.kdam, br.sol[i][2])
+    end
+    
+    return df
+end
+
+df = create_br_df(br2)
+
+df.kdam[90:95,:]
+
+df[df.kdam.==1.2692979238083333,:]
+
+df
+plot(scatter(x=df.kdam, y=df.rtca, mode="markers"))
+
+
+atp = 3578.9473684210525 
+
+function get_extra_vars(df, atp)
+    kr=0.125
+    L=10
+    c=0.001
+    Vmax_init = 39.51 
+    Km_init = 250.
+    fas=[]
+    ras=[]
+    alphas=[]
+    vinits=[]
+    for i in range(1,length(df.rt))
+        alpha = df.rt[i]/kr
+        push!(alphas, alpha)
+        fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
+        push!(fas, fa)
+        ra = fa*df.rtcr[i]
+        push!(ras, ra)
+        Vinit = ra*Vmax_init*atp/(Km_init+atp)
+        push!(vinits,Vinit)
+    end 
+    return fas, ras, alphas
+end
+
+
+
+using PlotlyJS
+
+fas, ras = get_extra_vars(df, atp)
+fa = scatter(x=df.kdam, y=fas, mode="markers",  marker=attr(size=5, color=0:455), name="fa")#, Layout(yaxis_type=:log))
+rtcr = scatter(x=df.kdam, y=df.rtcr, mode="markers",  marker=attr(size=5), name="rtcr")#, Layout(c="Viridis")))
+ra = scatter(x=df.kdam, y=ras, mode="markers",  marker=attr(size=5), name="ra")#, Layout(yaxis_type=:log)
+rm = scatter(x=df.kdam, y=df.rm_a, mode="markers",  marker=attr(size=5), name="mRNA RtcBA")#, Layout(c="Viridis")))
+rt = scatter(x=df.kdam[2:end], y=df.rt[2:end], mode="markers",  marker=attr(size=5), name="rt")#, Layout(c="Viridis")))
+rh = scatter(x=df.kdam, y=df.rh, mode="markers",  marker=attr(size=5), name="rh")#, Layout(c="Viridis")))
+
+bf_line1 = scatter(x=[br2.specialpoint[2].param,br2.specialpoint[2].param],y=[1e-4,3])
+bf_line2 = scatter(x=[br2.specialpoint[3].param,br2.specialpoint[3].param],y=[1e-4,3])
+plot([fa,rtcr,ra, rm, rt, rh, bf_line1, bf_line2], Layout(yaxis_type=:log))
+
+
+kr=0.125
+L=10.
+c=0.001
+
+params1 = (L = L, c = c, kr = kr, Vmax_init = 39.51, Km_init = 250.,
+θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
+krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
+kdeg = 0.001, kin = 0.022222222, ω_ab = 1, ω_r = 0.0001, 
+kdam =  0.01, lam = 0.014) 	
+
+br = get_br(rtc_mod, params1, initial, 8.)
+
+df1 = create_br_df(br)
+
+fas1, ras1, alphas1 = get_extra_vars(df1, atp)
+
+fa1 = scatter(x=df1.kdam, y=fas1, mode="markers",  marker=attr(size=5, color=0:length(df1.rtcr)), name="fa")
+rtcr1 = scatter(x=df1.kdam, y=df1.rtcr, mode="markers",  marker=attr(size=5), name="rtcr")
+ra1 = scatter(x=df1.kdam, y=ras1, mode="markers",  marker=attr(size=5), name="ra")
+rm1 = scatter(x=df1.kdam, y=df1.rm_a, mode="markers",  marker=attr(size=5), name="mRNA RtcBA")
+rt1 = scatter(x=df1.kdam[2:end], y=df1.rt[2:end], mode="markers",  marker=attr(size=5), name="rt")
+rh1 = scatter(x=df1.kdam, y=df1.rh, mode="markers",  marker=attr(size=5), name="rh")
+rtca1 = scatter(x=df1.kdam, y=df1.rtca, mode="markers",  marker=attr(size=5), name="RtcA")
+alpha1 = scatter(x=df1.kdam[2:end], y=alphas1[2:end], mode="markers",  marker=attr(size=5), name="alpha")
+rd1 = scatter(x=df1.kdam, y=df1.rd, mode="markers",  marker=attr(size=5), name="rd")
+
+bf_line11 = scatter(x=[br.specialpoint[2].param,br.specialpoint[2].param],y=[1e-6,2.8])
+bf_line21 = scatter(x=[br.specialpoint[3].param,br.specialpoint[3].param],y=[1e-6,2.8])
+plot([fa1,rtcr1,ra1, rm1, rt1, rh1, rd1, rtca1, bf_line11, bf_line21], Layout(yaxis_type=:log))
+
+
+
+
+
+
+plot(scatter(x=df.kdam, y=fas, mode="markers",  marker=attr(size=5, color=0:455)))#, Layout(yaxis_type=:log))#, Layout(c="Viridis")))
+plot(scatter(x=df.kdam, y=ras, mode="markers",  marker=attr(size=5, color=0:455)), Layout(yaxis_type=:log))#, Layout(c="Viridis")))
+plot(scatter(x=df.kdam, y=df.rtcr, mode="markers",  marker=attr(size=5, color=0:455)))#, Layout(c="Viridis")))
+plot(scatter(x=df.kdam, y=vinits, mode="markers",  marker=attr(size=5, color=0:455)))#, Layout(c="Viridis")))
+
+
+plot(df.kdam, fas, xlims=(0,3), ylims=(0.999999,1.000001), linewidth=0.5)
+plot(df.kdam, fas, xlims=(0,3), ylims=(0.99999,1.00001), linewidth=0.5)
+plot(df.kdam, fas, xlims=(0,3), ylims=(0.9999,1.0001), linewidth=0.5)
+plot(df.kdam, fas, xlims=(0,3), ylims=(0.999,1.001), linewidth=0.5)
+plot(df.kdam, fas, xlims=(0,3), ylims=(0.99,1.01), linewidth=0.5)
+plot(df.kdam, fas, xlims=(0,3), ylims=(0.9,1.1), linewidth=0.5)
 
 
 plots = []

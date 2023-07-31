@@ -47,5 +47,7 @@ function rtc_model(initial, params, t)
     drd = Vdam - Vtag - kdeg*rd - dil(rd)
     drt = Vtag - Vrep - dil(rt)
 
-    @SVector [drm_a, drtca, drm_b, drtcb, drm_r, drtcr, drh, drd, drt]
+    # @SVector [drm_a, drtca, drm_b, drtcb, drm_r, drtcr, drh, drd, drt]
+    [drm_a, drtca, drm_b, drtcb, drm_r, drtcr, drh, drd, drt]
+
 end

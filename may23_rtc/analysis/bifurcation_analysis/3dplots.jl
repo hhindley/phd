@@ -13,7 +13,8 @@ plotatpt = [(plotatpt...)...]
 plotlamt = [(plotlamt...)...]
 plotkint = [(plotkint...)...]
 
-plot(scatter(x=plotatpt, y=plotkint))
+plot(scatter(x=plotatpt, y=plotlamt))
+plot(scatter(x=plotatpt[1:5], y=plotlamt[1:5]))
 
 df_params = DataFrame(atp=plotatpt, lam=plotlamt, kin=plotkint)
 

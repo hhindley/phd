@@ -8,7 +8,7 @@ using LabelledArrays
 #     return plotly_plot_sol(solu, log, logy, "$title")
 # end
 
-function solvePlot_time(rtc_model, lam, atp, kin, title, log) 
+function solvePlot_time(rtc_model, lam, atp, kin, kdam, title, log) 
     params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
     solu = sol(rtc_model, initial, tspan, params)
     print(solu.retcode)

@@ -79,11 +79,13 @@ function change_param_atp(param_range, parameter, model, init, species)#, params
     return dict_res
 end
 
-function change_param(param_range, parameter, model, init, species, params)#, params)
+function change_param(param_range, parameter, model, init, func, species, params)
     # param_dict = OrderedDict("L"=>L, "c"=>c, "kr"=>kr, "Vmax_init"=>Vmax_init, "Km_init"=>Km_init, "ω_ab"=>ω_ab, "ω_r"=>ω_r, "θtscr"=>θtscr, "g_max"=>g_max, "θtlr"=>θtlr, "km_a"=>km_a, "km_b"=>km_b, "gr_c"=>gr_c, "d"=>d, "krep"=>krep, "kdam"=>kdam, "ktag"=>ktag, "kdeg"=>kdeg, "kin"=>kin, "atp"=>atp, "na"=>na, "nb"=>nb, "nr"=>nr, "k"=>k)
     dict_res = OrderedDict(name => [] for name in species)
     # params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
     # println(params)
+    # params = @LArray [L, c, kr, Vmax_init, Km_init, 0.05623413251903491, 0.010000000000000002, θtscr, g_max, θtlr, km_a, km_b, d, krep, 1, ktag, kdeg, 0.022222222, 3578.9473684210525, na, nb, nr, 0.014] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+
     new_params = deepcopy(params)
     for val in param_range
         new_params[parameter] = val
@@ -93,7 +95,7 @@ function change_param(param_range, parameter, model, init, species, params)#, pa
         # @show params
         solu = sol(model, init, tspan, new_params)
         for (i,j) in zip(values(dict_res), species)
-            push!(i, get_ssval(solu, j))
+            push!(i, func(solu, j))
         end
     end
     return dict_res
