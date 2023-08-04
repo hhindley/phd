@@ -71,12 +71,17 @@ end
 
 df = create_br_df(br2)
 
-df.kdam[90:95,:]
-
-df[df.kdam.==1.2692979238083333,:]
-
-df
-plot(scatter(x=df.kdam, y=df.rtca, mode="markers"))
+using PlotlyJS
+rma_p = scatter(x=df.kdam, y=df.rm_a, name="rm_a")
+rtca_p = scatter(x=df.kdam, y=df.rtca, name="rtca")
+rmb_p = scatter(x=df.kdam, y=df.rm_b, name="rm_b")
+rtcb_p = scatter(x=df.kdam, y=df.rtcb, name="rtcb")
+rmr_p = scatter(x=df.kdam, y=df.rm_r, name="rm_r")
+rtcr_p = scatter(x=df.kdam, y=df.rtcr, name="rtcr")
+rh_p = scatter(x=df.kdam, y=df.rh, name="rh")
+rd_p = scatter(x=df.kdam, y=df.rd, name="rd")
+rt_p = scatter(x=df.kdam, y=df.rt, name="rt")
+plot([rma_p, rtca_p, rmb_p, rtcb_p, rmr_p, rtcr_p, rh_p, rd_p, rt_p])
 
 
 atp = 3578.9473684210525 

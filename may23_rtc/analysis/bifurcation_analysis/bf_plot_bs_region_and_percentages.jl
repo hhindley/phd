@@ -320,11 +320,16 @@ plot_bs_region_same_plot(kin_range, lam_range, plotkint, plotlamt, results_both_
 function get_bs_region_results_kin(param_range1, param1, param_range2, param2)
     results=[]
     for i in kin_range1
+        # params1 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
+        # θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
+        # krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
+        # kdeg = 0.001, kin = i, ω_ab = 1, ω_r = 0.0001, 
+        # kdam =  0.01, lam = 0.014) 	
         params1 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
         θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
         krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
-        kdeg = 0.001, kin = i, ω_ab = 1, ω_r = 0.0001, 
-        kdam =  0.01, lam = 0.014) 	
+        kdeg = 0.001, kin = i, ω_ab = 0.05623413251903491, ω_r = 0.010000000000000002, 
+        kdam =  0.01, lam = 0.014)
         # @show (params1[:ω_r])
         max_,min_ = bistable_region(param_range1, param1, param_range2, param2, params1)
         push!(results, (max_,min_))
@@ -332,7 +337,26 @@ function get_bs_region_results_kin(param_range1, param1, param_range2, param2)
     return results
 end
 
-kin_range1 = range(0,0.1,length=10)
+function plot_bs_region_same_plot(param_range1, param_range2, plot_var1, plot_var2, results, title, range1, range2, param1, param2)
+    colours =palette(:vik25)
+    p = plot()
+    for (i,j) in zip(range(1,length(results)), range(1,20))
+        if length(results[i][1]) == length(param_range1)
+            p = plot!(param_range1, results[i][1]; fillrange=(results[i][2]), fillalpha = 0.45, fillcolor=colours[j], 
+            linecolor=colours[j],#, title=title, xlims=(minimum(param_range1), maximum(param_range1)), )#, label="wr = $(@sprintf "%g" (range1[j])), wab = $(@sprintf "%g" (range2[j]))", 
+            ylims=(minimum(param_range2), maximum(param_range2)), xlabel="$param1", ylabel="$param2")
+                # display(p)
+        else
+            Nothing
+        end
+    end
+    return p = (plot!(plot_var1, plot_var2, c=:black, label=""))
+end
 
+atp_range = range(500, stop=5500,length=20)
+lam_range = range(0.001,stop=0.04,length=20)
+kin_range1 = range(0,0.1,length=5)
+[(kin_range1...)...]
 results_kin = get_bs_region_results_kin(atp_range, :atp, lam_range, :lam)
+
 plot_bs_region_same_plot(atp_range, lam_range, plotatpt, plotlamt, results_kin, "atp lam", wr_range1, wab_range1, "ATP", "λ")

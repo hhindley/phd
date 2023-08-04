@@ -83,6 +83,16 @@ kdam =  0.01, lam = 0.014)
 # solu = sol(rtc_model, initial, tspan, params1)
 # ss_init = ss_init_vals(solu)
 initial = [0., 0., 0., 0., 0., 0., 11.29, 0., 0.]
+initss = [0.0008735009426379191,
+1.7342351146181998e-5,
+0.0008735009426379191,
+1.4366947763258614e-5,
+0.044729189117567736,
+9.403498079216664e-5,
+0.048110392167741795,
+0.2609572290416992,
+2.77192276995412]
+initial1 = [0., 0., 1., 0., 0., 0., 11.29, 0., 0.]
 
 rtc_mod(z, p) = rtc_mod!(similar(z), z, p, 0)
 
@@ -102,6 +112,8 @@ function get_br(model, params, initial, kdam_max)
     # maximum number of continuation steps
     maxSteps = 1000,)
     # continuation of equilibria
+    # br = continuation(prob, PALC(θ=0.5), opts_br; plot = false, bothside=true, normC = norminf)
+
     br = continuation(prob, PALC(), opts_br; plot = false, bothside=true, normC = norminf)
     return br
 end
