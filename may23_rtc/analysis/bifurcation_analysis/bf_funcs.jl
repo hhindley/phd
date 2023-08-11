@@ -171,3 +171,83 @@ function rtc_mod_t!(dz, z, p, t)
     dz
     
 end
+
+
+
+
+
+function bf_point_df(br2)
+    df_bf = DataFrame(rm_a=Float64[],rtca=Float64[],rm_b=Float64[],rtcb=Float64[],rm_r=Float64[],rtcr=Float64[],rh=Float64[],rd=Float64[],rt=Float64[],kdam=Float64[])
+    df_bf.rm_a
+    for i in br2.specialpoint
+        if i.type == :bp
+            push!(df_bf.rm_a, i.x[1])
+            push!(df_bf.rtca, i.x[2])
+            push!(df_bf.rm_b, i.x[3])
+            push!(df_bf.rtcb, i.x[4])
+            push!(df_bf.rm_r, i.x[5])
+            push!(df_bf.rtcr, i.x[6])
+            push!(df_bf.rh, i.x[7])
+            push!(df_bf.rd, i.x[8])
+            push!(df_bf.rt, i.x[9])
+            push!(df_bf.kdam, i.param)
+            # [push!(col,i.x[num] for (num, col) in zip(range(1,9), eachcol(df_bf)))]
+        
+        end
+    end
+    return df_bf
+end
+
+
+
+
+function create_br_df(br)
+    df = DataFrame(rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[],kdam=[])
+    for i in eachcol(df)
+        println(i)
+    end
+    for i in range(1,length(br.sol))
+        for (s,d) in zip(range(1,9), eachcol(df))
+            push!(d, br.sol[i][1][s])
+        end
+        push!(df.kdam, br.sol[i][2])
+    end
+    
+    return df
+end
+
+
+
+function split_curves(df, df_bf)
+    kdam1 = findall(x->x==df_bf.kdam[1],df.kdam)[1]
+    kdam2 = findall(x->x==df_bf.kdam[2],df.kdam)[1]
+    first=DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[])
+    middle=DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[])
+    last=DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[])
+    
+    for i in df.kdam[1:kdam1]
+        push!(first.kdam, i)
+    end
+    for i in df.kdam[kdam1:kdam2]
+        push!(middle.kdam, i)
+    end
+    for i in df.kdam[kdam2:end]
+        push!(last.kdam, i)
+    end
+    for (col,col1) in zip(eachcol(df)[1:9],eachcol(first)[2:end])
+        for i in col[1:kdam1]
+            push!(col1, i)
+        end
+    end
+    for (col,col1) in zip(eachcol(df)[1:9],eachcol(middle)[2:end])
+        for i in col[kdam1:kdam2]
+            push!(col1, i)
+        end
+    end
+    for (col,col1) in zip(eachcol(df)[1:9],eachcol(last)[2:end])
+        for i in col[kdam2:end]
+            push!(col1, i)
+        end
+    end
+    return first, middle, last
+end

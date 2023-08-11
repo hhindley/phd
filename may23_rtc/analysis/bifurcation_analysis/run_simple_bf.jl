@@ -54,6 +54,55 @@ savefig(p2, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plo
 p = Plots.plot(p2,p1,p3,p4,  size=(900,700), layout=@layout [a b; c d])
 Plots.savefig(p, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/solve_vs_bfplot.svg")
 
+br2.specialpoint # includes endpoints
+br2.specialpoint[2].type # find out if its bifurcation or not 
+br2.specialpoint[2].x[7] # y value at bifurcation point - has one for each species 
+br2.specialpoint[2].param # bifurcation x value
+df_bf = DataFrame(rm_a=Float64[],rtca=Float64[],rm_b=Float64[],rtcb=Float64[],rm_r=Float64[],rtcr=Float64[],rh=Float64[],rd=Float64[],rt=Float64[],kdam=Float64[])
+df_bf.rm_a
+for i in br2.specialpoint
+    if i.type == :bp
+        push!(df_bf.rm_a, i.x[1])
+        push!(df_bf.rtca, i.x[2])
+        push!(df_bf.rm_b, i.x[3])
+        push!(df_bf.rtcb, i.x[4])
+        push!(df_bf.rm_r, i.x[5])
+        push!(df_bf.rtcr, i.x[6])
+        push!(df_bf.rh, i.x[7])
+        push!(df_bf.rd, i.x[8])
+        push!(df_bf.rt, i.x[9])
+        push!(df_bf.kdam, i.param)
+        # [push!(col,i.x[num] for (num, col) in zip(range(1,9), eachcol(df_bf)))]
+    
+    end
+end
+df_bf
+
+
+function bf_point_df(br2)
+    df_bf = DataFrame(rm_a=Float64[],rtca=Float64[],rm_b=Float64[],rtcb=Float64[],rm_r=Float64[],rtcr=Float64[],rh=Float64[],rd=Float64[],rt=Float64[],kdam=Float64[])
+    df_bf.rm_a
+    for i in br2.specialpoint
+        if i.type == :bp
+            push!(df_bf.rm_a, i.x[1])
+            push!(df_bf.rtca, i.x[2])
+            push!(df_bf.rm_b, i.x[3])
+            push!(df_bf.rtcb, i.x[4])
+            push!(df_bf.rm_r, i.x[5])
+            push!(df_bf.rtcr, i.x[6])
+            push!(df_bf.rh, i.x[7])
+            push!(df_bf.rd, i.x[8])
+            push!(df_bf.rt, i.x[9])
+            push!(df_bf.kdam, i.param)
+            # [push!(col,i.x[num] for (num, col) in zip(range(1,9), eachcol(df_bf)))]
+        
+        end
+    end
+    return df_bf
+end
+    
+df_bf = bf_point_df(br2)
+
 function create_br_df(br)
     df = DataFrame(rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[],kdam=[])
     for i in eachcol(df)
@@ -72,16 +121,102 @@ end
 df = create_br_df(br2)
 
 using PlotlyJS
-rma_p = scatter(x=df.kdam, y=df.rm_a, name="rm_a")
-rtca_p = scatter(x=df.kdam, y=df.rtca, name="rtca")
-rmb_p = scatter(x=df.kdam, y=df.rm_b, name="rm_b")
-rtcb_p = scatter(x=df.kdam, y=df.rtcb, name="rtcb")
-rmr_p = scatter(x=df.kdam, y=df.rm_r, name="rm_r")
-rtcr_p = scatter(x=df.kdam, y=df.rtcr, name="rtcr")
-rh_p = scatter(x=df.kdam, y=df.rh, name="rh")
-rd_p = scatter(x=df.kdam, y=df.rd, name="rd")
-rt_p = scatter(x=df.kdam, y=df.rt, name="rt")
-plot([rma_p, rtca_p, rmb_p, rtcb_p, rmr_p, rtcr_p, rh_p, rd_p, rt_p])
+function full_lines(df,width)
+    rma_p = scatter(x=df.kdam, y=df.rm_a, name="RtcBA mRNA", line=attr(width=width))
+    rtca_p = scatter(x=df.kdam, y=df.rtca, name="RtcA", line=attr(width=width))
+    rmb_p = scatter(x=df.kdam, y=df.rm_b, name="rm_b", line=attr(width=width))
+    rtcb_p = scatter(x=df.kdam, y=df.rtcb, name="RtcB", line=attr(width=width))
+    rmr_p = scatter(x=df.kdam, y=df.rm_r, name="rm_r", line=attr(width=width))
+    rtcr_p = scatter(x=df.kdam, y=df.rtcr, name="RtcR", line=attr(width=width))
+    rh_p = scatter(x=df.kdam, y=df.rh, name="Rh", yaxis="y2", line=attr(width=width))
+    rd_p = scatter(x=df.kdam, y=df.rd, name="Rd", yaxis="y2", line=attr(width=width))
+    rt_p = scatter(x=df.kdam, y=df.rt, name="Rt", yaxis="y2", line=attr(width=width))
+    return rma_p, rtca_p, rmb_p, rtcb_p, rmr_p, rtcr_p, rh_p, rd_p, rt_p
+end
+rma_p, rtca_p, rmb_p, rtcb_p, rmr_p, rtcr_p, rh_p, rd_p, rt_p = full_lines(df, 3)
+plot([rma_p, rtca_p, rmb_p, rtcb_p, rmr_p, rtcr_p, rh_p, rd_p, rt_p], Layout(yaxis_type="log"))
+
+function bf_scatter(df_bf, color)
+    bf_rma = scatter(x=df_bf.kdam, y=df_bf.rm_a, mode="markers", name="", line=attr(color=color),showlegend=false)
+    bf_rtca = scatter(x=df_bf.kdam, y=df_bf.rtca, mode="markers", name="", line=attr(color=color),showlegend=false)
+    bf_rmb = scatter(x=df_bf.kdam, y=df_bf.rm_b, mode="markers", name="", line=attr(color=color),showlegend=false)
+    bf_rtcb = scatter(x=df_bf.kdam, y=df_bf.rtcb, mode="markers", name="", line=attr(color=color),showlegend=false)
+    bf_rmr = scatter(x=df_bf.kdam, y=df_bf.rm_r, mode="markers", name="", line=attr(color=color),showlegend=false)
+    bf_rtcr = scatter(x=df_bf.kdam, y=df_bf.rtcr, mode="markers", name="", line=attr(color=color),showlegend=false)
+    bf_rh = scatter(x=df_bf.kdam, y=df_bf.rh, mode="markers", yaxis="y2", name="", line=attr(color=color),showlegend=false)
+    bf_rd = scatter(x=df_bf.kdam, y=df_bf.rd, mode="markers", yaxis="y2", name="", line=attr(color=color),showlegend=false)
+    bf_rt = scatter(x=df_bf.kdam, y=df_bf.rt, mode="markers", yaxis="y2", name="Bifurcation point", line=attr(color=color),showlegend=true)
+    return bf_rma, bf_rtca, bf_rmb, bf_rtcb, bf_rmr, bf_rtcr, bf_rh, bf_rd, bf_rt
+end
+bf_rma, bf_rtca, bf_rmb, bf_rtcb, bf_rmr, bf_rtcr, bf_rh, bf_rd, bf_rt = bf_scatter(df_bf, "darkblue")
+plot([rma_p, rtca_p, rtcb_p, rtcr_p, rh_p, rd_p, rt_p, bf_rma, bf_rtca, bf_rtcb, bf_rtcr, bf_rh, bf_rd, bf_rt], 
+Layout(yaxis2=attr(overlaying="y",side="right"), xaxis_title="Damage rate (min<sup>-1</sup>)", yaxis_title="Proteins and mRNAs (μM)", yaxis2_title="Ribosomal species (μM)"))
+
+function dashed_lines_species(df, df_bf, colors)
+    kdam1 = findall(x->x==df_bf.kdam[1],df.kdam)[1]
+    kdam2 = findall(x->x==df_bf.kdam[2],df.kdam)[1]
+    first=[]
+    middle=[]
+    last=[]
+    names=["RtcBA mRNA","RtcA","RtcB mRNA","RtcB","RtcR mRNA","RtcR"]
+    for (col,i) in zip(eachcol(df)[1:6],range(1,9))
+        push!(first,scatter(x=df.kdam[1:kdam1], y=col[1:kdam1], name=names[i], line=attr(width=3, color=colors[i])))
+        push!(middle,scatter(x=df.kdam[kdam1:kdam2], y=col[kdam1:kdam2], name="", line=attr(width=3,dash="dash", color=colors[i]),showlegend=false))
+        push!(last,scatter(x=df.kdam[kdam2:end], y=col[kdam2:end], name="", line=attr(width=3, color=colors[i]),showlegend=false))
+    end
+    return first, middle, last
+end
+function dashed_lines_ribosomes(df, df_bf, colors)
+    kdam1 = findall(x->x==df_bf.kdam[1],df.kdam)[1]
+    kdam2 = findall(x->x==df_bf.kdam[2],df.kdam)[1]
+    first=[]
+    middle=[]
+    last=[]
+    names=["Healthy ribosomes","Damaged ribosomes","Tagged ribosomes"]
+    for (col,i) in zip(eachcol(df)[7:9],range(1,9))
+        push!(first,scatter(x=df.kdam[1:kdam1], y=col[1:kdam1], name=names[i], yaxis="y2", line=attr(width=3, color=colors[i])))
+        push!(middle,scatter(x=df.kdam[kdam1:kdam2], y=col[kdam1:kdam2], name="", yaxis="y2", line=attr(width=3,dash="dash", color=colors[i]),showlegend=false))
+        push!(last,scatter(x=df.kdam[kdam2:end], y=col[kdam2:end], name="", yaxis="y2", line=attr(width=3, color=colors[i]),showlegend=false))
+    end
+    return first, middle, last
+end
+colors=[:purple,:mediumpurple,:green,:plum,:purple,:green]
+colors_r=[:gold,:darkorange,:red]
+first,middle,last=dashed_lines_species(df, df_bf, colors)
+r_first,r_middle,r_last = dashed_lines_ribosomes(df,df_bf,colors_r)
+fullplot = plot([first[1],middle[1],last[1],bf_rma,
+first[2],middle[2],last[2],bf_rtca,
+first[4],middle[4],last[4],bf_rtcb,
+first[6],middle[6],last[6],bf_rtcr,
+r_first[1],r_middle[1],r_last[1],bf_rh,
+r_first[2],r_middle[2],r_last[2],bf_rd,
+r_first[3],r_middle[3],r_last[3],bf_rt],
+Layout(legend=attr(x=0.75,y=1),width=1000,height=750,yaxis2=attr(overlaying="y",side="right"), xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="Proteins and mRNAs (μM)", yaxis2_title="Ribosomal species (μM)",
+yaxis=attr(showline=true,linewidth=1,linecolor="black",mirror=true),xaxis=attr(showline=true,linewidth=1,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white"))
+
+open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/full_bf_plot.html", "w") do io
+    PlotlyBase.to_html(io, fullplot.plot)
+end
+
+savefig(fullplot, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/full_bf_plot.svg")
+
+
+
+first
+
+eachcol(df)[1:end-1]
+
+function test(specie)
+    return df.specie
+end
+test("rtca")
+
+
+plot([t1,t2,t3,bf_rma])
+
+df_bf
 
 
 atp = 3578.9473684210525 
