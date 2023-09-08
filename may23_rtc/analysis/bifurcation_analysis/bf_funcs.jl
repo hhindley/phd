@@ -168,7 +168,7 @@ function rtc_mod_t!(dz, z, p, t)
     dz[7] = Vrep - Vdam + Vinflux - dil(rh)
     dz[8] = Vdam - Vtag - kdeg*rd - dil(rd)
     dz[9] = Vtag - Vrep - dil(rt)
-    dz
+    # dz
     
 end
 
@@ -177,8 +177,8 @@ end
 
 
 function bf_point_df(br2)
-    df_bf = DataFrame(rm_a=Float64[],rtca=Float64[],rm_b=Float64[],rtcb=Float64[],rm_r=Float64[],rtcr=Float64[],rh=Float64[],rd=Float64[],rt=Float64[],kdam=Float64[])
-    df_bf.rm_a
+    df_bf = DataFrame(rm_a=Float64[],rtca=Float64[],rm_b=Float64[],rtcb=Float64[],rm_r=Float64[],rtcr=Float64[],rh=Float64[],rd=Float64[],rt=Float64[],kdam=Float64[]);
+    # df_bf.rm_a;
     for i in br2.specialpoint
         if i.type == :bp
             push!(df_bf.rm_a, i.x[1])
@@ -195,17 +195,17 @@ function bf_point_df(br2)
         
         end
     end
-    return df_bf
+    return df_bf;
 end
 
 
 
 
 function create_br_df(br)
-    df = DataFrame(rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[],kdam=[])
-    for i in eachcol(df)
-        println(i)
-    end
+    df = DataFrame(rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[],kdam=[]);
+    # for i in eachcol(df)
+    #     println(i)
+    # end
     for i in range(1,length(br.sol))
         for (s,d) in zip(range(1,9), eachcol(df))
             push!(d, br.sol[i][1][s])
@@ -213,7 +213,7 @@ function create_br_df(br)
         push!(df.kdam, br.sol[i][2])
     end
     
-    return df
+    return df;
 end
 
 
@@ -250,4 +250,46 @@ function split_curves(df, df_bf)
         end
     end
     return first, middle, last
+end
+
+function dashed_lines_species(df, df_bf, colors)
+    kdam1 = findall(x->x==df_bf.kdam[1],df.kdam)[1]
+    kdam2 = findall(x->x==df_bf.kdam[2],df.kdam)[1]
+    first=[]
+    middle=[]
+    last=[]
+    names=["RtcBA mRNA","RtcA","RtcB mRNA","RtcB","RtcR mRNA","RtcR"]
+    for (col,i) in zip(eachcol(df)[1:6],range(1,9))
+        push!(first,scatter(x=df.kdam[1:kdam1], y=col[1:kdam1], name=names[i], line=attr(width=3, color=colors[i]), legendgroup="$(names[i])"))
+        push!(middle,scatter(x=df.kdam[kdam1:kdam2], y=col[kdam1:kdam2], name="", line=attr(width=3,dash="dash", color=colors[i]),showlegend=false, legendgroup="$(names[i])"))
+        push!(last,scatter(x=df.kdam[kdam2:end], y=col[kdam2:end], name="", line=attr(width=3, color=colors[i]),showlegend=false, legendgroup="$(names[i])"))
+    end
+    return first, middle, last
+end
+function dashed_lines_ribosomes(df, df_bf, colors)
+    kdam1 = findall(x->x==df_bf.kdam[1],df.kdam)[1]
+    kdam2 = findall(x->x==df_bf.kdam[2],df.kdam)[1]
+    first=[]
+    middle=[]
+    last=[]
+    names=["Healthy ribosomes","Damaged ribosomes","Tagged ribosomes"]
+    for (col,i) in zip(eachcol(df)[7:9],range(1,9))
+        push!(first,scatter(x=df.kdam[1:kdam1], y=col[1:kdam1], name=names[i], yaxis="y2", line=attr(width=3, color=colors[i]), legendgroup="$(names[i])"))
+        push!(middle,scatter(x=df.kdam[kdam1:kdam2], y=col[kdam1:kdam2], name="", yaxis="y2", line=attr(width=3,dash="dash", color=colors[i]),showlegend=false, legendgroup="$(names[i])"))
+        push!(last,scatter(x=df.kdam[kdam2:end], y=col[kdam2:end], name="", yaxis="y2", line=attr(width=3, color=colors[i]),showlegend=false, legendgroup="$(names[i])"))
+    end
+    return first, middle, last
+end
+
+function bf_scatter(df_bf, color)
+    bf_rma = scatter(x=df_bf.kdam, y=df_bf.rm_a, mode="markers", name="", line=attr(color=color),showlegend=false, legendgroup="RtcBA mRNA")
+    bf_rtca = scatter(x=df_bf.kdam, y=df_bf.rtca, mode="markers", name="", line=attr(color=color),showlegend=false, legendgroup="RtcA")
+    bf_rmb = scatter(x=df_bf.kdam, y=df_bf.rm_b, mode="markers", name="", line=attr(color=color),showlegend=false, legendgroup="RtcB mRNA")
+    bf_rtcb = scatter(x=df_bf.kdam, y=df_bf.rtcb, mode="markers", name="", line=attr(color=color),showlegend=false, legendgroup="RtcB")
+    bf_rmr = scatter(x=df_bf.kdam, y=df_bf.rm_r, mode="markers", name="", line=attr(color=color),showlegend=false, legendgroup="RtcR mRNA")
+    bf_rtcr = scatter(x=df_bf.kdam, y=df_bf.rtcr, mode="markers", name="", line=attr(color=color),showlegend=false, legendgroup="RtcR")
+    bf_rh = scatter(x=df_bf.kdam, y=df_bf.rh, mode="markers", yaxis="y2", name="", line=attr(color=color),showlegend=false, legendgroup="Healthy ribosomes")
+    bf_rd = scatter(x=df_bf.kdam, y=df_bf.rd, mode="markers", yaxis="y2", name="", line=attr(color=color),showlegend=false, legendgroup="Damaged ribosomes")
+    bf_rt = scatter(x=df_bf.kdam, y=df_bf.rt, mode="markers", yaxis="y2", name="Bifurcation point", line=attr(color=color),showlegend=true, legendgroup="Tagged ribosomes")
+    return bf_rma, bf_rtca, bf_rmb, bf_rtcb, bf_rmr, bf_rtcr, bf_rh, bf_rd, bf_rt
 end

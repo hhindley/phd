@@ -1,3 +1,5 @@
+
+
 function setup_ssvals(params)
     tspan = (0,1e9)
     # initial =  [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0]
@@ -19,15 +21,23 @@ function setup_ssvals(params)
 end
 
 
-function set_ss_range_zerotoNssval(branch_df, branch, specie, n, l)
-    a = range((branch_df[branch_df.species .== specie,:][:,Symbol("$branch")]-(branch_df[branch_df.species .== specie,:][:,Symbol("$branch")])),branch_df[branch_df.species .== specie,:][:,Symbol("$branch")],length=Int(l/2))
-    b = range((branch_df[branch_df.species .== specie,:][:,Symbol("$branch")]),(branch_df[branch_df.species .== specie,:][:,Symbol("$branch")]+(n*branch_df[branch_df.species .== specie,:][:,Symbol("$branch")])),length=Int(l/2))
-    return [(vcat(a,b)...)...]
+function set_ss_range_Nssval(branch_df, branch, specie, n, l)
+    # a = range((branch_df[branch_df.species .== specie,:][:,Symbol("$branch")]-(branch_df[branch_df.species .== specie,:][:,Symbol("$branch")])),branch_df[branch_df.species .== specie,:][:,Symbol("$branch")],length=Int(l/2))
+    b = range((branch_df[branch_df.species .== specie,:][:,Symbol("$branch")]),(branch_df[branch_df.species .== specie,:][:,Symbol("$branch")]+(n*branch_df[branch_df.species .== specie,:][:,Symbol("$branch")])),length=l)
+    # return [(vcat(a,b)...)...]
+    return [(b...)...]
 end
 
 function set_ss_range_zerotossval(branch_df, branch, specie, n, l)
-    b = range((branch_df[branch_df.species .== specie,:][:,Symbol("$branch")]-branch_df[branch_df.species .== specie,:][:,Symbol("$branch")]),branch_df[branch_df.species .== specie,:][:,Symbol("$branch")],length=l)
+    b = range((branch_df[branch_df.species .== specie,:][:,Symbol("$branch")]-branch_df[branch_df.species .== specie,:][:,Symbol("$branch")]),(branch_df[branch_df.species .== specie,:][:,Symbol("$branch")]),length=l)
     return [(b...)...]
+end
+
+function set_ss_range_full(branch_df, branch, specie, n, l)
+    a = range((branch_df[branch_df.species .== specie,:][:,Symbol("$branch")]-(branch_df[branch_df.species .== specie,:][:,Symbol("$branch")])),branch_df[branch_df.species .== specie,:][:,Symbol("$branch")],length=Int(l/2))
+    b = range((branch_df[branch_df.species .== specie,:][:,Symbol("$branch")]),(branch_df[branch_df.species .== specie,:][:,Symbol("$branch")]+(n*branch_df[branch_df.species .== specie,:][:,Symbol("$branch")])),length=Int(l/2))
+    # return [(vcat(a,b)...)...]
+    return [(vcat(a,b)...)...]
 end
 
 function get_all_ranges(func, branch_df, branch, n, l)
@@ -46,7 +56,7 @@ function get_ss_change_init(init, range, l, params)
     for specie in all_species
         for i in range
             initial[7] = i
-            @show initial
+            # @show initial
             solu = sol(rtc_model, initial, tspan, params)
             push!(res, get_ssval(solu,specie))
             # push!(res, [get_ssval(solu,specie) for specie in all_species])
@@ -61,9 +71,10 @@ function get_ss_change_init(init, range, l, params)
 end
 
 
-function get_rh_init_switch_all_ranges(ranges, branch_ssval, specie, l, params)
-    res=[]
-    init_vals=[]
+function get_rh_init_switch_all_ranges(rtc_model, ranges, branch_ssval, specie, l, params)
+    res=[];
+    init_vals=[];
+    unstable=[];
     for (range,i) in zip(ranges,range(1,9))
         initial = deepcopy(branch_ssval)
         # res=[]
@@ -71,6 +82,9 @@ function get_rh_init_switch_all_ranges(ranges, branch_ssval, specie, l, params)
             initial[i] = j
             # @show initial
             solu = sol(rtc_model, initial, tspan, params)
+            # if solu.retcode == ReturnCode.Unstable
+            #     push!(unstable, initial)
+            # end
             push!(res, get_ssval(solu,specie))
             push!(init_vals, initial[i])
         end
@@ -81,7 +95,9 @@ function get_rh_init_switch_all_ranges(ranges, branch_ssval, specie, l, params)
     res = (reshape(res, (l,9)))
     # init_vals = Float64.init_vals
     init_vals = reshape(init_vals, (l,9))
-    return DataFrame(res,all_species), DataFrame(init_vals,all_species)
+    # return DataFrame(res,all_species), DataFrame(init_vals,all_species), unstable
+    return DataFrame(res,all_species), DataFrame(init_vals,all_species);
+
 end
 
 
@@ -96,13 +112,13 @@ end
 # end
 
 function upper_or_lower(df, lower_branch, l)
-    arr=[]
+    arr=[];
     # state1 = "$state"
     for col in eachcol(df)
         for i in col
             for j in i 
                 # if round(j;digits=3) == round(lower_branch[7];digits=3)
-                if lower_branch[7]-(0.001*lower_branch[7]) < j < lower_branch[7]+(0.001*lower_branch[7]) 
+                if lower_branch-(0.1*lower_branch) < j < lower_branch+(0.1*lower_branch) 
                     push!(arr, 0)
                 else
                     push!(arr, 1)
@@ -110,35 +126,9 @@ function upper_or_lower(df, lower_branch, l)
             end
         end
     end
-
-    # if state1 == "lower"
-    #     for col in eachcol(df)
-    #         for i in col
-    #             for j in i 
-    #                 if round(j;digits=10) == round(col[1];digits=10)
-    #                     push!(arr, 0)
-    #                 else
-    #                     push!(arr, 1)
-    #                 end
-    #             end
-    #         end
-    #     end
-    # else
-    #     for col in eachcol(df)
-    #         for i in col
-    #             for j in i 
-    #                 if round(j;digits=10) == round(col[1];digits=10)
-    #                     push!(arr, 1)
-    #                 else
-    #                     push!(arr, 0)
-    #                 end
-    #             end
-    #         end
-    #     end
-    # end
     arr = reshape(arr, (l,9))
     df = DataFrame(arr,all_species)
-    return df
+    return df;
 end
 
 # function all_upper_lower(all, state)
@@ -154,11 +144,11 @@ function set_shared_range(n,l)
     x2 = range(0,n*100, length=Int(l/2))
     return vcat(x1,x2)
 end
-# function set_shared_range(n)
-#     # x1 = range(-100,0, length=200)
-#     x2 = range(0,n*100, length=500)
-#     return x2
-# end
+function set_shared_range_0ton(n,l)
+    # x1 = range(-100,0, length=200)
+    x2 = range(0,n*100, length=l)
+    return x2
+end
 
 
 function double_init(branch,ranges,opposite_branch,init1,init2,params)
@@ -176,10 +166,10 @@ function double_init(branch,ranges,opposite_branch,init1,init2,params)
             push!(sss,ss)
             push!(rtcbs, initial[4])
             push!(rtcrs,initial[6])
-            if ss == opposite_branch[7]
-                push!(res, (initial[4],initial[6]))
-            end
-            @show initial    
+            # if ss == opposite_branch[7]
+            #     push!(res, (initial[4],initial[6]))
+            # end
+            # @show initial    
         end
     end
     return sss, rtcbs, rtcrs
@@ -188,7 +178,7 @@ end
 function get_binary(lower_branch, sss)
     binary=[]
     for i in sss
-        if lower_branch[7]-(0.001*lower_branch[7]) < i < lower_branch[7]+(0.001*lower_branch[7]) 
+        if lower_branch-(0.1*lower_branch) < i < lower_branch+(0.1*lower_branch) 
             push!(binary, 0)
         else
             push!(binary, 1)
@@ -196,6 +186,7 @@ function get_binary(lower_branch, sss)
     end
     return binary
 end
+
 
 function get_xy_percentage(shared_range)
     rtcbs1=[]
@@ -223,7 +214,7 @@ function triple_init(branch,ranges,opposite_branch,init1,init2,init3,params)
     init1s=[]
     init2s=[]
     init3s=[]
-    initial = @LArray [branch.ss_val[1],branch.ss_val[2],branch.ss_val[3],branch.ss_val[4],branch.ss_val[5],branch.ss_val[6],branch.ss_val[7],branch.ss_val[8],branch.ss_val[9]] (:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt)
+    initial = @LArray [branch[1],branch[2],branch[3],branch[4],branch[5],branch[6],branch[7],branch[8],branch[9]] (:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt)
     for i in ranges[Symbol("$init3")]
         initial[Symbol("$init3")] = i
         for k in ranges[Symbol("$init1")]
@@ -236,10 +227,10 @@ function triple_init(branch,ranges,opposite_branch,init1,init2,init3,params)
                 push!(init1s, initial[Symbol("$init1")])
                 push!(init2s,initial[Symbol("$init2")])
                 push!(init3s,initial[Symbol("$init3")])
-                if ss == opposite_branch.ss_val[7]
-                    push!(res, (initial[4],initial[6]))
-                end
-                @show initial    
+                # if ss == opposite_branch.ss_val[7]
+                #     push!(res, (initial[4],initial[6]))
+                # end
+                # @show initial    
             end
         end
     end
@@ -250,24 +241,13 @@ end
 
 
 
-function round_ssvals(all)
-    rounded=[]
-    for col in eachcol(all)
-        new_rh=[]
-        for i in col
-            push!(new_rh,round(i;digits=3))
-        end
-        push!(rounded,new_rh)
-    end
-    return DataFrame(rounded,all_species)
-end
 
-function get_switch_ind(binary_df)
+function get_switch_ind(binary_df,l) # for off to on l needs to be set to 0, otherwise l is l 
     switch_ind=[]
     for col in eachcol(binary_df)
         # @show length(findall(x->x==round(branches1.ss_val_on[7];digits=3),col))
         # if length(findall(x->x==round(branches1.ss_val_on[7];digits=3),col)) == 0
-        if length(findall(x->x==1,col)) == 0
+        if length(findall(x->x==1,col)) == l
             push!(switch_ind,NaN)
         else
             # push!(switch_ind,findall(x->x==round(branches1.ss_val_on[7];digits=3),col)[1])
@@ -290,52 +270,95 @@ function get_switch_vals(switch_ind,init_vals)
     return switch_vals
 end
 
-function get_percentages(switch_vals,branch) #used to check the original plots
+function get_percentages(switch_vals,branch,branch_label) #used to check the original plots
     #work out percentage different between switch_vals and ss_val_lower to see if it corresponds to plot already made
-    perc=[]
+    perc=[];
+    if branch_label == "off"
     for i in range(1,9)
         if isnan(switch_vals[i]) == true
             push!(perc, NaN)
         else
-            push!(perc,100*((switch_vals[i]-branch.ss_val_off[i])/branch.ss_val_off[i]))
+            push!(perc,100*((switch_vals[i]-branch[i])/branch[i]))
         end
     end
-    return perc
+    else
+        for i in range(1,9)
+            if isnan(switch_vals[i]) == true
+                push!(perc, NaN)
+            else
+                push!(perc,100*((branch[i]-switch_vals[i])/branch[i]))
+            end
+        end
+    end
+    return perc;
 end
 
-function get_diffs(switch_vals,branch)
+function get_diffs(switch_vals,branch,branch_label)
     #plot how much more than ss_val is needed in uM 
     diffs=[]
+    # if branch == branches1.ss_val_off
     for i in range(1,9)
         if isnan(switch_vals[i]) == true
             push!(diffs,NaN)
         else
-            push!(diffs,(switch_vals[i]-branch.ss_val_off[i]))
+            push!(diffs,(switch_vals[i]-branch[i]))
         end
     end
+    # else
+    #     for i in range(1,9)
+    #         if isnan(switch_vals[i]) == true
+    #             push!(diffs,NaN)
+    #         else
+    #             push!(diffs,(branch[i]-switch_vals[i]))
+    #         end
+    #     end
+    # end
     return diffs
 end
 
-function full_find_differences_or_percs(all,func,init_vals,branches1)
-    binary_df = upper_or_lower(all,branches1.ss_val_off,l)
+function get_multiples(switch_vals,branch,branch_label)
+    #plot how much more than ss_val is needed in uM 
+    diffs=[]
+    if branch_label == "off"
+        for i in range(1,9)
+            if isnan(switch_vals[i]) == true
+                push!(diffs,NaN)
+            else
+                push!(diffs,(switch_vals[i]/branch[i]))
+            end
+        end
+    else
+        for i in range(1,9)
+            if isnan(switch_vals[i]) == true
+                push!(diffs,NaN)
+            else
+                push!(diffs,(branch[i]/switch_vals[i]))
+            end
+        end
+    end 
+    return diffs
+end
 
-    switch_ind = get_switch_ind(binary_df)
+function full_find_differences_or_percs(all,func,init_vals,lower_branch,l,branch,l1,branch_label)
+    binary_df = upper_or_lower(all,lower_branch,l)
+
+    switch_ind = get_switch_ind(binary_df,l1)
 
     switch_vals = get_switch_vals(switch_ind,init_vals)
 
-    diffs = func(switch_vals,branches1)
+    diffs = func(switch_vals,branch,branch_label)
     return diffs
-
+    # return switch_vals
 end 
 
 
 
-function setup_ssvals_from_bfkit(kdam_val)
-    params2 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
-    θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
-    krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
-    kdeg = 0.001, kin = 0.022222222, ω_ab = 0.05623413251903491, ω_r = 0.010000000000000002, 
-    kdam =  0.01, lam = 0.014)
+function setup_ssvals_from_bfkit(rtc_mod, kdam_val, params2)
+    # params2 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
+    # θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
+    # krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
+    # kdeg = 0.001, kin = 0.022222222, ω_ab = 0.05623413251903491, ω_r = 0.010000000000000002, 
+    # kdam =  0.01, lam = 0.014)
     initial = [0., 0., 0., 0., 0., 0., 11.29, 0., 0.]
     br2 = get_br(rtc_mod, params2, initial, 3.)
     df = create_br_df(br2)
@@ -363,5 +386,72 @@ function setup_ssvals_from_bfkit(kdam_val)
     int_rt1 = QuadraticInterpolation(first.rt, first.kdam)
     int_rt2 = QuadraticInterpolation(last.rt, last.kdam)
 
-    return DataFrame(species=all_species,ss_val_on=[int_rma1(kdam_val),int_rtca1(kdam_val),int_rmb1(kdam_val),int_rtcb1(kdam_val),int_rmr1(kdam_val),int_rtcr1(kdam_val),int_rh1(kdam_val),int_rd1(kdam_val),int_rt1(kdam_val)],ss_val_off=[int_rma2(kdam_val),int_rtca2(kdam_val),int_rmb2(kdam_val),int_rtcb2(kdam_val),int_rmr2(kdam_val),int_rtcr2(kdam_val),int_rh2(kdam_val),int_rd2(kdam_val),int_rt2(kdam_val)])
+    return DataFrame(species=all_species,ss_val_on=[int_rma1(kdam_val),int_rtca1(kdam_val),int_rmb1(kdam_val),int_rtcb1(kdam_val),int_rmr1(kdam_val),int_rtcr1(kdam_val),int_rh1(kdam_val),int_rd1(kdam_val),int_rt1(kdam_val)],ss_val_off=[int_rma2(kdam_val),int_rtca2(kdam_val),int_rmb2(kdam_val),int_rtcb2(kdam_val),int_rmr2(kdam_val),int_rtcr2(kdam_val),int_rh2(kdam_val),int_rd2(kdam_val),int_rt2(kdam_val)]);
 end
+
+
+function create_resdf(all_res,kdam_range)
+    df = DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[])
+    for (res,kdam) in zip(all_res,kdam_range)
+        push!(df.rm_a,res[1])
+        push!(df.rtca,res[2])
+        push!(df.rm_b,res[3])
+        push!(df.rtcb,res[4])
+        push!(df.rm_r,res[5])
+        push!(df.rtcr,res[6])
+        push!(df.rh,res[7])
+        push!(df.rd,res[8])
+        push!(df.rt,res[9])
+        push!(df.kdam,kdam)
+    end
+    return df
+end
+
+
+
+
+function get_plot_vals(binary, l, n)
+    binary_matrix = reshape(binary, (l,l))
+    # ind = findall(x->x==1,binary_matrix)
+    # tups=[]
+    # for i in ind
+    #     push!(tups, Tuple(i))
+    # end
+    # first_tuples_dict = OrderedDict{Int, Tuple{Int, Int}}()
+
+    # for tuple in tups
+    #     second_index = tuple[2]
+    #     if !haskey(first_tuples_dict, second_index)
+    #         # If this is the first tuple with the current second index, store it
+    #         first_tuples_dict[second_index] = tuple
+    #     end
+    # end
+    last_tuples_dict = OrderedDict{Int, Tuple{Int, Int}}()
+    ind1 = findall(x->x==0,binary_matrix)
+    tups1=[]
+    for i in ind1
+        push!(tups1, Tuple(i))
+    end
+    for tuple in tups1
+        second_index = tuple[2]
+        last_tuples_dict[second_index] = tuple  # Update the dictionary with the current tuple
+    end
+
+    xs,ys = get_xy_percentage(set_shared_range_0ton(n,l))
+    new_arr = reshape(tuple.(xs,ys), (l,l))
+    vals = Tuple(values(last_tuples_dict))
+
+    plot_vals=[]
+    for i in vals
+        push!(plot_vals, new_arr[i[2],i[1]])
+    end
+
+    x=[];y=[];
+    for i in plot_vals
+        push!(x, i[2])
+        push!(y, i[1])
+    end
+    return x, y
+end
+
+

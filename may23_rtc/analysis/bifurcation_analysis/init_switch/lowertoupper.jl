@@ -51,69 +51,49 @@ include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_sw
     # rt_0 = 0;
 end
 
+# branches = setup_ssvals_from_bfkit(0.6357116)
+# n=600; l=1000
+# all_ranges = get_all_ranges(set_ss_range_Nssval, branches, "ss_val_off", n, l)
+
 params1 = @LArray [L, c, kr, Vmax_init, Km_init, 0.05623413251903491, 0.010000000000000002, θtscr, g_max, θtlr, km_a, km_b, d, krep, 1., ktag, kdeg, 0.022222222, 3578.9473684210525, na, nb, nr, 0.014] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
-kdam_range = range(0.6357116,2.017744,length=50)
+kdam_range = range(0.6359851,2.016996,length=10)
 tspan=(0,1e9)
 all_diffs=[]
 all_percs=[]
+all_multiples=[]
 ps = deepcopy(params1)
-
+instab=[]
 for kdam_val in kdam_range
     ps = deepcopy(params1)
     ps.kdam = kdam_val
     branches1 = setup_ssvals_from_bfkit(kdam_val)
     @show ps
     
-    n = 300; l = 1000;
-    lower_ranges = get_all_ranges(set_ss_range_zerotoNssval, branches1, "ss_val_off", n, l)
+    n = 6000; l = 7500;
+    lower_ranges = get_all_ranges(set_ss_range_Nssval, branches1, "ss_val_off", n, l)
     # @show lower_ranges[9]
-    all, init_vals = get_rh_init_switch_all_ranges(lower_ranges, branches1.ss_val_off,:rh,l,ps)
-    # rounded = round_ssvals(all)
-    # switch_ind = get_switch_ind(rounded,branches1)
-    # # @show switch_ind
-    # switch_vals = get_switch_vals(switch_ind,init_vals)
-    # diffs = get_diffs(switch_vals, branches1)
-    # push!(all_diffs, diffs)
-    push!(all_diffs,full_find_differences_or_percs(all,get_diffs,init_vals,branches1))
-    push!(all_percs,full_find_differences_or_percs(all,get_percentages,init_vals,branches1))
+    all, init_vals, unstable = get_rh_init_switch_all_ranges(lower_ranges, branches1.ss_val_off,:rh,l,ps)
+    push!(instab,unstable)
+    push!(all_diffs,full_find_differences_or_percs(all,get_diffs,init_vals,branches1.ss_val_off[7],l,branches1.ss_val_off,0,"off"))
+    push!(all_percs,full_find_differences_or_percs(all,get_percentages,init_vals,branches1.ss_val_off[7],l,branches1.ss_val_off,0,"off"))
+    push!(all_multiples,full_find_differences_or_percs(all,get_multiples,init_vals,branches1.ss_val_off[7],l,branches1.ss_val_off,0,"off"))
 end
-
 all_diffs
 
-df_res = DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[])
-for (res,kdam) in zip(all_diffs,kdam_range)
-    push!(df_res.rm_a,res[1])
-    push!(df_res.rtca,res[2])
-    push!(df_res.rm_b,res[3])
-    push!(df_res.rtcb,res[4])
-    push!(df_res.rm_r,res[5])
-    push!(df_res.rtcr,res[6])
-    push!(df_res.rh,res[7])
-    push!(df_res.rd,res[8])
-    push!(df_res.rt,res[9])
-    push!(df_res.kdam,kdam)
-end
-df_res
+df_res = create_resdf(all_diffs,kdam_range)
+df_percs = create_resdf(all_percs,kdam_range)
+df_multiples = create_resdf(all_multiples,kdam_range)
 
-df_percs = DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[])
-for (res,kdam) in zip(all_percs,kdam_range)
-    push!(df_percs.rm_a,res[1])
-    push!(df_percs.rtca,res[2])
-    push!(df_percs.rm_b,res[3])
-    push!(df_percs.rtcb,res[4])
-    push!(df_percs.rm_r,res[5])
-    push!(df_percs.rtcr,res[6])
-    push!(df_percs.rh,res[7])
-    push!(df_percs.rd,res[8])
-    push!(df_percs.rt,res[9])
-    push!(df_percs.kdam,kdam)
-end
+CSV.write("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/off_on/diffs.csv", df_res)
+CSV.write("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/off_on/percs.csv", df_percs)
+CSV.write("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/off_on/fold.csv", df_multiples)
+
 
 p_diff = plot([scatter(x=df_res.kdam,y=df_res.rm_a,name="rm_a"),scatter(x=df_res.kdam,y=df_res.rtca,name="rtca"),scatter(x=df_res.kdam,y=df_res.rm_b,name="rm_b"),
 scatter(x=df_res.kdam,y=df_res.rtcb,name="rtcb"),scatter(x=df_res.kdam,y=df_res.rm_r,name="rm_r"),scatter(x=df_res.kdam,y=df_res.rtcr,name="rtcr"),
 scatter(x=df_res.kdam,y=df_res.rh,name="rh"),scatter(x=df_res.kdam,y=df_res.rd,name="rd"),scatter(x=df_res.kdam,y=df_res.rt,name="rt")],
 Layout(xaxis_title="kdam",yaxis_title="difference from ssval (μM)", title="switching from off to on",
-yaxis_type="log"))
+yaxis_type="log"))#,xaxis_type="log"))
 
 p_perc = plot([scatter(x=df_percs.kdam,y=df_percs.rm_a,name="rm_a"),scatter(x=df_percs.kdam,y=df_percs.rtca,name="rtca"),scatter(x=df_percs.kdam,y=df_res.rm_b,name="rm_b"),
 scatter(x=df_percs.kdam,y=df_percs.rtcb,name="rtcb"),scatter(x=df_percs.kdam,y=df_percs.rm_r,name="rm_r"),scatter(x=df_percs.kdam,y=df_res.rtcr,name="rtcr"),
@@ -121,8 +101,20 @@ scatter(x=df_percs.kdam,y=df_percs.rh,name="rh"),scatter(x=df_percs.kdam,y=df_re
 Layout(xaxis_title="kdam",yaxis_title="difference from ssval (%)", title="switching from off to on",
 yaxis_type="log"))
 
-open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_percs_offon.html", "w") do io
+p_fold = plot([scatter(x=df_multiples.kdam,y=df_multiples.rm_a,name="rm_a"),scatter(x=df_multiples.kdam,y=df_multiples.rtca,name="rtca"),scatter(x=df_multiples.kdam,y=df_res.rm_b,name="rm_b"),
+scatter(x=df_multiples.kdam,y=df_multiples.rtcb,name="rtcb"),scatter(x=df_multiples.kdam,y=df_multiples.rm_r,name="rm_r"),scatter(x=df_multiples.kdam,y=df_res.rtcr,name="rtcr"),
+scatter(x=df_multiples.kdam,y=df_multiples.rh,name="rh"),scatter(x=df_multiples.kdam,y=df_res.rd,name="rd"),scatter(x=df_multiples.kdam,y=df_res.rt,name="rt")],
+Layout(xaxis_title="kdam",yaxis_title="fold-change from ssval", title="switching from off to on",
+yaxis_type="log"))
+
+open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_fold_offon.html", "w") do io
+    PlotlyBase.to_html(io, p_fold.plot)
+end
+open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_perc_offon.html", "w") do io
     PlotlyBase.to_html(io, p_perc.plot)
+end
+open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_diff_offon.html", "w") do io
+    PlotlyBase.to_html(io, p_diff.plot)
 end
 
 

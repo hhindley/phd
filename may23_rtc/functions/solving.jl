@@ -27,7 +27,7 @@ function sol(model, init, tspan, params)
     prob = ODEProblem(model, init, tspan, params)
     solu = solve(prob, Rodas4())
     # solu = solve(prob, Rodas5(), isoutofdomain=(y,p,t)->any(x->x<0,y), abstol=1e-15, reltol=1e-12);
-
+    # @show solu.retcode
     # solu = solve(prob, alg_hints=[:auto], isoutofdomain=(y,p,t)->any(x->x<0,y))#, abstol=1e-15, reltol=1e-12);
 
     return solu

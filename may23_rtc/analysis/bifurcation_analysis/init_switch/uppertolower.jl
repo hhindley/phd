@@ -1,9 +1,12 @@
 using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, Statistics
-# using Plots
+using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra
+
 using PlotlyJS
 include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/set_ups.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); 
 include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/holliehindley/phd/may23_rtc/models/combinations_t.jl"); include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/funcs.jl");
+include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/holliehindley/phd/may23_rtc/models/combinations_t.jl"); include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/bf_funcs.jl");
+
+include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/funcs.jl");
 
 
 @consts begin
@@ -48,10 +51,81 @@ include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/
 end
 
 params1 = @LArray [L, c, kr, Vmax_init, Km_init, 0.05623413251903491, 0.010000000000000002, θtscr, g_max, θtlr, km_a, km_b, d, krep, 1., ktag, kdeg, 0.022222222, 3578.9473684210525, na, nb, nr, 0.014] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
-
-branches1 = setup_ssvals(params1)
-
+kdam_range = range(0.6359851,2.016996,length=20)
 tspan=(0,1e9)
+all_diffs=[]
+all_percs=[]
+all_multiples=[]
+
+ps = deepcopy(params1)
+allres=[]
+all2=[]
+instab=[]
+all_diffs=[]
+all_percs=[]
+all_multiples=[]
+for kdam_val in kdam_range
+    ps = deepcopy(params1)
+    ps.kdam = kdam_val
+    branches1 = setup_ssvals_from_bfkit(kdam_val)
+    @show ps
+    
+    n = 6000; l = 1000;
+    upper_ranges = get_all_ranges(set_ss_range_zerotossval, branches1, "ss_val_on", n, l)
+    # @show upper_ranges[9]
+    all, init_vals, unstable = get_rh_init_switch_all_ranges(upper_ranges, branches1.ss_val_on,:rh,l,ps)
+    push!(instab,unstable)
+    # @show all
+    # push!(all2, get_switch_vals(get_switch_ind(upper_or_lower(all, branches1.ss_val_off, l),l),init_vals))
+    # push!(all2,upper_or_lower(all,branches1.ss_val_off,l))
+    push!(all_diffs,full_find_differences_or_percs(all,get_diffs,init_vals,branches1,l,branches1.ss_val_on,l,"on"))
+    push!(all_percs,full_find_differences_or_percs(all,get_percentages,init_vals,branches1,l,branches1.ss_val_on,l,"on"))
+    push!(all_multiples,full_find_differences_or_percs(all,get_multiples,init_vals,branches1,l,branches1.ss_val_on,l,"on"))
+end
+instab
+allres
+all2
+
+df_res = create_resdf(all_diffs,kdam_range)
+df_percs = create_resdf(all_percs,kdam_range)
+df_multiples = create_resdf(all_multiples,kdam_range)
+
+CSV.write("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/on_off/diffs.csv", df_res)
+CSV.write("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/on_off/percs.csv", df_percs)
+CSV.write("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/on_off/fold.csv", df_multiples)
+
+
+p_diff = plot([scatter(x=df_res.kdam,y=df_res.rm_a,name="rm_a"),scatter(x=df_res.kdam,y=df_res.rtca,name="rtca"),scatter(x=df_res.kdam,y=df_res.rm_b,name="rm_b"),
+scatter(x=df_res.kdam,y=df_res.rtcb,name="rtcb"),scatter(x=df_res.kdam,y=df_res.rm_r,name="rm_r"),scatter(x=[df_res.kdam[end]],y=[df_res.rtcr[end]],name="rtcr"),
+scatter(x=[df_res.kdam[end]],y=[df_res.rh[end]],name="rh"),scatter(x=df_res.kdam,y=df_res.rd,name="rd"),scatter(x=[df_res.kdam[end]],y=[df_res.rt[end]],name="rt")],
+Layout(xaxis_title="kdam",yaxis_title="difference from ssval (μM)", title="switching from on to off",))
+# yaxis_type="log"))#,xaxis_type="log"))
+
+
+p_perc = plot([scatter(x=df_percs.kdam,y=df_percs.rm_a,name="rm_a"),scatter(x=df_percs.kdam,y=df_percs.rtca,name="rtca"),scatter(x=df_percs.kdam,y=df_percs.rm_b,name="rm_b"),
+scatter(x=df_percs.kdam,y=df_percs.rtcb,name="rtcb"),scatter(x=df_percs.kdam,y=df_percs.rm_r,name="rm_r"),scatter(x=[df_percs.kdam[end]],y=[df_percs.rtcr[end]],name="rtcr"),
+scatter(x=[df_percs.kdam[end]],y=[df_percs.rh[end]],name="rh"),scatter(x=df_percs.kdam,y=df_percs.rd,name="rd"),scatter(x=[df_percs.kdam[end]],y=[df_percs.rt[end]],name="rt")],
+Layout(xaxis_title="kdam",yaxis_title="difference from ssval (%)", title="switching from on to off",))
+# yaxis_type="log"))
+
+p_fold = plot([scatter(x=df_multiples.kdam,y=df_multiples.rm_a,name="rm_a"),scatter(x=df_multiples.kdam,y=df_multiples.rtca,name="rtca"),scatter(x=df_multiples.kdam,y=df_multiples.rm_b,name="rm_b"),
+scatter(x=df_multiples.kdam,y=df_multiples.rtcb,name="rtcb"),scatter(x=df_multiples.kdam,y=df_multiples.rm_r,name="rm_r"),scatter(x=[df_multiples.kdam[end]],y=[df_multiples.rtcr[end]],name="rtcr"),
+scatter(x=[df_multiples.kdam[end]],y=[df_multiples.rh[end]],name="rh"),scatter(x=df_multiples.kdam,y=df_multiples.rd,name="rd"),scatter(x=[df_multiples.kdam[end]],y=[df_multiples.rt[end]],name="rt")],
+Layout(xaxis_title="kdam",yaxis_title="fold-change from ssval", title="switching from on to off",))
+# yaxis_type="log"))
+
+open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_fold_onoff.html", "w") do io
+    PlotlyBase.to_html(io, p_fold.plot)
+end
+open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_perc_onoff.html", "w") do io
+    PlotlyBase.to_html(io, p_perc.plot)
+end
+open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_diff_onoff.html", "w") do io
+    PlotlyBase.to_html(io, p_diff.plot)
+end
+
+
+
 
 # upper to lower - single change - don't see anything
 n1 = 1000; l1= 1000;

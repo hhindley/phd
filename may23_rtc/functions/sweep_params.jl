@@ -101,9 +101,9 @@ function change_param(param_range, parameter, model, init, func, species, params
     return dict_res
 end
 
-function sweep_paramx2_new(model, species, func, param1, param2, param_range1, param_range2, initial, xlog, ylog)
+function sweep_paramx2_new(model, species, func, param1, param2, param_range1, param_range2, initial, params, xlog, ylog)
     all_res = []
-    params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+    # params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
     new_params = deepcopy(params)
     for i in param_range1
         new_params[param1] = i
@@ -156,10 +156,10 @@ end
 
 
 
-function save_1x_plots(range, param, title, log, initial)
+function save_1x_plots(range, param, title, log, initial, func)
     # print(params)
     params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
-    results = change_param(range, param, rtc_model, initial, all_species, params)
+    results = change_param(range, param, rtc_model, initial, func, all_species, params)
     p = display(plot_change_param_sols(range, results, "$param", title, log))
     # return p 
     # open("/home/holliehindley/phd/may23_rtc/analysis/results/1x_param_sweep/without_damage/$param.html", "w") do io

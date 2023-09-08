@@ -1,5 +1,5 @@
 using Parameters, LabelledArrays, StaticArrays, CSV, DataFrames, DifferentialEquations, BenchmarkTools, OrderedCollections, DataInterpolations, PlotlyJS, Statistics
-include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); include("/home/holliehindley/phd/may23_rtc/analysis/t_param_setup.jl");
+include("/home/hollie_hindley/Documents/may23_rtc/functions/solving.jl"); include("/home/hollie_hindley/Documents/may23_rtc/functions/plotting.jl"); include("/home/hollie_hindley/Documents/may23_rtc/functions/sweep_params.jl"); include("/home/hollie_hindley/Documents/may23_rtc/models/rtc_orig.jl"); include("/home/hollie_hindley/Documents/may23_rtc/models/atp_lam_kin_t.jl"); include("/home/hollie_hindley/Documents/may23_rtc/analysis/t_param_setup.jl");
 
 @consts begin   
     L = 10; #10 
@@ -40,8 +40,6 @@ include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/hom
     rm_r_0 = 0#0.0131#0.04 # 0; 
     rd_0 = 0; 
     rt_0 = 0;
-
-    tspan = (0, 1e9);
 end
 params_kdam = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 params_kdam = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, 0, ktag, kdeg, kin, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
@@ -60,13 +58,26 @@ kin_range = range(0,stop=0.2,length=101)
 lam_range = range(0.001,stop=0.04,length=101)
 kdam_range = 10 .^ range(-4,stop=0,length=101)
 
+initial = [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0]
+new_params=deepcopy(params1)
+res=[]
+for i in atp_range
+    new_params.atp = i 
+    solu = sol(rtc_model, initial, tspan, new_params)
+    push!(res, get_ssval(solu, :rh))
+end
+res
+
+
+plot(scatter(x=atp_range, y=res))
+
 
 param_change = [:L, :c, :ω_ab, :ω_r, :atp, :kin, :lam, :kdam]
 param_ranges = [L_range, c_range, wab_range, wr_range, atp_range, kin_range, lam_range, kdam_range]
 
 
 for (i, j) in zip(param_change, param_ranges)
-    save_1x_plots(j, i, "kdam = 0.0", "log")
+    save_1x_plots(j, i, "kdam = 0.0", "log", initial, get_ssval)
 end
 
 kdam_range1 = range(0, stop=1, length=10)
