@@ -230,6 +230,62 @@ end
 
 
 
+function plot_all_vars(solu)
+    rm_a = get_curve(solu, :rm_a)
+    rtca = get_curve(solu, :rtca)
+    rm_b = get_curve(solu, :rm_b)
+    rtcb = get_curve(solu, :rtcb)
+    rm_r = get_curve(solu, :rm_r)
+    rtcr = get_curve(solu, :rtcr)
+    rh = get_curve(solu, :rh)
+    rd = get_curve(solu, :rd)
+    rt = get_curve(solu, :rt)
+    # rtc_i = get_curve(solu, :rtca_i)
+
+    atp = 3578.9473684210525
+    kdam = 0.5
+    kin = 0.022222222
+
+    alpha = @. rt/kr
+    fa = @. (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
+    ra = @. fa*rtcr
+    Vinit = @. ra*Vmax_init*atp/(Km_init+atp)
+    tscr_el_a = ω_ab*atp/(θtscr+atp)
+    tscr_a = Vinit*tscr_el_a
+    tscr_el_b = ω_ab*atp/(θtscr+atp)
+    tscr_b = Vinit*tscr_el_b
+    tscr_r = ω_r*atp/(θtscr+atp)
+    tlr_el = g_max*atp/(θtlr+atp)
+    tlr(rm_x, nx) = @. (1/nx)*rh*rm_x*tlr_el
+    tlr_r = tlr(rm_r, nr); tlr_a = tlr(rm_a, na); tlr_b = tlr(rm_b, nb);
+    rtca1 = @. (atp*rtca)/(atp+(km_a*rd)) 
+    rtcb1 = @. (atp*rtcb)/(atp+(km_b*rt)) 
+    Vrep = @. krep*rtcb1*rt
+    Vdam = @. kdam*rh
+    Vinflux = kin*tlr_el
+    Vtag = @. ktag*rtca1*rd
+
+
+    p_alpha = scatter(x=solu.t, y=alpha, name="alpha")
+    p_fa = scatter(x=solu.t, y=fa, name="fa")
+    p_ra = scatter(x=solu.t, y=ra, name="ra")
+    p_vinit = scatter(x=solu.t, y=Vinit, name="Vinit")
+    p_tscr_a = scatter(x=solu.t, y=tscr_a, name="tscr_a")
+    p_tscr_b = scatter(x=solu.t, y=tscr_b, name="tscr_b")
+    p_tlr_r = scatter(x=solu.t, y=tlr_r, name="tlr_r")
+    p_tlr_a = scatter(x=solu.t, y=tlr_a, name="tlr_a")
+    p_tlr_b = scatter(x=solu.t, y=tlr_b, name="tlr_b")
+    p_rtca1 = scatter(x=solu.t, y=rtca1, name="rtca1")
+    p_rtcb1 = scatter(x=solu.t, y=rtcb1, name="rtcb1")
+    p_vrep = scatter(x=solu.t, y=Vrep, name="Vrep")
+    p_vdam = scatter(x=solu.t, y=Vdam, name="Vdam")
+    p_vtag = scatter(x=solu.t, y=Vtag, name="Vtag")
+
+   return p_alpha, p_fa, p_ra, p_vinit, p_tscr_a, p_tscr_b, p_tlr_a, p_tlr_b, p_tlr_r, p_rtca1, p_rtcb1, p_vrep, p_vdam, p_vtag
+end
+
+
+
 function plot_all_change_param(range, res)
     # res = get_all_curves(solu, all_species)
     # lambda = get_lambda(solu, lam)

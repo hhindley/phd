@@ -43,10 +43,10 @@ end
 function get_all_ranges(func, branch_df, branch, n, l)
     all_ranges=[]
     # species=["rm_a","rtca","rm_b","rtcb","rm_r","rtcr","rh","rd","rt"]
-    for i in all_species
+    for i in [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :rtcb_i]
         push!(all_ranges, func(branch_df, branch, i, n, l))
     end
-    return @LArray [all_ranges[1], all_ranges[2],all_ranges[3],all_ranges[4],all_ranges[5],all_ranges[6],all_ranges[7],all_ranges[8],all_ranges[9]] (:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt) 
+    return @LArray [all_ranges[1], all_ranges[2],all_ranges[3],all_ranges[4],all_ranges[5],all_ranges[6],all_ranges[7],all_ranges[8],all_ranges[9],all_ranges[10]] (:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :rtcb_i) 
 end
 
 
@@ -71,17 +71,18 @@ function get_ss_change_init(init, range, l, params)
 end
 
 
-function get_rh_init_switch_all_ranges(rtc_model, ranges, branch_ssval, specie, l, params)
+function get_rh_init_switch_all_ranges(rtc_model, ranges, branch_ssval, specie, l, params, num_species)
     res=[];
     init_vals=[];
     unstable=[];
-    for (range,i) in zip(ranges,range(1,9))
+    params1 = deepcopy(params)
+    for (range,i) in zip(ranges,range(1,10))
         initial = deepcopy(branch_ssval)
         # res=[]
         for j in range
             initial[i] = j
             # @show initial
-            solu = sol(rtc_model, initial, tspan, params)
+            solu = sol(rtc_model, initial, tspan, params1)
             # if solu.retcode == ReturnCode.Unstable
             #     push!(unstable, initial)
             # end
@@ -92,11 +93,15 @@ function get_rh_init_switch_all_ranges(rtc_model, ranges, branch_ssval, specie, 
     end
 
     res = Float64.(res)
-    res = (reshape(res, (l,9)))
+    res = (reshape(res, (l,num_species)))
     # init_vals = Float64.init_vals
-    init_vals = reshape(init_vals, (l,9))
+    init_vals = reshape(init_vals, (l,num_species))
     # return DataFrame(res,all_species), DataFrame(init_vals,all_species), unstable
-    return DataFrame(res,all_species), DataFrame(init_vals,all_species);
+    if num_species == 10
+        return DataFrame(res,[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :rtcb_i]), DataFrame(init_vals,[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :rtcb_i]);
+    else 
+        return DataFrame(res,[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt]), DataFrame(init_vals,[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt]);
+    end
 
 end
 
@@ -111,7 +116,7 @@ end
 #     return all
 # end
 
-function upper_or_lower(df, lower_branch, l)
+function upper_or_lower(df, lower_branch, l, num_species)
     arr=[];
     # state1 = "$state"
     for col in eachcol(df)
@@ -126,8 +131,12 @@ function upper_or_lower(df, lower_branch, l)
             end
         end
     end
-    arr = reshape(arr, (l,9))
-    df = DataFrame(arr,all_species)
+    arr = reshape(arr, (l,num_species))
+    if num_species == 10
+        df = DataFrame(arr,[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :rtcb_i])
+    else
+        df = DataFrame(arr,[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt])
+    end 
     return df;
 end
 
@@ -389,6 +398,44 @@ function setup_ssvals_from_bfkit(rtc_mod, kdam_val, params2)
     return DataFrame(species=all_species,ss_val_on=[int_rma1(kdam_val),int_rtca1(kdam_val),int_rmb1(kdam_val),int_rtcb1(kdam_val),int_rmr1(kdam_val),int_rtcr1(kdam_val),int_rh1(kdam_val),int_rd1(kdam_val),int_rt1(kdam_val)],ss_val_off=[int_rma2(kdam_val),int_rtca2(kdam_val),int_rmb2(kdam_val),int_rtcb2(kdam_val),int_rmr2(kdam_val),int_rtcr2(kdam_val),int_rh2(kdam_val),int_rd2(kdam_val),int_rt2(kdam_val)]);
 end
 
+function setup_ssvals_from_bfkit_inhib(rtc_mod, kdam_val, params2)
+    # params2 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
+    # θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
+    # krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
+    # kdeg = 0.001, kin = 0.022222222, ω_ab = 0.05623413251903491, ω_r = 0.010000000000000002, 
+    # kdam =  0.01, lam = 0.014)
+    initial = [0., 0., 0., 0., 0., 0., 11.29, 0., 0., 0.]
+    br2 = get_br(rtc_mod, params2, initial, 3.)
+    df = create_br_df_inhib(br2)
+    df_bf = bf_point_df_inhib(br2)
+    first,middle,last=split_curves_inhib(df, df_bf)
+    first=Float64.(first)
+    last=Float64.(last)
+    
+    int_rma1 = QuadraticInterpolation(first.rm_a, first.kdam)
+    int_rma2 = QuadraticInterpolation(last.rm_a, last.kdam)
+    int_rtca1 = QuadraticInterpolation(first.rtca, first.kdam)
+    int_rtca2 = QuadraticInterpolation(last.rtca, last.kdam)
+    int_rmb1 = QuadraticInterpolation(first.rm_b, first.kdam)
+    int_rmb2 = QuadraticInterpolation(last.rm_b, last.kdam)
+    int_rtcb1 = QuadraticInterpolation(first.rtcb, first.kdam)
+    int_rtcb2 = QuadraticInterpolation(last.rtcb, last.kdam)
+    int_rmr1 = QuadraticInterpolation(first.rm_r, first.kdam)
+    int_rmr2 = QuadraticInterpolation(last.rm_r, last.kdam)
+    int_rtcr1 = QuadraticInterpolation(first.rtcr, first.kdam)
+    int_rtcr2 = QuadraticInterpolation(last.rtcr, last.kdam)
+    int_rh1 = QuadraticInterpolation(first.rh, first.kdam)
+    int_rh2 = QuadraticInterpolation(last.rh, last.kdam)
+    int_rd1 = QuadraticInterpolation(first.rd, first.kdam)
+    int_rd2 = QuadraticInterpolation(last.rd, last.kdam)
+    int_rt1 = QuadraticInterpolation(first.rt, first.kdam)
+    int_rt2 = QuadraticInterpolation(last.rt, last.kdam)
+    int_rtcbi1 = QuadraticInterpolation(first.rtcb_i, first.kdam)
+    int_rtcbi2 = QuadraticInterpolation(last.rtcb_i, last.kdam)
+
+    return DataFrame(species=[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :rtcb_i],ss_val_on=[int_rma1(kdam_val),int_rtca1(kdam_val),int_rmb1(kdam_val),int_rtcb1(kdam_val),int_rmr1(kdam_val),int_rtcr1(kdam_val),int_rh1(kdam_val),int_rd1(kdam_val),int_rt1(kdam_val),int_rtcbi1(kdam_val)],ss_val_off=[int_rma2(kdam_val),int_rtca2(kdam_val),int_rmb2(kdam_val),int_rtcb2(kdam_val),int_rmr2(kdam_val),int_rtcr2(kdam_val),int_rh2(kdam_val),int_rd2(kdam_val),int_rt2(kdam_val),int_rtcbi2(kdam_val)]);
+end
+
 
 function create_resdf(all_res,kdam_range)
     df = DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[])
@@ -455,3 +502,161 @@ function get_plot_vals(binary, l, n)
 end
 
 
+function double_param_vary(param_range1, param1, param_range2, param2, params1)
+    df = DataFrame(atp = Float64[], wab = Float64[], kdam1 = Float64[], kdam2 = Float64[], bs = Symbol[])
+    params = deepcopy(params1)
+    for i in param_range1
+        params = merge(params, (param1=>i,))
+        for j in param_range2
+            params = merge(params, (param2=>j,))
+            # @show params[:k_inhib], params[:inhib]
+            br = get_br(rtc_mod, params, initial, 3.)
+            if length(br.specialpoint) == 2
+                push!(df, (i, j, br.specialpoint[1].param, br.specialpoint[2].param, br.specialpoint[1].type))
+            else
+                push!(df, (i, j, br.specialpoint[2].param, br.specialpoint[3].param, br.specialpoint[2].type))
+            end
+        end    
+    end
+    return df
+end
+
+function double_param_vary_inhib(param_range1, param1, param_range2, param2, params1)
+    df = DataFrame(atp = Float64[], wab = Float64[], kdam1 = Float64[], kdam2 = Float64[], bs = Symbol[])
+    params = deepcopy(params1)
+    for i in param_range1
+        params = merge(params, (param1=>i,))
+        for j in param_range2
+            params = merge(params, (param2=>j,))
+            @show params
+            br = get_br(rtc_inhib_mod, params, initial_i, 3.)
+            if length(br.specialpoint) == 2
+                push!(df, (i, j, br.specialpoint[1].param, br.specialpoint[2].param, br.specialpoint[1].type))
+            else
+                push!(df, (i, j, br.specialpoint[2].param, br.specialpoint[3].param, br.specialpoint[2].type))
+            end
+        end    
+    end
+    return df
+end
+
+function plot_bistable_region(param_range1, param1, param_range2, param2, params1, colour, title)
+    df = double_param_vary_inhib(param_range1, param1, param_range2, param2, params1)
+    bsp = df[df.bs .== :bp, :]
+    # @show maximum(bsp[bsp[:,1] .== i, :][:,2])
+    max_ = Float64[]
+    min_ = Float64[]
+    for i in param_range1
+        if bsp[bsp[:,1] .== i, :][:,2] == Float64[]
+            @show i
+        else
+            push!(max_, maximum(bsp[bsp[:,1] .== i, :][:,2]))
+            push!(min_, minimum(bsp[bsp[:,1] .== i, :][:,2]))
+        end
+    end
+    if length(max_) == length(param_range1)
+        p = plot(param_range1, max_; fillrange=(min_), fillalpha = 0.35, fillcolor=colour, linecolor=:white, title=title, legend=false, xlims=(minimum(param_range1), maximum(param_range1)), ylims=(minimum(param_range2), maximum(param_range2)))
+        # p = plot!(plotatpt, plotlamt, c=:black)
+    else
+        Nothing
+    end
+
+    return (p)
+end
+
+
+function bistable_region(param_range1, param1, param_range2, param2, params1)
+    df = double_param_vary(param_range1, param1, param_range2, param2, params1)
+    bsp = df[df.bs .== :bp, :]
+    # @show maximum(bsp[bsp[:,1] .== i, :][:,2])
+    max_ = Float64[]
+    min_ = Float64[]
+    for i in param_range1
+        if bsp[bsp[:,1] .== i, :][:,2] == Float64[]
+            @show i
+        else
+            push!(max_, maximum(bsp[bsp[:,1] .== i, :][:,2]))
+            push!(min_, minimum(bsp[bsp[:,1] .== i, :][:,2]))
+        end
+    end
+    return max_, min_
+end
+
+function bistable_region_inhib(param_range1, param1, param_range2, param2, params1)
+    df = double_param_vary_inhib(param_range1, param1, param_range2, param2, params1)
+    bsp = df[df.bs .== :bp, :]
+    # @show maximum(bsp[bsp[:,1] .== i, :][:,2])
+    max_ = Float64[]
+    min_ = Float64[]
+    for i in param_range1
+        if bsp[bsp[:,1] .== i, :][:,2] == Float64[]
+            @show i
+        else
+            push!(max_, maximum(bsp[bsp[:,1] .== i, :][:,2]))
+            push!(min_, minimum(bsp[bsp[:,1] .== i, :][:,2]))
+        end
+    end
+    return max_, min_
+end
+
+function plot_bs_region_same_plot(param_range1, param_range2, results, title, range1, param1, param2)
+    colours =palette(:tab10)
+    p = plot()
+    for (i,j) in zip(range(1,length(results)), range(1,5))
+        if length(results[i][1]) == length(param_range1)
+            p = plot!(param_range1, results[i][1]; fillrange=(results[i][2]), fillalpha = 0.45, fillcolor=colours[j], 
+            linecolor=colours[j], title=title, label="$(@sprintf "%g" (range1[j]))", xlims=(minimum(param_range1), maximum(param_range1)), 
+            ylims=(minimum(param_range2), maximum(param_range2)), xlabel="$param1", ylabel="$param2")
+            # display(p)
+        else
+            Nothing
+        end
+    end
+    return p 
+    # return p = (plot!(plot_var1, plot_var2, c=:black, label=""))
+end
+
+function get_bs_region_results_wr(param_range1, param1, param_range2, param2, wab)
+    results_wr=[]
+    for i in wr_range1
+        params1 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
+        θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
+        krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
+        kdeg = 0.001, kin = 0.022222222, ω_ab = wab, ω_r = i, 
+        kdam =  0.01, lam = 0.014) 	
+        @show (params1[:ω_r])
+        max_,min_ = bistable_region(param_range1, param1, param_range2, param2, params1)
+        push!(results_wr, (max_,min_))
+    end
+    return results_wr
+end
+
+function get_bs_region_results_wab(param_range1, param1, param_range2, param2, wr)
+    results_wab=[]
+    for i in wab_range1
+        params1 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
+        θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
+        krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
+        kdeg = 0.001, kin = 0.022222222, ω_ab = i, ω_r = wr, 
+        kdam =  0.01, lam = 0.014) 	
+        # @show (params1[:ω_ab], params1[:atp])
+        max_,min_ = bistable_region(param_range1, param1, param_range2, param2, params1)
+        push!(results_wab, (max_,min_))
+    end
+    return results_wab
+end
+
+function get_bs_region_results_wab_inhib(param_range1, param1, param_range2, param2, wr)
+    results_wab=[]
+    for i in wab_range1
+        params1 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
+        θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
+        krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
+        kdeg = 0.001, kin = 0.022222222, ω_ab = i, ω_r = wr, 
+        kdam =  0.01, lam = 0.014, k_inhib=0.1, inhib=10)	
+        # @show (params1[:ω_ab], params1[:atp])
+        max_,min_ = bistable_region_inhib(param_range1, param1, param_range2, param2, params1)
+        push!(results_wab, (max_,min_))
+    end
+    return results_wab
+end

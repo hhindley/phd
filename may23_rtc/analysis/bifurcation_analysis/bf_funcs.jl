@@ -49,7 +49,7 @@ function rtc_mod!(dz, z, p, t)
     dz[1] = tscr_a - dil(rm_a) - deg(rm_a)
     dz[2] = tlr(rm_a, na) - dil(rtca)    
     dz[3] = tscr_b - dil(rm_b) - deg(rm_b)
-    dz[4] = tlr(rm_b, nb) - dil(rtcb)
+    dz[4] = tlr(rm_b, nb) - dil(rtcb) 
     dz[5] = tscr_r - dil(rm_r) - deg(rm_r)
     dz[6] = tlr(rm_r, nr) - dil(rtcr)
     dz[7] = Vrep - Vdam + Vinflux - dil(rh)
@@ -218,6 +218,47 @@ end
 
 
 
+function bf_point_df_inhib(br2)
+    df_bf = DataFrame(rm_a=Float64[],rtca=Float64[],rm_b=Float64[],rtcb=Float64[],rm_r=Float64[],rtcr=Float64[],rh=Float64[],rd=Float64[],rt=Float64[],rtcb_i=Float64[],kdam=Float64[]);
+    # df_bf.rm_a;
+    for i in br2.specialpoint
+        if i.type == :bp
+            push!(df_bf.rm_a, i.x[1])
+            push!(df_bf.rtca, i.x[2])
+            push!(df_bf.rm_b, i.x[3])
+            push!(df_bf.rtcb, i.x[4])
+            push!(df_bf.rm_r, i.x[5])
+            push!(df_bf.rtcr, i.x[6])
+            push!(df_bf.rh, i.x[7])
+            push!(df_bf.rd, i.x[8])
+            push!(df_bf.rt, i.x[9])
+            push!(df_bf.rtcb_i, i.x[10])
+            push!(df_bf.kdam, i.param)
+            # [push!(col,i.x[num] for (num, col) in zip(range(1,9), eachcol(df_bf)))]
+        
+        end
+    end
+    return df_bf;
+end
+
+
+
+
+function create_br_df_inhib(br)
+    df = DataFrame(rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[],rtcb_i=[],kdam=[]);
+    # for i in eachcol(df)
+    #     println(i)
+    # end
+    for i in range(1,length(br.sol))
+        for (s,d) in zip(range(1,10), eachcol(df))
+            push!(d, br.sol[i][1][s])
+        end
+        push!(df.kdam, br.sol[i][2])
+    end
+    
+    return df;
+end
+
 function split_curves(df, df_bf)
     kdam1 = findall(x->x==df_bf.kdam[1],df.kdam)[1]
     kdam2 = findall(x->x==df_bf.kdam[2],df.kdam)[1]
@@ -245,6 +286,41 @@ function split_curves(df, df_bf)
         end
     end
     for (col,col1) in zip(eachcol(df)[1:9],eachcol(last)[2:end])
+        for i in col[kdam2:end]
+            push!(col1, i)
+        end
+    end
+    return first, middle, last
+end
+
+
+function split_curves_inhib(df, df_bf)
+    kdam1 = findall(x->x==df_bf.kdam[1],df.kdam)[1]
+    kdam2 = findall(x->x==df_bf.kdam[2],df.kdam)[1]
+    first=DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[],rtcb_i=[])
+    middle=DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[],rtcb_i=[])
+    last=DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[],rtcb_i=[])
+    
+    for i in df.kdam[1:kdam1]
+        push!(first.kdam, i)
+    end
+    for i in df.kdam[kdam1:kdam2]
+        push!(middle.kdam, i)
+    end
+    for i in df.kdam[kdam2:end]
+        push!(last.kdam, i)
+    end
+    for (col,col1) in zip(eachcol(df)[1:10],eachcol(first)[2:end])
+        for i in col[1:kdam1]
+            push!(col1, i)
+        end
+    end
+    for (col,col1) in zip(eachcol(df)[1:10],eachcol(middle)[2:end])
+        for i in col[kdam1:kdam2]
+            push!(col1, i)
+        end
+    end
+    for (col,col1) in zip(eachcol(df)[1:10],eachcol(last)[2:end])
         for i in col[kdam2:end]
             push!(col1, i)
         end
@@ -292,4 +368,49 @@ function bf_scatter(df_bf, color)
     bf_rd = scatter(x=df_bf.kdam, y=df_bf.rd, mode="markers", yaxis="y2", name="", line=attr(color=color),showlegend=false, legendgroup="Damaged ribosomes")
     bf_rt = scatter(x=df_bf.kdam, y=df_bf.rt, mode="markers", yaxis="y2", name="Bifurcation point", line=attr(color=color),showlegend=true, legendgroup="Tagged ribosomes")
     return bf_rma, bf_rtca, bf_rmb, bf_rtcb, bf_rmr, bf_rtcr, bf_rh, bf_rd, bf_rt
+end
+
+
+function full_lines(df,width, colors)
+    rma_p = scatter(x=df.kdam, y=df.rm_a, name="RtcBA mRNA", line=attr(width=width,color=colors[1]))
+    rtca_p = scatter(x=df.kdam, y=df.rtca, name="RtcA", line=attr(width=width,color=colors[2]))
+    rmb_p = scatter(x=df.kdam, y=df.rm_b, name="rm_b", line=attr(width=width,color=colors[3]))
+    rtcb_p = scatter(x=df.kdam, y=df.rtcb, name="RtcB", line=attr(width=width,color=colors[4]))
+    rmr_p = scatter(x=df.kdam, y=df.rm_r, name="rm_r", line=attr(width=width,color=colors[5]))
+    rtcr_p = scatter(x=df.kdam, y=df.rtcr, name="RtcR", line=attr(width=width,color=colors[6]))
+    rh_p = scatter(x=df.kdam, y=df.rh, name="Rh", yaxis="y2", line=attr(width=width,color=colors[7]))
+    rd_p = scatter(x=df.kdam, y=df.rd, name="Rd", yaxis="y2", line=attr(width=width,color=colors[8]))
+    rt_p = scatter(x=df.kdam, y=df.rt, name="Rt", yaxis="y2", line=attr(width=width,color=colors[9]))
+    return rma_p, rtca_p, rmb_p, rtcb_p, rmr_p, rtcr_p, rh_p, rd_p, rt_p
+end
+
+
+function different_levels_inhibition(rtc_inhib_mod, k_inhib1, k_inhib2, inhib)
+    params_for_ssval_setup_inhib = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
+    θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
+    krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
+    kdeg = 0.001, kin = 0.022222222, ω_ab = 0.05623413251903491, ω_r = 0.010000000000000002, 
+    kdam =  0.01, lam = 0.014, k_inhib1=k_inhib1, k_inhib2=k_inhib2, inhib=inhib)
+    br = get_br(rtc_inhib_mod, params_for_ssval_setup_inhib, initial_i, 3.)
+    bf = bf_point_df_inhib(br)
+    df = create_br_df_inhib(br)
+    kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
+    kdam2 = findall(x->x==bf.kdam[2],df.kdam)[1]
+    return bf, df, kdam1, kdam2
+end
+
+function plot_rtcb_bf(bf, df, kdam1, kdam2)
+    rtcb1 = scatter(x=df.kdam[1:kdam1], y=df.rtcb[1:kdam1], name="RtcB", line=attr(width=3, color=:green), showlegend=false, legendgroup="1")#, fill="tozeroy")
+    rtcb2 = scatter(x=df.kdam[kdam1:kdam2], y=df.rtcb[kdam1:kdam2], name="", line=attr(width=3,dash="dash", color=:black),showlegend=false, legendgroup="1")
+    rtcb3 = scatter(x=df.kdam[kdam2:end], y=df.rtcb[kdam2:end], name="", line=attr(width=3, color=:red),showlegend=false, legendgroup="1")
+    bf_rtcb = scatter(x=bf.kdam, y=bf.rtcb, mode="markers", name="Bifurcation point", line=attr(color=:black),showlegend=false, legendgroup="1")
+    return rtcb1, rtcb2, rtcb3, bf_rtcb
+end
+
+function plot_rtca_bf(bf, df, kdam1, kdam2)
+    rtcb1 = scatter(x=df.kdam[1:kdam1], y=df.rtca[1:kdam1], name="RtcA", line=attr(width=3, color=:green), showlegend=false, legendgroup="1")#, fill="tozeroy")
+    rtcb2 = scatter(x=df.kdam[kdam1:kdam2], y=df.rtca[kdam1:kdam2], name="", line=attr(width=3,dash="dash", color=:black),showlegend=false, legendgroup="1")
+    rtcb3 = scatter(x=df.kdam[kdam2:end], y=df.rtca[kdam2:end], name="", line=attr(width=3, color=:red),showlegend=false, legendgroup="1")
+    bf_rtcb = scatter(x=bf.kdam, y=bf.rtca, mode="markers", name="Bifurcation point", line=attr(color=:black),showlegend=false, legendgroup="1")
+    return rtcb1, rtcb2, rtcb3, bf_rtcb
 end

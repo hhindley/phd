@@ -1,5 +1,5 @@
 using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, Statistics
-using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra
+using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
 
 using PlotlyJS, ProgressBars
 include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/set_ups.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); 
@@ -59,10 +59,16 @@ kdam =  0.01, lam = 0.014)
 
 params1 = @LArray [L, c, kr, Vmax_init, Km_init, 0.05623413251903491, 0.010000000000000002, θtscr, g_max, θtlr, km_a, km_b, d, krep, 1., ktag, kdeg, 0.022222222, 3578.9473684210525, na, nb, nr, 0.014] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 
-kdam_range_onoff = range(0.63575,2.0175,length=20)
+br = get_br(rtc_mod, params_for_ssval_setup, initial, 3.)
+bf = bf_point_df(br)
+df = create_br_df(br)
+kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
+kdam2 = findall(x->x==bf.kdam[2],df.kdam)[1]
+
+kdam_range_onoff = range(df.kdam[kdam2]+0.01*df.kdam[kdam2], df.kdam[kdam1]-0.01*df.kdam[kdam1], length=10)
 tspan=(0,1e9)
 
-branches1 = setup_ssvals_from_bfkit(1, params_for_ssval_setup)
+branches1 = setup_ssvals_from_bfkit(rtc_mod, 1, params_for_ssval_setup)
 branches1.ss_val_off
 initial
 
@@ -72,14 +78,14 @@ svals_onoff = DataFrame(rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd
 for kdam_val in ProgressBar(kdam_range_onoff)
     psm = deepcopy(params1)
     psm.kdam = kdam_val
-    branches1 = setup_ssvals_from_bfkit(kdam_val, params_for_ssval_setup)
+    branches1 = setup_ssvals_from_bfkit(rtc_mod, kdam_val, params_for_ssval_setup)
     # @show psm
     
     n = 600; l = 1000;
     upper_ranges = get_all_ranges(set_ss_range_zerotossval, branches1, "ss_val_on", n, l)
     # @show upper_ranges[4]
-    all, init_vals = get_rh_init_switch_all_ranges(rtc_model, upper_ranges, branches1.ss_val_on,:rh,l,psm)
-    binary = upper_or_lower(all, branches1.ss_val_off[7], l)
+    all, init_vals = get_rh_init_switch_all_ranges(rtc_model, upper_ranges, branches1.ss_val_on,:rh,l,psm,9)
+    binary = upper_or_lower(all, branches1.ss_val_off[7], l, 9)
     inds = get_switch_ind(binary, l)
     vals = get_switch_vals(inds, init_vals)
     push!(svals_onoff.rm_a, vals[1])
@@ -93,11 +99,21 @@ for kdam_val in ProgressBar(kdam_range_onoff)
     push!(svals_onoff.rt, vals[9])
 end
 
+svals_onoff
 
+rtcb1 = scatter(x=df.kdam[1:kdam1], y=df.rtcb[1:kdam1], name="RtcB", line=attr(width=3, color=:green), showlegend=false, legendgroup="1")#, fill="tozeroy")
+rtcb2 = scatter(x=df.kdam[kdam1:kdam2], y=df.rtcb[kdam1:kdam2], name="", line=attr(width=3,dash="dash", color=:black),showlegend=false, legendgroup="1")
+rtcb3 = scatter(x=df.kdam[kdam2:end], y=df.rtcb[kdam2:end], name="", line=attr(width=3, color=:red),showlegend=false, legendgroup="1")
+bf_rtcb = scatter(x=bf.kdam, y=bf.rtcb, mode="markers", name="Bifurcation point", line=attr(color=:black),showlegend=false, legendgroup="1")
 
+rtcb_onoff = scatter(x=kdam_range_onoff, y=svals_onoff.rtcb, name="switch point", showlegend=false, line=attr(color=:red, dash="dot"))#, fill="tozeroy")
 
+plot([rtcb1,rtcb2,rtcb3,bf_rtcb,rtcb_onoff])
 
+svals_onoff.rtcb
+((collect(kdam_range_onoff)[7]-df.kdam[kdam2])/(df.kdam[kdam1] - df.kdam[kdam2]))*100
 
+65.3032
 
 
 atp_range = range(2500,stop=4000,length=3)
