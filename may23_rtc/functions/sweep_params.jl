@@ -1,15 +1,16 @@
 # module SweepParams
 # export sweep_paramx2, sweep_paramx3, change_param, change_param_atp, sweep_paramx2_new, sweep_paramx2_few_t
-function sweep_paramx2(model, lam, species, func, param1, param2, param_range1, param_range2)
+function sweep_paramx2(model, parameters, all_species, species, func, param1, param2, param_range1, param_range2)
     all_res = []
-    params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+    # params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+    params = deepcopy(parameters)
     for i in param_range1
         params[param1] = i
         res1 = []
         for val in param_range2 
             params[param2] = val
             solu = sol(model, initial, tspan, params)
-            push!(res1, func(solu, species))
+            push!(res1, func(solu, species, all_species))
         end
         push!(all_res, res1)
 
@@ -90,12 +91,12 @@ function change_param(param_range, parameter, model, init, func, species, params
     for val in param_range
         new_params[parameter] = val
         # @show params[parameter]
-        @show new_params[:kdam]
+        @show new_params[parameter]
         # param = values(params)
         # @show params
         solu = sol(model, init, tspan, new_params)
         for (i,j) in zip(values(dict_res), species)
-            push!(i, func(solu, j))
+            push!(i, func(solu, j, species))
         end
     end
     return dict_res

@@ -15,23 +15,30 @@ function solvePlot_time(rtc_model, lam, atp, kin, kdam, title, log)
     return plotly_plot_sol(solu, "", log, "$title")
 end
 
-function plotly_plot_sol(sol, log, log1, title)
-    rm_a = get_curve(sol, :rm_a); rm_b = get_curve(sol, :rm_b); rm_r = get_curve(sol, :rm_r); rtca = get_curve(sol, :rtca); rtcb = get_curve(sol, :rtcb); rtcr = get_curve(sol, :rtcr); rh = get_curve(sol, :rh); rt = get_curve(sol, :rt); rd = get_curve(sol, :rd);
+function plotly_plot_sol(sol, all_species, log, log1, title)
+    df = create_solu_df(sol, all_species)
+    curves=[]
+    for i in all_species
+        push!(curves, get_curve(df, i))
+    end
 
-    rma_curve = scatter(x=sol.t, y=rm_a, name="mRNA RtcA")
-    rmb_curve = scatter(x=sol.t, y=rm_b, name="mRNA RtcB")
-    rmr_curve = scatter(x=sol.t, y=rm_r, name="mRNA RtcR")
-    rtca_curve = scatter(x=sol.t, y=rtca, name="RtcA")
-    rtcb_curve = scatter(x=sol.t, y=rtcb, name="RtcB")
-    rtcr_curve = scatter(x=sol.t, y=rtcr, name="RtcR")
-    rh_curve = scatter(x=sol.t, y=rh, name="Rh")
-    rt_curve = scatter(x=sol.t, y=rt, name="Rt")
-    rd_curve = scatter(x=sol.t, y=rd, name="Rd")
-    rtot = scatter(x=sol.t, y=rh+rd+rt, name="rtot")
+    # rm_a = get_curve(sol, all_species, :rm_a); rm_b = get_curve(sol, all_species, :rm_b); rm_r = get_curve(sol, all_species, :rm_r); rtca = get_curve(sol, all_species, :rtca); rtcb = get_curve(sol, all_species, :rtcb); rtcr = get_curve(sol, all_species, :rtcr); rh = get_curve(sol, all_species, :rh); rt = get_curve(sol, all_species, :rt); rd = get_curve(sol, all_species, :rd);
+
+    rma_curve = scatter(x=sol.t, y=curves[1], name="$(all_species[1])")
+    rmb_curve = scatter(x=sol.t, y=curves[2], name="$(all_species[2])")
+    rmr_curve = scatter(x=sol.t, y=curves[3], name="$(all_species[3])")
+    rtca_curve = scatter(x=sol.t, y=curves[4], name="$(all_species[4])")
+    rtcb_curve = scatter(x=sol.t, y=curves[5], name="$(all_species[5])")
+    rtcr_curve = scatter(x=sol.t, y=curves[6], name="$(all_species[6])")
+    rh_curve = scatter(x=sol.t, y=curves[7], name="$(all_species[7])")
+    rt_curve = scatter(x=sol.t, y=curves[8], name="$(all_species[8])")
+    rd_curve = scatter(x=sol.t, y=curves[9], name="$(all_species[9])")
+    # rtot = scatter(x=sol.t, y=rh+rd+rt, name="rtot")
+
     # alpha = @. rt/kr 
     # fa = @. (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
     # ra = scatter(x=sol.t, y=fa.*rtcr, name="A_RtcR")
-    return (plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve, rtot] ,Layout(xaxis_type=log, yaxis_type=log1, title=title, xaxis_range=(0,1320), xaxis_title="Time (minutes)", yaxis_title="Concentration (μM)")))
+    return (plot([rma_curve, rmb_curve, rmr_curve, rtca_curve, rtcb_curve, rtcr_curve, rh_curve, rt_curve, rd_curve] ,Layout(xaxis_type=log, yaxis_type=log1, title=title, xaxis_range=(0,1320), xaxis_title="Time (minutes)", yaxis_title="Concentration (μM)")))
 end
 
 function plotly_plot_sol_timepoints(sol)
