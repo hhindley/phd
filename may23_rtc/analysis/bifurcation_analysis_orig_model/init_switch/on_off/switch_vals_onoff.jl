@@ -78,13 +78,13 @@ svals_onoff = DataFrame(rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd
 for kdam_val in ProgressBar(kdam_range_onoff)
     psm = deepcopy(params1)
     psm.kdam = kdam_val
-    branches1 = setup_ssvals_from_bfkit(rtc_mod, kdam_val, params_for_ssval_setup)
+    branches1 = setup_ssvals_from_bfkit(rtc_mod, kdam_val, params_for_ssval_setup, initial)
     # @show psm
     
     n = 600; l = 1000;
     upper_ranges = get_all_ranges(set_ss_range_zerotossval, branches1, "ss_val_on", n, l)
     # @show upper_ranges[4]
-    all, init_vals = get_rh_init_switch_all_ranges(rtc_model, upper_ranges, branches1.ss_val_on,:rh,l,psm,9)
+    all, init_vals = get_rh_init_switch_all_ranges(rtc_model, upper_ranges, branches1.ss_val_on,:rh,l,psm,9, all_species)
     binary = upper_or_lower(all, branches1.ss_val_off[7], l, 9)
     inds = get_switch_ind(binary, l)
     vals = get_switch_vals(inds, init_vals)

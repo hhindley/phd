@@ -4,9 +4,8 @@ using StatsPlots
 include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/set_ups.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); 
 include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); 
 include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/holliehindley/phd/may23_rtc/models/combinations_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/bf_funcs.jl");
-include("/home/holliehindley/phd/colors_plotly.jl")
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/funcs.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_inhibition_model.jl");
+include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
+include("/home/holliehindley/phd/colors_plotly.jl");
 
 @consts begin
     L = 10; #10 
@@ -94,12 +93,17 @@ range_kdeg = (kdeg_ub) - (kdeg_lb)
 kdeg_std = 0.015
 kdeg_dist = Truncated(Normal(kdeg, kdeg_std), kdeg_lb, kdeg_ub)
 
-l=1000
+krep_dist = Truncated(krep_norm, 0, 300)
+
+kdeg_lnorm = LogNormal(kdeg)
+histogram(rand(kdeg_lnorm, l), bins=100)
+
+l=1000000
 kr_new = rand(kr_norm,l)
 Vmax_init_new = rand(Vmax_init_norm,l)
 Km_init_new = rand(Km_init_norm,l)
 d_new = rand(d_norm,l)
-krep_new = rand(krep_norm,l)
+krep_new = rand(krep_dist,l)
 ktag_new = rand(ktag_norm,l)
 kdeg_new = rand(kdeg_dist,l)
 kin_new = rand(kin_dist,l)
@@ -107,20 +111,25 @@ kma_new = rand(kma_norm,l)
 kmb_new = rand(kmb_norm,l)
 
 
-histogram(kr_new, bins=50, label="kr")
-histogram(Vmax_init_new, bins=50, label="Vmax_init")
-histogram(Km_init_new, bins=50, label="Km_init")
-histogram(d_new, bins=50, label="d")
-histogram(krep_new, bins=50, label="krep")
-histogram(ktag_new, bins=50, label="ktag")
-histogram(kdeg_new, bins=50, label="kdeg")
-histogram(kin_new, bins=50, label="kin")
-histogram(kma_new, bins=50, label="km_a")
-histogram(kmb_new, bins=50, label="km_b")
 
+p_kr = histogram(kr_new, bins=100, label="kr", ylabel="f(x)", xlabel="x")#, formatter=y->y/1e4)#, x->x*1e6)
+p_Vmax = histogram(Vmax_init_new, bins=100, label="Vmax_init", ylabel="f(x)", xlabel="x")#, formatter=y->y/1e4)
+p_Km = histogram(Km_init_new, bins=100, label="Km_init", ylabel="f(x)", xlabel="x")#, formatter=y->y/1e4)
+p_d = histogram(d_new, bins=100, label="d", ylabel="f(x)", xlabel="x")#, formatter=y->y/1e4)#, x->x*1e5)
+p_krep = histogram(krep_new, bins=100, label="krep", ylabel="f(x)", xlabel="x")#, formatter=y->y/1e4)
+p_ktag = histogram(ktag_new, bins=100, label="ktag", ylabel="f(x)", xlabel="x")#, formatter=y->y/1e4)
+p_kdeg = histogram(kdeg_new, bins=100, label="kdeg", ylabel="f(x)", xlabel="x")#, formatter=y->y/1e4)#, x->x*1e6)
+p_kin = histogram(kin_new, bins=100, label="kin", ylabel="f(x)", xlabel="x")#, formatter=y->y/1e4)
+p_kma = histogram(kma_new, bins=100, label="km_a", ylabel="f(x)", xlabel="x")#, formatter=y->y/1e4)
+p_kmb = histogram(kmb_new, bins=100, label="km_b", ylabel="f(x)", xlabel="x")#, formatter=y->y/1e4)#, x->x*1e3)
 
+p=plot(p_kr, p_Vmax, p_Km, p_d, p_krep, p_ktag, p_kdeg, p_kma, p_kmb, size=(1000,1000), yaxis=(formatter=y->y/1e4))
 
+savefig(p, "/home/holliehindley/phd/may23_rtc/analysis/sensitivity_analysis/dists.svg")
 
+plot(x->pdf(kr_new, x))
+
+pdf(kr_new, l)
 # plot(plot(krep_norm, label="krep"), plot(kr_norm, label="kr"), plot(Vmax_init_norm, label="Vmax_init"), plot(Km_init_norm, label="Km_init"),
 # plot(d_norm, label="d"), plot(ktag_norm, label="ktag"), plot(kdeg_norm, label="kdeg"), plot(kin_dist, label="kin"), 
 # plot(kma_norm, label="km_a"), plot(kmb_norm, label="km_b"), size=(1000,400))

@@ -5,9 +5,9 @@ using PlotlyJS, ProgressBars
 include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/set_ups.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); 
 include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); 
 include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/holliehindley/phd/may23_rtc/models/combinations_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/bf_funcs.jl");
-include("/home/holliehindley/phd/colors_plotly.jl")
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/funcs.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_inhibition_model.jl");
+include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
+include("/home/holliehindley/phd/colors_plotly.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_trna_model.jl")
+include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/init_switch_funcs.jl"); include("/home/holliehindley/phd/may23_rtc/models/inhibition_models/rtc_inhibition_model.jl");
 
 @consts begin
     L = 10; #10 
@@ -208,6 +208,26 @@ sweep_paramx2(rtc_model_trna, params_trna, trna_species, :trna, get_ssval, :kdam
 
 
 
+function checking_bistability(model, params, init, specie, all_species, kdam_range)
+    param_init = deepcopy(params)
+    new_params = deepcopy(params)
+    first_params = deepcopy(params)
+    first_params[:kdam]=kdam_range[1]
+    solu = sol(model, init, tspan, first_params)
+    ss = get_ssval(solu, specie, all_species)
+    init_first = ss_init_vals(solu, all_species)
+    res =[]
+    for i in range(2, length(kdam_range))
+        param_init[:kdam]=kdam_range[i-1]
+        solu_init = sol(model, init_first, tspan, param_init)
+        init_ss = ss_init_vals(solu_init, all_species)
+        new_params[:kdam] = kdam_range[i]
+        solu_new = sol(model, init_ss, tspan, new_params)
+        push!(res, get_ssval(solu_new, specie, all_species))
+    end
+    pushfirst!(res, ss)
+    return res
+end
 
 kdam_range = range(0,400,length=1000)
 kdam_range2 = range(400,0,length=1000)
@@ -263,7 +283,7 @@ bf_p1 = (scatter(x=[df1.kdam[kdam2]], y=[df1.rh[kdam2]], legendgroup=6, line=att
 plot([stable1, unstable1], Layout(title="θ tRNA = 30"))
 
 plot([trna_h_p1, trna_h_p2, stable1, unstable1, stable2, unstable2, bf_p, bf_p1])
-
+plot([bf_p])
 
 res_orig1 = numerical_bistability_analysis(rtc_model, params_orig, initial, :rh, all_species, kdam_range_orig)
 res_orig2 = numerical_bistability_analysis(rtc_model, params_orig, initial, :rh, all_species, kdam_range_orig2)
@@ -272,12 +292,17 @@ porig2 = scatter(x=kdam_range_orig2, y=res_orig2, name="↓ kdam", legendgroup=4
 
 orig = plot([porig1, porig2, rh_p, bifurc_orig], Layout(title="original model - Rh"))
 
-params_trna = @LArray [10., c, kr*12, Vmax_init, Km_init, 0.05623413251903491, 0.010000000000000002, θtscr, g_max, θtlr, km_a, km_b, d, krep, 0.5, ktag, kdeg, kin_trna, 3578.9473684210525, na, nb, nr, 0.014, rh, thr_t] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam, :rh, :thr_t)
+params_trna = @LArray [10., c, kr*1020, Vmax_init, Km_init, 0.05623413251903491, 0.010000000000000002, θtscr, g_max, θtlr, km_a, km_b, d, krep, 0.5, ktag, kdeg, kin_trna, 3578.9473684210525, na, nb, nr, 0.014, rh, thr_t] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam, :rh, :thr_t)
 res_trna1 = numerical_bistability_analysis(rtc_model_trna, params_trna, init_trna, :trna, trna_species, kdam_range)
 res_trna2 = numerical_bistability_analysis(rtc_model_trna, params_trna, init_trna, :trna, trna_species, kdam_range2)
 ptrna1 = scatter(x=kdam_range, y=res_trna1, name="↑ kdam", legendgroup=3, line=attr(color="#e377c2"))
 ptrna2 = scatter(x=kdam_range2, y=res_trna2, name="↓ kdam", legendgroup=4, line=attr(color="#9467bd"))
-trna = plot([ptrna1, ptrna2])
+trna = plot([ptrna1, ptrna2],
+Layout(legend=attr(x=0.75,y=1),width=1000,height=750,yaxis2=attr(overlaying="y",side="right"), xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="Proteins and mRNAs (μM)", yaxis2_title="Ribosomal species (μM)",
+yaxis=attr(showline=true,linewidth=1,linecolor="black",mirror=true),xaxis=attr(showline=true,linewidth=1,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white"))
+
 trna2 = plot([ptrna1, ptrna2, trna_h_p, stable1, unstable1, stable2, unstable2, bf_p, bf_p1], Layout(title="tRNA model - tRNA"))
 
 p = [orig trna2]
@@ -285,6 +310,37 @@ p = [orig trna2]
 open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/ss_proof.html", "w") do io
     PlotlyBase.to_html(io, p.plot)
 end
+
+res_trna1 = numerical_bistability_analysis(rtc_model_trna, params_trna, init_trna, :trna, trna_species, kdam_range)
+res_trna2 = numerical_bistability_analysis(rtc_model_trna, params_trna, init_trna, :trna, trna_species, kdam_range2)
+ptrna1 = scatter(x=kdam_range, y=res_trna1, name="Healthy tRNA", legendgroup=3, yaxis="y2", line=attr(color=:gold,linewidth=3))
+ptrna2 = scatter(x=kdam_range2, y=res_trna2, name="", legendgroup=3, showlegend=false, yaxis="y2", line=attr(color=:gold,linewidth=3))
+res_rtcb1 = numerical_bistability_analysis(rtc_model_trna, params_trna, init_trna, :rtcb, trna_species, kdam_range)
+res_rtcb2 = numerical_bistability_analysis(rtc_model_trna, params_trna, init_trna, :rtcb, trna_species, kdam_range2)
+prtcb1 = scatter(x=kdam_range, y=res_rtcb1, name="RtcB", legendgroup=3, line=attr(color=:plum,linewidth=3))
+prtcb2 = scatter(x=kdam_range2, y=res_rtcb2, name="", showlegend=false, legendgroup=3, line=attr(color=:plum,linewidth=3))
+
+stable_trna = df.rh[1:kdam1]
+unstable_trna = df.rh[kdam1:end]
+stable1 = scatter(x=df.kdam[1:kdam1],y=stable_trna, line=attr(color=:gold, linewidth=3), name="Healthy tRNA", legendgroup=5, yaxis="y2")
+unstable1 = scatter(x=df.kdam[kdam1:end],y=unstable_trna, line=attr(color=:gold, linewidth=3, dash="dash"), name="", showlegend=false, legendgroup=5, yaxis="y2")
+
+stable_rtcb = df.rtcb[1:kdam1]
+unstable_rtcb = df.rtcb[kdam1:end]
+stable2 = scatter(x=df.kdam[1:kdam1],y=stable_rtcb, line=attr(color=:plum, linewidth=3), name="RtcB", legendgroup=5)
+unstable2 = scatter(x=df.kdam[kdam1:end],y=unstable_rtcb, line=attr(color=:plum, linewidth=3, dash="dash"), name="", showlegend=false, legendgroup=5)
+
+bf_p = (scatter(x=[df.kdam[kdam1]], y=[df.rh[kdam1]], legendgroup=5, line=attr(color=:darkblue), mode="markers", showlegend=false, yaxis="y2"))
+bf_p1 = (scatter(x=[df.kdam[kdam1]], y=[df.rtcb[kdam1]], legendgroup=5, line=attr(color=:darkblue), mode="markers", showlegend=false))
+
+trna = plot([ptrna2, prtcb2, stable1, unstable1, stable2, unstable2, bf_p, bf_p1],
+Layout(legend=attr(x=0.75,y=1),width=1000,height=750,yaxis2=attr(overlaying="y",side="right"), xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="RtcB (μM)", yaxis2_title="Healthy tRNA (μM)",
+yaxis=attr(showline=true,linewidth=1,linecolor="black",mirror=true),xaxis=attr(showline=true,linewidth=1,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white"))
+
+savefig(trna, "/home/holliehindley/phd/may23_rtc/analysis/trna_analysis/trna_bf.svg")
+
 
 
 
@@ -322,6 +378,8 @@ unstable_firsthalf = df[!,:rh][kdam1:end][1:2094]
 unstable1 = plot(scatter(x=df.kdam[kdam1:end],y=unstable_firsthalf, line=attr(color="#1f77b4", dash="dash"),showlegend=false))
 
 
+kdam_range = range(0,400,length=1000)
+kdam_range2 = range(400,0,length=1000)
 kdam_range_short = range(20,350,length=10)
 new_ps = deepcopy(params_trna)
 first_init = DataFrame(rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],trna=[],rd=[],rt=[]); 
@@ -345,7 +403,7 @@ for i in kdam_range_short
     end
 end
 
-function plot_bf_species(br, specie, specie2, kdam_range2, kdam_range_short, first_init, new_init, final_ss)
+function plot_bf_species_switch(br, specie, specie2, kdam_range2, kdam_range_short, first_init, new_init, final_ss)
     df = create_br_df(br)
     bf = bf_point_df(br)
     kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
@@ -356,7 +414,7 @@ function plot_bf_species(br, specie, specie2, kdam_range2, kdam_range_short, fir
     res_trna2 = checking_bistability(rtc_model_trna, params_trna, init_trna, specie2, trna_species, kdam_range2)
     zeross = scatter(x=kdam_range2, y=res_trna2, name="↓ kdam", legendgroup=4, line=attr(color="#9467bd"),showlegend=false)
     diffs_ss = []
-    for (i,j, kdam_val) in zip(first_init[!,specie2], new_init[!,specie2], kdam_range_short)
+    for (i,j, kdam_val) in ProgressBar(zip(first_init[!,specie2], new_init[!,specie2], kdam_range_short))
         push!(diffs_ss,scatter(x=[kdam_val,kdam_val], y=[i,j],line=attr(color="#e377c2"),showlegend=false))
     end
     final_ss_p = scatter(x=kdam_range_short, y=final_ss[!,specie2],showlegend=false)
@@ -365,14 +423,14 @@ function plot_bf_species(br, specie, specie2, kdam_range2, kdam_range_short, fir
     diffs_ss[9], diffs_ss[10], final_ss_p], Layout(title="$specie"))
 end
 
-prma = plot_bf_species(br, :rm_a, :rm_a, kdam_range2, kdam_range_short, first_init, new_init, final_ss)
-prtca = plot_bf_species(br, :rtca, :rtca, kdam_range2, kdam_range_short, first_init, new_init, final_ss)    
-prmb = plot_bf_species(br, :rm_b, :rm_b, kdam_range2, kdam_range_short, first_init, new_init, final_ss)
-prtcb = plot_bf_species(br, :rtcb, :rtcb, kdam_range2, kdam_range_short, first_init, new_init, final_ss)     
-prtcr = plot_bf_species(br, :rtcr, :rtcr, kdam_range2, kdam_range_short, first_init, new_init, final_ss) 
-ptrna = plot_bf_species(br, :rh, :trna, kdam_range2, kdam_range_short, first_init, new_init, final_ss)  
-prd = plot_bf_species(br, :rd, :rd, kdam_range2, kdam_range_short, first_init, new_init, final_ss)    
-prt = plot_bf_species(br, :rt, :rt, kdam_range2, kdam_range_short, first_init, new_init, final_ss) 
+prma = plot_bf_species_switch(br, :rm_a, :rm_a, kdam_range2, kdam_range_short, first_init, new_init, final_ss);
+prtca = plot_bf_species_switch(br, :rtca, :rtca, kdam_range2, kdam_range_short, first_init, new_init, final_ss);    
+prmb = plot_bf_species_switch(br, :rm_b, :rm_b, kdam_range2, kdam_range_short, first_init, new_init, final_ss);
+prtcb = plot_bf_species_switch(br, :rtcb, :rtcb, kdam_range2, kdam_range_short, first_init, new_init, final_ss);     
+prtcr = plot_bf_species_switch(br, :rtcr, :rtcr, kdam_range2, kdam_range_short, first_init, new_init, final_ss) ;
+ptrna = plot_bf_species_switch(br, :rh, :trna, kdam_range2, kdam_range_short, first_init, new_init, final_ss)  ;
+prd = plot_bf_species_switch(br, :rd, :rd, kdam_range2, kdam_range_short, first_init, new_init, final_ss)    ;
+prt = plot_bf_species_switch(br, :rt, :rt, kdam_range2, kdam_range_short, first_init, new_init, final_ss) ;
     
 p = [prma prtca prmb prtcb; prtcr ptrna prd prt]
 
@@ -412,3 +470,26 @@ bistable_search(:rh, rh_range)
 bistable_search(:kin, kin_range)
 bistable_search(:thr_t, thrt_range)
 
+
+
+
+
+
+
+params_trna = @LArray [10., c, kr*1020, Vmax_init, Km_init, 0.05623413251903491, 0.010000000000000002, θtscr, g_max, θtlr, km_a, km_b, d, krep, 0.5, ktag, kdeg, kin_trna, 3578.9473684210525, na, nb, nr, 0.014, rh, thr_t] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam, :rh, :thr_t)
+kr_range = 10 .^ range(log10(0.125),log10(1250),length=5)
+ps=[]
+for i in kr_range
+    p = deepcopy(params_trna)
+    p[:kr] = i
+
+    res_trna1 = numerical_bistability_analysis(rtc_model_trna, p, init_trna, :trna, trna_species, kdam_range)
+    ptrna1 = scatter(x=kdam_range, y=res_trna1, name="kr = $i")
+    push!(ps, ptrna1)
+end
+
+trna = plot([ps[1],ps[2],ps[3],ps[4],ps[5]],
+Layout(legend=attr(x=0.75,y=1),width=1000,height=750,yaxis2=attr(overlaying="y",side="right"), xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="Proteins and mRNAs (μM)", yaxis2_title="Ribosomal species (μM)",
+yaxis=attr(showline=true,linewidth=1,linecolor="black",mirror=true),xaxis=attr(showline=true,linewidth=1,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white"))

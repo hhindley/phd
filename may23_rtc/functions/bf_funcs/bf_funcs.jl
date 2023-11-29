@@ -12,12 +12,12 @@ norminf(x) = norm(x, Inf)
 # kdam =  0.01,
 # ω_ab = 2., ω_r = 0.0089, atp = 3000., kin = 0.022222, lam = 0.04)
 
-params1 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
+params_bf = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
 θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
 krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
-kdeg = 0.001, kin = 0.022222222, ω_ab = 1, ω_r = 0.0001, 
+kdeg = 0.001, kin = 0.022222222, ω_ab = 0.05623413251903491, ω_r = 0.010000000000000002, 
 kdam =  0.01, lam = 0.014) 		
-
+#ω_ab = 1, ω_r = 0.0001
 
 
 initial = [0., 0., 0., 0., 0., 0., 11.29, 0., 0.]
@@ -31,7 +31,7 @@ function get_br(model, params, initial, kdam_max)
         prob = BifurcationProblem(model, initial, setproperties(params; kdam=0.), (@lens _.kdam);
         recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], trna = x[7], rd = x[8], rt = x[9]),)
         opts_br = ContinuationPar(pMin = 0., pMax = kdam_max, ds = 0.001, 
-        dsmax = 0.1, # 0.001, 0.15
+        dsmax = 0.15, # 0.001, 0.15
         # options to detect bifurcations
         detectBifurcation = 3, nInversion = 4, maxBisectionSteps = 10, #3,2,10
         # number of eigenvalues
@@ -68,7 +68,7 @@ function get_br(model, params, initial, kdam_max)
 
     end
     # continuation of equilibria
-    br = continuation(prob, PALC(θ=0.05), opts_br; plot = false, bothside=true, normC = norminf)
+    br = continuation(prob, PALC(θ=0.5), opts_br; plot = false, bothside=true, normC = norminf)
     # br = continuation(prob, PALC(θ=0.75), opts_br; plot = false, bothside=true, normC = norminf)
     return br
 end
@@ -343,19 +343,11 @@ function different_levels_inhibition(rtc_inhib_mod, k_inhib1, k_inhib2, inhib)
     return bf, df, kdam1, kdam2
 end
 
-function plot_rtcb_bf(bf, df, kdam1, kdam2)
-    rtcb1 = scatter(x=df.kdam[1:kdam1], y=df.rtcb[1:kdam1], name="RtcB", line=attr(width=3, color=:green), showlegend=false, legendgroup="1")#, fill="tozeroy")
-    rtcb2 = scatter(x=df.kdam[kdam1:kdam2], y=df.rtcb[kdam1:kdam2], name="", line=attr(width=3,dash="dash", color=:black),showlegend=false, legendgroup="1")
-    rtcb3 = scatter(x=df.kdam[kdam2:end], y=df.rtcb[kdam2:end], name="", line=attr(width=3, color=:red),showlegend=false, legendgroup="1")
-    bf_rtcb = scatter(x=bf.kdam, y=bf.rtcb, mode="markers", name="Bifurcation point", line=attr(color=:black),showlegend=false, legendgroup="1")
-    return rtcb1, rtcb2, rtcb3, bf_rtcb
-end
-
-function plot_rtca_bf(bf, df, kdam1, kdam2)
-    rtcb1 = scatter(x=df.kdam[1:kdam1], y=df.rtca[1:kdam1], name="RtcA", line=attr(width=3, color=:green), showlegend=false, legendgroup="1")#, fill="tozeroy")
-    rtcb2 = scatter(x=df.kdam[kdam1:kdam2], y=df.rtca[kdam1:kdam2], name="", line=attr(width=3,dash="dash", color=:black),showlegend=false, legendgroup="1")
-    rtcb3 = scatter(x=df.kdam[kdam2:end], y=df.rtca[kdam2:end], name="", line=attr(width=3, color=:red),showlegend=false, legendgroup="1")
-    bf_rtcb = scatter(x=bf.kdam, y=bf.rtca, mode="markers", name="Bifurcation point", line=attr(color=:black),showlegend=false, legendgroup="1")
+function plot_rtc_bf(bf, df, kdam1, kdam2, specie)
+    rtcb1 = scatter(x=df.kdam[1:kdam1], y=df[!,specie][1:kdam1], name="$specie", line=attr(width=5, color="#005356ff"), showlegend=true)#, legendgroup="1")#, fill="tozeroy")
+    rtcb2 = scatter(x=df.kdam[kdam1:kdam2], y=df[!,specie][kdam1:kdam2], name="", line=attr(width=5,dash="dash", color=:black),showlegend=false, legendgroup="1")
+    rtcb3 = scatter(x=df.kdam[kdam2:end], y=df[!,specie][kdam2:end], name="", line=attr(width=5, color="#f04e53ff"),showlegend=false, legendgroup="1")
+    bf_rtcb = scatter(x=bf.kdam, y=bf[!,specie], mode="markers", name="Bifurcation point", line=attr(color=:black),showlegend=false, legendgroup="1")
     return rtcb1, rtcb2, rtcb3, bf_rtcb
 end
 

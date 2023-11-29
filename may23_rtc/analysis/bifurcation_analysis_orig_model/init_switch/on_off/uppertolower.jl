@@ -1,12 +1,12 @@
 using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, Statistics
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra
 
-using PlotlyJS
+using PlotlyJS, Printf
 include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/set_ups.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); 
 include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/holliehindley/phd/may23_rtc/models/combinations_t.jl"); include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/bf_funcs.jl");
+include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/holliehindley/phd/may23_rtc/models/combinations_t.jl"); include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
 
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/funcs.jl");
+include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/init_switch_funcs.jl");
 
 
 @consts begin
@@ -67,24 +67,23 @@ all_multiples=[]
 for kdam_val in kdam_range
     ps = deepcopy(params1)
     ps.kdam = kdam_val
-    branches1 = setup_ssvals_from_bfkit(kdam_val)
+    branches1 = setup_ssvals_from_bfkit(rtc_mod, kdam_val, params_bf)
     @show ps
     
     n = 6000; l = 1000;
     upper_ranges = get_all_ranges(set_ss_range_zerotossval, branches1, "ss_val_on", n, l)
     # @show upper_ranges[9]
-    all, init_vals, unstable = get_rh_init_switch_all_ranges(upper_ranges, branches1.ss_val_on,:rh,l,ps)
-    push!(instab,unstable)
-    # @show all
+    all, init_vals = get_rh_init_switch_all_ranges(rtc_model, upper_ranges, branches1.ss_val_on,:rh,l,ps,9, all_species)
+    # push!(instab,unstable)
+    # push!(all2, all)
     # push!(all2, get_switch_vals(get_switch_ind(upper_or_lower(all, branches1.ss_val_off, l),l),init_vals))
     # push!(all2,upper_or_lower(all,branches1.ss_val_off,l))
-    push!(all_diffs,full_find_differences_or_percs(all,get_diffs,init_vals,branches1,l,branches1.ss_val_on,l,"on"))
-    push!(all_percs,full_find_differences_or_percs(all,get_percentages,init_vals,branches1,l,branches1.ss_val_on,l,"on"))
-    push!(all_multiples,full_find_differences_or_percs(all,get_multiples,init_vals,branches1,l,branches1.ss_val_on,l,"on"))
+
+    # push!(all_diffs,full_find_differences_or_percs(all,get_diffs,init_vals,branches1.ss_val_off[7],l,branches1.ss_val_on,l,"on"))
+    push!(all_percs,full_find_differences_or_percs(all,get_percentages,init_vals,branches1.ss_val_off[7],l,branches1.ss_val_on,l,"on"))
+    # push!(all_multiples,full_find_differences_or_percs(all,get_multiples,init_vals,branches1.ss_val_off[7],l,branches1.ss_val_on,l,"on"))
 end
-instab
-allres
-all2
+
 
 df_res = create_resdf(all_diffs,kdam_range)
 df_percs = create_resdf(all_percs,kdam_range)

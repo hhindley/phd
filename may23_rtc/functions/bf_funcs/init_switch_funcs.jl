@@ -43,10 +43,10 @@ end
 function get_all_ranges(func, branch_df, branch, n, l)
     all_ranges=[]
     # species=["rm_a","rtca","rm_b","rtcb","rm_r","rtcr","rh","rd","rt"]
-    for i in [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :rtcb_i]
+    for i in all_species#[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :rtcb_i]
         push!(all_ranges, func(branch_df, branch, i, n, l))
     end
-    return @LArray [all_ranges[1], all_ranges[2],all_ranges[3],all_ranges[4],all_ranges[5],all_ranges[6],all_ranges[7],all_ranges[8],all_ranges[9],all_ranges[10]] (:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :rtcb_i) 
+    return @LArray [all_ranges[1], all_ranges[2],all_ranges[3],all_ranges[4],all_ranges[5],all_ranges[6],all_ranges[7],all_ranges[8],all_ranges[9]] (:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt)  #[all_ranges[1], all_ranges[2],all_ranges[3],all_ranges[4],all_ranges[5],all_ranges[6],all_ranges[7],all_ranges[8],all_ranges[9],all_ranges[10]] (:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :rtcb_i) 
 end
 
 
@@ -71,12 +71,12 @@ function get_ss_change_init(init, range, l, params)
 end
 
 
-function get_rh_init_switch_all_ranges(rtc_model, ranges, branch_ssval, specie, l, params, num_species)
+function get_rh_init_switch_all_ranges(rtc_model, ranges, branch_ssval, specie, l, params, num_species, all_species)
     res=[];
     init_vals=[];
     unstable=[];
     params1 = deepcopy(params)
-    for (range,i) in zip(ranges,range(1,10))
+    for (range,i) in zip(ranges,range(1,9))
         initial = deepcopy(branch_ssval)
         # res=[]
         for j in range
@@ -86,19 +86,21 @@ function get_rh_init_switch_all_ranges(rtc_model, ranges, branch_ssval, specie, 
             # if solu.retcode == ReturnCode.Unstable
             #     push!(unstable, initial)
             # end
-            push!(res, get_ssval(solu,specie))
+            push!(res, get_ssval(solu,specie,all_species))
             push!(init_vals, initial[i])
         end
         # push!(all_res,res)
     end
 
     res = Float64.(res)
-    res = (reshape(res, (l,num_species)))
+    res = reshape(res, (l,num_species))
     # init_vals = Float64.init_vals
     init_vals = reshape(init_vals, (l,num_species))
     # return DataFrame(res,all_species), DataFrame(init_vals,all_species), unstable
+    # @show size(res)
+    # return DataFrame(res,[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt]), DataFrame(init_vals,[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt]);
     if num_species == 10
-        return DataFrame(res,[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :rtcb_i]), DataFrame(init_vals,[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :rtcb_i]);
+        return DataFrame(res,[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :rtc_i]), DataFrame(init_vals,[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :rtc_i]);
     else 
         return DataFrame(res,[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt]), DataFrame(init_vals,[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt]);
     end
@@ -121,14 +123,14 @@ function upper_or_lower(df, lower_branch, l, num_species)
     # state1 = "$state"
     for col in eachcol(df)
         for i in col
-            for j in i 
-                # if round(j;digits=3) == round(lower_branch[7];digits=3)
-                if lower_branch-(0.1*lower_branch) < j < lower_branch+(0.1*lower_branch) 
-                    push!(arr, 0)
-                else
-                    push!(arr, 1)
-                end
+        # for j in i 
+            # if round(j;digits=3) == round(lower_branch[7];digits=3)
+            if lower_branch-(0.1*lower_branch) < i < lower_branch+(0.1*lower_branch) 
+                push!(arr, 0)
+            else
+                push!(arr, 1)
             end
+            # end
         end
     end
     arr = reshape(arr, (l,num_species))
@@ -349,7 +351,7 @@ function get_multiples(switch_vals,branch,branch_label)
 end
 
 function full_find_differences_or_percs(all,func,init_vals,lower_branch,l,branch,l1,branch_label)
-    binary_df = upper_or_lower(all,lower_branch,l)
+    binary_df = upper_or_lower(all,lower_branch,l,9)
 
     switch_ind = get_switch_ind(binary_df,l1)
 
@@ -362,13 +364,12 @@ end
 
 
 
-function setup_ssvals_from_bfkit(rtc_mod, kdam_val, params2)
+function setup_ssvals_from_bfkit(rtc_mod, kdam_val, params2, initial)
     # params2 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
     # θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
     # krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
     # kdeg = 0.001, kin = 0.022222222, ω_ab = 0.05623413251903491, ω_r = 0.010000000000000002, 
     # kdam =  0.01, lam = 0.014)
-    initial = [0., 0., 0., 0., 0., 0., 11.29, 0., 0.]
     br2 = get_br(rtc_mod, params2, initial, 3.)
     df = create_br_df(br2)
     df_bf = bf_point_df(br2)

@@ -148,3 +148,29 @@ function ss_init_vals(sol, species)
         end
     end
 end
+
+
+function all_var_df(sol, all_species)
+    df = DataFrame(sol)
+    names = [:time;all_species]
+    rename!(df, names)
+    alpha = @. df.rt/kr
+    fa = @. (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
+    ra = @. fa*df.rtcr
+    Vinit = @. ra*Vmax_init*atp/(Km_init+atp)
+    tscr_el_a = ω_ab*atp/(θtscr+atp)
+    tscr_ab = Vinit*tscr_el_a
+    tscr_r = ω_r*atp/(θtscr+atp)
+    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_r = @. (1/nr)*df.rh*df.rm_r*tlr_el
+    tlr_a = @. (1/na)*df.rh*df.rm_a*tlr_el
+    tlr_b = @. (1/nb)*df.rh*df.rm_b*tlr_el
+    rtca1 = @. (atp*df.rtca)/(atp+(km_a*df.rd)) 
+    rtcb1 = @. (atp*df.rtcb)/(atp+(km_b*df.rt)) 
+    Vrep = @. krep*rtcb1*df.rt
+    Vdam = @. kdam*df.rh
+    Vinflux = kin*tlr_el
+    Vtag = @. ktag*rtca1*df.rd
+    all_df = DataFrame(:alpha=>alpha,:fa=>fa,:ra=>ra,:Vinit=>Vinit,:tscr_ab=>tscr_ab, :tscr_r=>tscr_r, :tlr_r=>tlr_r, :tlr_b=>tlr_b, :tlr_a=>tlr_a, :rtca1=>rtca1, :rtcb1=>rtcb1, :Vrep=>Vrep, :Vdam=>Vdam, :Vinflux=>Vinflux, :Vtag=>Vtag)
+    return all_df
+end

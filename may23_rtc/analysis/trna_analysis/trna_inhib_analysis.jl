@@ -5,9 +5,10 @@ using PlotlyJS, ProgressBars
 include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/set_ups.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); 
 include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); 
 include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/holliehindley/phd/may23_rtc/models/combinations_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/bf_funcs.jl");
-include("/home/holliehindley/phd/colors_plotly.jl")
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/funcs.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_inhibition_model.jl");
+include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
+include("/home/holliehindley/phd/colors_plotly.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_trna_model.jl")
+include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/init_switch_funcs.jl"); include("/home/holliehindley/phd/may23_rtc/models/inhibition_models/rtc_inhibition_model.jl");
+include("/home/holliehindley/phd/may23_rtc/models/inhibition_models/trna_inhib.jl")
 
 @consts begin
     L = 10; #10 
@@ -60,7 +61,9 @@ kin_trna = 1
 
 trna_species_inhib = [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :trna, :rd, :rt, :rtc_i]
 init_trna_inhib = [0,0,0,0,0,0,135.5,0,0,0] # tRNA initial conc = 135.5
+init_trna = [0,0,0,0,0,0,135.5,0,0] # tRNA initial conc = 135.5
 params_trna_inhib = @LArray [10., c, kr*12, Vmax_init, Km_init, 0.05623413251903491, 0.010000000000000002, θtscr, g_max, θtlr, km_a, km_b, d, krep, 0.5, ktag, kdeg, kin_trna, 3578.9473684210525, na, nb, nr, 0.014, rh, thr_t,k_inhib1, k_inhib2, inhib] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam, :rh, :thr_t, :k_inhib1, :k_inhib2, :inhib)
+params_trna = @LArray [10., c, kr*12, Vmax_init, Km_init, 0.05623413251903491, 0.010000000000000002, θtscr, g_max, θtlr, km_a, km_b, d, krep, 0.5, ktag, kdeg, kin_trna, 3578.9473684210525, na, nb, nr, 0.014, rh, thr_t] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam, :rh, :thr_t)
 
 
 kdam_range = range(0,400,length=1000)
@@ -104,6 +107,11 @@ ptrna3 = scatter(x=kdam_range, y=res_trna3, name="↑ kdam", legendgroup=3, line
 ptrna4 = scatter(x=kdam_range2, y=res_trna4, name="↓ kdam", legendgroup=4, line=attr(color="#9467bd"))
 trna = plot([ptrna1, ptrna2])
 
+res_trna7 = checking_bistability(rtc_trna_inhib_model_rtcr, params_trna_inhib, init_trna_inhib, :trna, trna_species_inhib, kdam_range)
+res_trna8 = checking_bistability(rtc_trna_inhib_model_rtcr, params_trna_inhib, init_trna_inhib, :trna, trna_species_inhib, kdam_range2)
+ptrna7 = scatter(x=kdam_range, y=res_trna7, name="↑ kdam", legendgroup=3, line=attr(color="#e377c2"))
+ptrna8 = scatter(x=kdam_range2, y=res_trna8, name="↓ kdam", legendgroup=4, line=attr(color="#9467bd"))
+
 trna_species = [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :trna, :rd, :rt]
 res_trna5 = checking_bistability(rtc_model_trna, params_trna, init_trna, :trna, trna_species, kdam_range)
 res_trna6 = checking_bistability(rtc_model_trna, params_trna, init_trna, :trna, trna_species, kdam_range2)
@@ -113,8 +121,22 @@ trna = plot([ptrna5, ptrna6])
 
 bs1 = scatter(x=kdam_range, y=res_trna1, name="RtcB inhib")
 bs2 = scatter(x=kdam_range, y=res_trna3, name="RtcA inhib")
-bs3 = scatter(x=kdam_range, y=res_trna5, name="Normal tRNA model")
-plot([bs1, bs2, bs3])
+bs3 = scatter(x=kdam_range, y=res_trna5, name="Original tRNA")
+bs4 = scatter(x=kdam_range, y=res_trna7, name="RtcR inhib")
+
+p = plot([bs3, bs2, bs1, bs4], Layout(title="tRNA"))
+
+open("/home/holliehindley/phd/may23_rtc/analysis/trna_analysis/inhib.html", "w") do io
+    PlotlyBase.to_html(io, p.plot)
+end
+p = plot([bs3, bs2, bs1, bs4],
+Layout(legend=attr(x=0.75,y=1),width=1000,height=750, xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="Healthy tRNA steady-state concentration (μM)",
+yaxis=attr(showline=true,linewidth=1,linecolor="black"),xaxis=attr(showline=true,linewidth=1,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white"))
+
+savefig(p, "/home/holliehindley/phd/may23_rtc/analysis/trna_analysis/trna_inhib.svg")
+
 
 params_trna_inhib_bf = (L = 50000., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
 θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 

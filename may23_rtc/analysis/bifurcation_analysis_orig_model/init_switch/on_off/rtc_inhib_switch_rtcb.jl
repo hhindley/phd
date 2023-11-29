@@ -5,11 +5,11 @@ using PlotlyJS, ProgressBars
 include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/set_ups.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); 
 include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); 
 include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/holliehindley/phd/may23_rtc/models/combinations_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/bf_funcs.jl");
+include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
 
-include("/home/holliehindley/phd/may23_rtc/models/rtc_inhibition_model.jl");
+include("/home/holliehindley/phd/may23_rtc/models/inhibition_models/rtc_inhibition_model.jl");
 
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/funcs.jl");
+include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/init_switch_funcs.jl");
 
 
 tspan = (0,1e9)
@@ -100,7 +100,7 @@ inhibb = 0.1
 bfb, dfb, kdam1b, kdam2b = different_levels_inhibition(rtc_inhib_mod_rtcb, k_inhib1b, k_inhib2b, inhibb)
 rtcb1b, rtcb2b, rtcb3b, bf_rtcbb = plot_rtcb_bf(bfb, dfb, kdam1b, kdam2b)
 
-p = plot([rtcb1, rtcb2, rtcb3, bf_rtcb, rtcb10, rtcb20, rtcb30, bf_rtcb0, rtcb1a, rtcb2a, rtcb3a, bf_rtcba, rtcb1b, rtcb2b, rtcb3b, bf_rtcbb],
+p = plot([rtcb_p0, rtcb1, rtcb2, rtcb3, bf_rtcb, rtcb1a, rtcb2a, rtcb3a, bf_rtcba, rtcb1a, rtcb2a, rtcb3a, bf_rtcba, rtcb1b, rtcb2b, rtcb3b, bf_rtcbb],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="RtcB (μM)",
 yaxis=attr(showline=true,linewidth=1,linecolor="black"),xaxis=attr(showline=true,linewidth=1,linecolor="black"),
@@ -121,20 +121,20 @@ p_r = plot([rh_p, rd_p, rt_p], Layout(title="inhib"))
 plot([scatter(x=df.kdam, y=df.rtcb, name="inhib"), scatter(x=df0.kdam, y=df0.rtcb, name="orig")])
 
 
-
+inhib_species=[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :rtc_i]
 kdam_range = range(df.kdam[kdam2]+0.01*df.kdam[kdam2], df.kdam[kdam1]-0.01*df.kdam[kdam1], length=10)
 
 svals_onoff = DataFrame(rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[])
 for kdam_val in ProgressBar(kdam_range)
     psm = deepcopy(params_inhib)
     psm.kdam = kdam_val
-    branches1 = setup_ssvals_from_bfkit_inhib(rtc_inhib_mod, kdam_val, params_for_ssval_setup_inhib)
+    branches1 = setup_ssvals_from_bfkit_inhib(rtc_inhib_mod_rtcb, kdam_val, params_for_ssval_setup_inhib)
     # @show psm
     
     n = 600; l = 500;
     upper_ranges = get_all_ranges(set_ss_range_zerotossval, branches1, "ss_val_on", n, l)
     # @show upper_ranges[4]
-    all, init_vals = get_rh_init_switch_all_ranges(rtc_inhib_model_rtcb, upper_ranges, branches1.ss_val_on,:rh,l,psm,10)
+    all, init_vals = get_rh_init_switch_all_ranges(rtc_inhib_model_rtcb, upper_ranges, branches1.ss_val_on,:rh,l,psm,9, all_species)
     binary = upper_or_lower(all, branches1.ss_val_off[7], l,10)
     inds = get_switch_ind(binary, l)
     vals = get_switch_vals(inds, init_vals)
