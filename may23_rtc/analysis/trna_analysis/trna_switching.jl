@@ -55,6 +55,7 @@ rh = 11.29 #75 # conc of ribosomes in exponential phase
 thr_t = 5#30 # was at 5 before to get saved plots # needs to be less than 30 
 kin_trna = 1
 
+init_trna = [0,0,0,0,0,0,135.5,0,0] # tRNA initial conc = 135.5
 
 function checking_bistability(model, params, init, specie, all_species, kdam_range)
     param_init = deepcopy(params)
@@ -77,12 +78,14 @@ function checking_bistability(model, params, init, specie, all_species, kdam_ran
     return res
 end
 
+trna_species = [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :trna, :rd, :rt]
 
 params_trna2 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
 θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
 krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923,
 kdeg = 0.001, kin = kin_trna, ω_ab = 0.05623413251903491, ω_r = 0.010000000000000002, 
 kdam =  0.01, lam = 0.014, rh = rh, thr_t = thr_t)
+params_trna = @LArray [10., c, kr*12, Vmax_init, Km_init, 0.05623413251903491, 0.010000000000000002, θtscr, g_max, θtlr, km_a, km_b, d, krep, 0.5, ktag, kdeg, kin_trna, 3578.9473684210525, na, nb, nr, 0.014, rh, thr_t] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam, :rh, :thr_t)
 
 br = get_br(rtc_mod_trna, params_trna2, init_trna, 400.)
 

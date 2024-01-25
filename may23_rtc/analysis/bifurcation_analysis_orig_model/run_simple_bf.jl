@@ -1,27 +1,18 @@
-using Plots, Printf, Measures
+using PlotlyJS, Printf, Measures, LabelledArrays
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, DataFrames
 
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/bf_funcs.jl")
+include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl")
+include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl")
+include("/home/holliehindley/phd/may23_rtc/rtc_parameters/params.jl")
+include("/home/holliehindley/phd/may23_rtc/rtc_parameters/init.jl")
+
+br = get_br(rtc_mod, params_bf, rtc_init, 30.)
 
 
-params1 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
-θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
-krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
-kdeg = 0.001, kin = 0.022222222, ω_ab = 1, ω_r = 0.0001, 
-kdam =  0.01, lam = 0.014) 	
 
-params2 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
-θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
-krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
-kdeg = 0.001, kin = 0.022222222, ω_ab = 0.05623413251903491, ω_r = 0.010000000000000002, 
-kdam =  0.01, lam = 0.014) 	
+df = create_br_df(br)
 
-br_rtca = get_br(rtc_inhib_mod_rtca, params_for_ssval_setup_inhib, initial_i, 3.)
-plot(br_rtca, vars=(:param, :rt), linewidthstable=5)
-
-
-br = get_br(rtc_mod, params1, initial, 1.)
-br2 = get_br(rtc_mod, params2, initial, 3.)
+plot(scatter(x=df.kdam, y=df.rtca))
 
 plot(br, br2, vars = (:param, :rh), linewidthstable=2.5)
 plot(br, br2, vars = (:param, :rd), linewidthstable=2.5)

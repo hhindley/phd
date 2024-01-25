@@ -10,7 +10,7 @@ include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/
 # include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/funcs.jl");
 
 function rtc_inhib_model_rtcb(initial, params, t) 
-    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = params
+    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = params
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rtc_i = initial
 
 
@@ -33,7 +33,7 @@ function rtc_inhib_model_rtcb(initial, params, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -67,7 +67,7 @@ end
 
 
 function rtc_inhib_mod_rtcb!(dz, z, p, t)
-    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = p
+    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = p
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rtc_i = z
 
 
@@ -90,7 +90,7 @@ function rtc_inhib_mod_rtcb!(dz, z, p, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -132,7 +132,7 @@ rtc_inhib_mod_rtcb(z, p) = rtc_inhib_mod_rtcb!(similar(z), z, p, 0)
 
 
 function rtc_inhib_model_rtca(initial, params, t) 
-    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = params
+    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = params
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rtc_i = initial
 
 
@@ -155,7 +155,7 @@ function rtc_inhib_model_rtca(initial, params, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -189,7 +189,7 @@ end
 
 
 function rtc_inhib_mod_rtca!(dz, z, p, t)
-    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = p
+    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = p
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rtc_i = z
 
 
@@ -212,7 +212,7 @@ function rtc_inhib_mod_rtca!(dz, z, p, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -250,7 +250,7 @@ rtc_inhib_mod_rtca(z, p) = rtc_inhib_mod_rtca!(similar(z), z, p, 0)
 
 
 function rtc_inhib_model_rtcr(initial, params, t) 
-    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = params
+    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = params
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rtc_i = initial
 
 
@@ -273,7 +273,7 @@ function rtc_inhib_model_rtcr(initial, params, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -307,7 +307,7 @@ end
 
 
 function rtc_inhib_mod_rtcr!(dz, z, p, t)
-    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = p
+    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = p
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rtc_i = z
 
 
@@ -330,7 +330,7 @@ function rtc_inhib_mod_rtcr!(dz, z, p, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -375,7 +375,7 @@ rtc_inhib_mod_rtcr(z, p) = rtc_inhib_mod_rtcr!(similar(z), z, p, 0)
 
 
 function rtc_inhib_model_rt(initial, params, t) 
-    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = params
+    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = params
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rtc_i = initial
 
 
@@ -398,7 +398,7 @@ function rtc_inhib_model_rt(initial, params, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -432,7 +432,7 @@ end
 
 
 function rtc_inhib_mod_rt!(dz, z, p, t)
-    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = p
+    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = p
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rtc_i = z
 
 
@@ -455,7 +455,7 @@ function rtc_inhib_mod_rt!(dz, z, p, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -499,7 +499,7 @@ rtc_inhib_mod_rt(z, p) = rtc_inhib_mod_rt!(similar(z), z, p, 0)
 
 
 function rtc_inhib_model_rtcab(initial, params, t) 
-    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = params
+    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = params
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rtca_i, rtcb_i = initial
 
 
@@ -522,7 +522,7 @@ function rtc_inhib_model_rtcab(initial, params, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -557,7 +557,7 @@ end
 
 
 function rtc_inhib_mod_rtcab!(dz, z, p, t)
-    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = p
+    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = p
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rtca_i, rtcb_i = z
 
 
@@ -580,7 +580,7 @@ function rtc_inhib_mod_rtcab!(dz, z, p, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -627,7 +627,7 @@ rtc_inhib_mod_rtcab(z, p) = rtc_inhib_mod_rtcab!(similar(z), z, p, 0)
 
 
 function rtc_inhib_model_rtcbr(initial, params, t) 
-    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = params
+    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = params
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rtcr_i, rtcb_i = initial
 
 
@@ -650,7 +650,7 @@ function rtc_inhib_model_rtcbr(initial, params, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -685,7 +685,7 @@ end
 
 
 function rtc_inhib_mod_rtcbr!(dz, z, p, t)
-    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = p
+    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = p
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rtcr_i, rtcb_i = z
 
 
@@ -708,7 +708,7 @@ function rtc_inhib_mod_rtcbr!(dz, z, p, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -757,7 +757,7 @@ rtc_inhib_mod_rtcbr(z, p) = rtc_inhib_mod_rtcbr!(similar(z), z, p, 0)
 
 
 function rtc_inhib_model_rtcar(initial, params, t) 
-    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = params
+    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = params
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rtcr_i, rtca_i = initial
 
 
@@ -780,7 +780,7 @@ function rtc_inhib_model_rtcar(initial, params, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -815,7 +815,7 @@ end
 
 
 function rtc_inhib_mod_rtcar!(dz, z, p, t)
-    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = p
+    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = p
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rtcr_i, rtca_i = z
 
 
@@ -838,7 +838,7 @@ function rtc_inhib_mod_rtcar!(dz, z, p, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -883,7 +883,7 @@ rtc_inhib_mod_rtcar(z, p) = rtc_inhib_mod_rtcar!(similar(z), z, p, 0)
 
 
 function rtc_inhib_model_rtcat(initial, params, t) 
-    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = params
+    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = params
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rt_i, rtca_i = initial
 
 
@@ -906,7 +906,7 @@ function rtc_inhib_model_rtcat(initial, params, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -941,7 +941,7 @@ end
 
 
 function rtc_inhib_mod_rtcat!(dz, z, p, t)
-    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = p
+    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = p
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rt_i, rtca_i = z
 
 
@@ -964,7 +964,7 @@ function rtc_inhib_mod_rtcat!(dz, z, p, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -1005,7 +1005,7 @@ rtc_inhib_mod_rtcat(z, p) = rtc_inhib_mod_rtcat!(similar(z), z, p, 0)
 
 
 function rtc_inhib_model_rtcbt(initial, params, t) 
-    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = params
+    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = params
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rt_i, rtcb_i = initial
 
 
@@ -1028,7 +1028,7 @@ function rtc_inhib_model_rtcbt(initial, params, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -1063,7 +1063,7 @@ end
 
 
 function rtc_inhib_mod_rtcbt!(dz, z, p, t)
-    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = p
+    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = p
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rt_i, rtcb_i = z
 
 
@@ -1086,7 +1086,7 @@ function rtc_inhib_mod_rtcbt!(dz, z, p, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -1131,7 +1131,7 @@ rtc_inhib_mod_rtcbt(z, p) = rtc_inhib_mod_rtcbt!(similar(z), z, p, 0)
 
 
 function rtc_inhib_model_rtcrt(initial, params, t) 
-    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = params
+    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = params
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rt_i, rtc_i = initial
 
 
@@ -1154,7 +1154,7 @@ function rtc_inhib_model_rtcrt(initial, params, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
@@ -1189,7 +1189,7 @@ end
 
 
 function rtc_inhib_mod_rtcrt!(dz, z, p, t)
-    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, k_inhib1, k_inhib2, inhib = p
+    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_inhib1, k_inhib2, inhib = p
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rt_i, rtc_i = z
 
 
@@ -1212,7 +1212,7 @@ function rtc_inhib_mod_rtcrt!(dz, z, p, t)
 
     # translation
     tlr_el = g_max*atp/(θtlr+atp)
-    tlr(rm_x, nx) = (1/nx)*rh*rm_x*tlr_el # *1/nx nx = length of RtcA, RtcB and RtcR
+    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
 
     # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)

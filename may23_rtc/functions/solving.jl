@@ -8,6 +8,12 @@ all_species_atp = [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :atp
 
 # export solcb, sol_with_t, sol, get_all_curves, get_all_curves_df, check_get_ssval, get_curve, get_ssval
 
+function simple_solve!(model, init, tspan, params)
+    prob = ODEProblem(model, init, tspan, params);
+    solu = solve(prob, Rodas4(), isoutofdomain=(y,p,t)->any(x->x<0,y))#, abstol=1e-15, reltol=1e-12);
+    return solu
+end
+
 function solcb(model, init, tspan, params, callback)
     # params, init = choose_param_vector(model)
     prob = ODEProblem(model, init, tspan, params, callback=callback)

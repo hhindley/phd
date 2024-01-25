@@ -43,7 +43,7 @@ end
 function get_all_ranges(func, branch_df, branch, n, l)
     all_ranges=[]
     # species=["rm_a","rtca","rm_b","rtcb","rm_r","rtcr","rh","rd","rt"]
-    for i in all_species#[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :rtcb_i]
+    for i in species_rtc#[:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :rtcb_i]
         push!(all_ranges, func(branch_df, branch, i, n, l))
     end
     return @LArray [all_ranges[1], all_ranges[2],all_ranges[3],all_ranges[4],all_ranges[5],all_ranges[6],all_ranges[7],all_ranges[8],all_ranges[9]] (:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt)  #[all_ranges[1], all_ranges[2],all_ranges[3],all_ranges[4],all_ranges[5],all_ranges[6],all_ranges[7],all_ranges[8],all_ranges[9],all_ranges[10]] (:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :rtcb_i) 
@@ -125,7 +125,7 @@ function upper_or_lower(df, lower_branch, l, num_species)
         for i in col
         # for j in i 
             # if round(j;digits=3) == round(lower_branch[7];digits=3)
-            if lower_branch-(0.1*lower_branch) < i < lower_branch+(0.1*lower_branch) 
+            if lower_branch-(0.001*lower_branch) < i < lower_branch+(0.001*lower_branch) 
                 push!(arr, 0)
             else
                 push!(arr, 1)
@@ -362,15 +362,47 @@ function full_find_differences_or_percs(all,func,init_vals,lower_branch,l,branch
     # return switch_vals
 end 
 
+function split_curves(df, df_bf)
+    kdam1 = findall(x->x==df_bf.kdam[1],df.kdam)[1]
+    kdam2 = findall(x->x==df_bf.kdam[2],df.kdam)[1]
+    first=DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[])
+    middle=DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[])
+    last=DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[])
+    
+    for i in df.kdam[1:kdam1]
+        push!(first.kdam, i)
+    end
+    for i in df.kdam[kdam1:kdam2]
+        push!(middle.kdam, i)
+    end
+    for i in df.kdam[kdam2:end]
+        push!(last.kdam, i)
+    end
+    for (col,col1) in zip(eachcol(df)[1:9],eachcol(first)[2:end])
+        for i in col[1:kdam1]
+            push!(col1, i)
+        end
+    end
+    for (col,col1) in zip(eachcol(df)[1:9],eachcol(middle)[2:end])
+        for i in col[kdam1:kdam2]
+            push!(col1, i)
+        end
+    end
+    for (col,col1) in zip(eachcol(df)[1:9],eachcol(last)[2:end])
+        for i in col[kdam2:end]
+            push!(col1, i)
+        end
+    end
+    return first, middle, last
+end
 
-
-function setup_ssvals_from_bfkit(rtc_mod, kdam_val, params2, initial)
+function setup_ssvals_from_bfkit(rtc_mod, kdam_val, params2, initial, kdam)
     # params2 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
     # θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
     # krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
     # kdeg = 0.001, kin = 0.022222222, ω_ab = 0.05623413251903491, ω_r = 0.010000000000000002, 
     # kdam =  0.01, lam = 0.014)
-    br2 = get_br(rtc_mod, params2, initial, 3.)
+    br2 = get_br(rtc_mod, params2, initial, kdam)
     df = create_br_df(br2)
     df_bf = bf_point_df(br2)
     first,middle,last=split_curves(df, df_bf)
@@ -396,7 +428,7 @@ function setup_ssvals_from_bfkit(rtc_mod, kdam_val, params2, initial)
     int_rt1 = QuadraticInterpolation(first.rt, first.kdam)
     int_rt2 = QuadraticInterpolation(last.rt, last.kdam)
 
-    return DataFrame(species=all_species,ss_val_on=[int_rma1(kdam_val),int_rtca1(kdam_val),int_rmb1(kdam_val),int_rtcb1(kdam_val),int_rmr1(kdam_val),int_rtcr1(kdam_val),int_rh1(kdam_val),int_rd1(kdam_val),int_rt1(kdam_val)],ss_val_off=[int_rma2(kdam_val),int_rtca2(kdam_val),int_rmb2(kdam_val),int_rtcb2(kdam_val),int_rmr2(kdam_val),int_rtcr2(kdam_val),int_rh2(kdam_val),int_rd2(kdam_val),int_rt2(kdam_val)]);
+    return DataFrame(species=species_rtc,ss_val_on=[int_rma1(kdam_val),int_rtca1(kdam_val),int_rmb1(kdam_val),int_rtcb1(kdam_val),int_rmr1(kdam_val),int_rtcr1(kdam_val),int_rh1(kdam_val),int_rd1(kdam_val),int_rt1(kdam_val)],ss_val_off=[int_rma2(kdam_val),int_rtca2(kdam_val),int_rmb2(kdam_val),int_rtcb2(kdam_val),int_rmr2(kdam_val),int_rtcr2(kdam_val),int_rh2(kdam_val),int_rd2(kdam_val),int_rt2(kdam_val)]);
 end
 
 function setup_ssvals_from_bfkit_inhib(rtc_mod, kdam_val, params2)

@@ -1,3 +1,13 @@
+using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, Statistics
+using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
+# using Plots
+using PlotlyJS, ProgressBars
+
+include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
+include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl");
+include("/home/holliehindley/phd/may23_rtc/rtc_parameters/params.jl");
+include("/home/holliehindley/phd/may23_rtc/rtc_parameters/init.jl");
+
 
 
 svals_onoff = DataFrame(CSV.File("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis_orig_model/init_switch/on_off/data/PAPERswitch_vals_NEW.csv"))

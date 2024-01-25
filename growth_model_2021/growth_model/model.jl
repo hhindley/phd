@@ -1,3 +1,33 @@
+function growth_model(dydt, initial, params, t)
+    dm, kb, ku, f, thetar, s0, gmax, thetax, Kt, M, we, Km, vm, nx, Kq, vt, wr, wq, nq, nr, ns, Kgamma = params
+    cr, em, cq, ct, et, cm, mt, mm, q, si, mq, mr, r, a = initial
+
+    dcr, dem, dcq, dct, det, dcm, dmt, dmm, dq, dsi, dmq, dmr, dr, da = zeros(length(dydt))
+    
+    # Kgamma = 7*sf #gmax/Kp
+    gamma = gmax*a/(Kgamma+a) # aa min-1 molec-1 (aa min-1 molec-1(in terms of uM so this does cancel out below))
+    ttrate = (cq+cr+ct+cm)*gamma # aa min-1 (aa min-1)
+    lam = ttrate/M # min-1 (min-1)
+    vimp = (et*vt*s0/(Kt+s0)) # molec min-1 (uM min-1)
+    nucat = (em*vm*si/(Km+si)) # molec min-1 (uM min-1)
+
+    dydt[1] =  +r*mr*kb - cr*ku - cr*lam - gamma/nr*cr - f*cr # molec min-1
+    dydt[2] = - lam*em + cm*gamma/nx # molec min-1
+    dydt[3] =  +r*mq*kb - cq*ku - cq*lam - gamma/nx*cq - f*cq # molec min-1
+    dydt[4] =  +r*mt*kb - ct*ku - ct*lam - gamma/nx*ct - f*ct # molec min-1
+    dydt[5] =  - lam*et + gamma/nx*ct # molec min-1
+    dydt[6] =   +r*mm*kb - cm*ku - cm*lam - gamma/nx*cm - f*cm # molec min-1
+    dydt[7] =   +(we*a/(thetax+a)) - mt*dm - mt*lam - r*mt*kb + ct*ku + gamma/nx*ct # molec min-1
+    dydt[8] =   +(we*a/(thetax+a)) - mm*dm - mm*lam - r*mm*kb + cm*ku + gamma/nx*cm # molec min-1
+    dydt[9] = - lam*q + gamma/nx*cq # molec min-1
+    dydt[10] = - lam*si + vimp - nucat # molec min-1
+    dydt[11] =   +(wq*a/(thetax+a)/(1+(q/Kq)^nq)) - mq*dm - mq*lam - r*mq*kb + cq*ku + gamma/nx*cq # molec min-1
+    dydt[12] =   +(wr*a/(thetar+a)) - mr*dm - mr*lam - r*mr*kb + cr*ku + gamma/nr*cr # molec min-1
+    dydt[13] =  - lam*r - r*mr*kb - r*mt*kb - r*mm*kb - r*mq*kb + cr*ku + ct*ku + cm*ku + cq*ku + gamma/nr*cr + gamma/nr*cr + gamma/nx*ct + gamma/nx*cm + gamma/nx*cq # molec min-1
+    dydt[14] =  +ns*nucat - ttrate - lam*a ### aa min-1
+end
+
+
 function odemodel!(dydt, initial, params, t)
     b, dm, kb, ku, f, thetar, k_cm, s0, gmax, cl, thetax, Kt, M, we, Km, vm, nx, Kq, Kp, vt, wr, wq, wp, nq, nr, ns, Kgamma = params
     cr, em, cp, cq, ct, et, cm, mt, mm, q, p, si, mq, mp, mr, r, a = initial
