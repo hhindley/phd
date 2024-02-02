@@ -17,66 +17,66 @@ colours_rtca = ["a1403fff", "e25a58ff", "ff9c9bff"]
 
 
 
-rtcb_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcb, :rtcb, 10., colours_rtcb)
+rtcb_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcb, :rtcb, 1.5, colours_rtcb)
 p_rtcb = plot([i for i in rtcb_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
-yaxis_title="RtcB (μM)",
+yaxis_title="RtcB (μM)", showlegend=false,
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white", font=attr(size=24, color="black", family="sans-serif")))
 
 
-rtca_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtca, :rtca, 10., colours_rtca)
+rtca_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtca, :rtca, 1.5, colours_rtca)
 p_rtca = plot([i for i in rtca_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
-yaxis_title="RtcA (μM)",
+yaxis_title="RtcA (μM)",showlegend=false,
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-rtcr_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcr, :rtcr, 10., colours_rtcr)
+rtcr_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcr, :rtcr, 1.5, colours_rtcr)
 p_rtcr = plot([i for i in rtcr_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
-yaxis_title="RtcR (μM)", yaxis_tickformat=".1e",
-yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+yaxis_title="RtcR (μM)", showlegend=false,#yaxis_tickformat=".1e",
+yaxis=attr(showline=true,linewidth=3,linecolor="black",tickangle=77),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
 
-# rtcb_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcb, :rh, 10., colours_rtcb)
-# p_rtcb_rh = plot([i for i in rtcb_rh_traces],
-# Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
-# yaxis_title="Rh (μM)",
-# yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
-# xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
+rtcb_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcb, :rh, 1.5, colours_rtcb)
+p_rtcb_rh = plot([i for i in rtcb_rh_traces],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="Rh (μM)",showlegend=false,
+yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-# rtca_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtca, :rh, 10., colours_rtca)
-# p_rtca_rh = plot([i for i in rtca_rh_traces],
-# Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
-# yaxis_title="Rh (μM)",
-# yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
-# xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
+rtca_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtca, :rh, 1.5, colours_rtca)
+p_rtca_rh = plot([i for i in rtca_rh_traces],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="Rh (μM)",showlegend=false,
+yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-# rtcr_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcr, :rh, 10., colours_rtcr)
-# p_rtcr_rh = plot([i for i in rtcr_rh_traces],
-# Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
-# yaxis_title="Rh (μM)",
-# yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
-# xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
+rtcr_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcr, :rh, 1.5, colours_rtcr)
+p_rtcr_rh = plot([i for i in rtcr_rh_traces],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="Rh (μM)",showlegend=false,
+yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
 
 [p_rtcb p_rtcb_rh; p_rtca p_rtca_rh; p_rtcr p_rtcr_rh]
 
 
 savefig(p_rtcb, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcb1.svg")
-savefig(p_rtca, "/home/holliehindley/phd/may23_rtc/paper_plots/rtca.svg")
-savefig(p_rtcr, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcr.svg")
+savefig(p_rtca, "/home/holliehindley/phd/may23_rtc/paper_plots/rtca1.svg")
+savefig(p_rtcr, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcr2.svg")
 savefig(p_rtcb_rh, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcb_rh.svg")
 savefig(p_rtca_rh, "/home/holliehindley/phd/may23_rtc/paper_plots/rtca_rh.svg")
 savefig(p_rtcr_rh, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcr_rh.svg")
 
 
 
-rtcb_auc = all_area_under_curve_rh(rtc_inhib_mod_rtcb, 10.)
-rtcr_auc = all_area_under_curve_rh(rtc_inhib_mod_rtcr, 10.)
-rtca_auc = all_area_under_curve_rh(rtc_inhib_mod_rtca, 10.)
+rtcb_auc = all_area_under_curve_rh(rtc_inhib_mod_rtcb, 1.5)
+rtcr_auc = all_area_under_curve_rh(rtc_inhib_mod_rtcr, 1.5)
+rtca_auc = all_area_under_curve_rh(rtc_inhib_mod_rtca, 1.5)
 
 a = 0.3
 colours_rtcb_rgba = ["rgba(126,92,148,$a)", "rgba(196,143,231,$a)", "rgba(228,187,255,$a)"]
@@ -100,27 +100,27 @@ rtcr_fill4 = scatter(x=rtcr_auc[4].x,y=rtcr_auc[4].f1.(rtcr_auc[4].x), fill="toz
 
 
 
-rtcb_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcb, :rh, 10., colours_rtcb)
+rtcb_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcb, :rh, 1.5, colours_rtcb)
 push!(rtcb_rh_traces, rtcb_fill1, rtcb_fill2, rtcb_fill3, rtcb_fill4)
 p_rtcb_rh = plot([i for i in rtcb_rh_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
-yaxis_title="Rh (μM)",
+yaxis_title="Rh (μM)",showlegend=false,
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-rtca_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtca, :rh, 10., colours_rtca)
+rtca_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtca, :rh, 1.5, colours_rtca)
 push!(rtca_rh_traces, rtca_fill1, rtca_fill2, rtca_fill3, rtca_fill4)
 p_rtca_rh = plot([i for i in rtca_rh_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
-yaxis_title="Rh (μM)",
+yaxis_title="Rh (μM)",showlegend=false,
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-rtcr_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcr, :rh, 10., colours_rtcr)
+rtcr_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcr, :rh, 1.5, colours_rtcr)
 push!(rtcr_rh_traces, rtcr_fill1, rtcr_fill2, rtcr_fill3, rtcr_fill4)
 p_rtcr_rh = plot([i for i in rtcr_rh_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
-yaxis_title="Rh (μM)",
+yaxis_title="Rh (μM)",showlegend=false,
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
@@ -173,8 +173,8 @@ rdf = DataFrame("data"=>["Rtc conc.","Bistability region","Growth Capacity"],
 p = plot([bar(rdf, x=:data, y=:rtcb, text=:rtcb, textposition="auto", name=String(:rtcb), marker_color=["#7e5c94ff","#7e5c94ff","#7e5c94ff"]),
 bar(rdf, x=:data, y=:rtcr, text=:rtcr, textposition="auto", name=String(:rtcr), marker_color=["#28726dff","#28726dff","#28726dff"]),
 bar(rdf, x=:data, y=:rtca, text=:rtca, textposition="auto", name=String(:rtca), marker_color=["#a1403fff","#a1403fff","#a1403fff"])], 
-Layout(yaxis_title="% of original",yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
-xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=20, color="black", family="sans-serif")))
+Layout(xaxis_tickangle=0,yaxis_title="% of original",yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",showlegend=false,font=attr(size=24, color="black", family="sans-serif")))
 
 
 savefig(p,"/home/holliehindley/phd/may23_rtc/paper_plots/bar.svg")

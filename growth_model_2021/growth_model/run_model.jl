@@ -23,9 +23,23 @@ gamma = @. gmax*df_gm.a/(Kgamma+df_gm.a) # aa min-1
 ttrate = @. (df_gm.cq+df_gm.cr+df_gm.ct+df_gm.cm)*gamma 
 lam_gm = @. ttrate/M
 
+params1 = deepcopy(params)
+nut = range(0,1e4, length=20)
+gr = []
+for i in nut
+    params1[6] = i
+    solu_gm = simple_solve!(growth_model, init_gm, tspan, params1)
+    df_gm = create_solu_df(solu_gm, gm_species)
+    gamma = gmax*df_gm.a[end]/(Kgamma+df_gm.a[end]) # aa min-1
+    ttrate = (df_gm.cq[end]+df_gm.cr[end]+df_gm.ct[end]+df_gm.cm[end])*gamma 
+    lam_gm = ttrate/M
+    push!(gr, lam_gm)
+end
 # open("/home/holliehindley/phd/growth_model_2021/growth_model/result_plot.html", "w") do io
 #     PlotlyBase.to_html(io, p.plot)
 # end
+
+plot(scatter(x=nut, y=gr))
 
 solu_gm_uM = simple_solve!(growth_model, init_gm_uM, tspan, params_uM)
 df_gm_uM = create_solu_df(solu_gm_uM, gm_species)

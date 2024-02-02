@@ -19,35 +19,29 @@ function rtc_inhib_model_rtcb(initial, params, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     drm_a = tscr_a - dil(rm_a) - deg(rm_a)
@@ -76,35 +70,29 @@ function rtc_inhib_mod_rtcb!(dz, z, p, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     dz[1] = tscr_a - dil(rm_a) - deg(rm_a)
@@ -141,35 +129,29 @@ function rtc_inhib_model_rtca(initial, params, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     drm_a = tscr_a - dil(rm_a) - deg(rm_a)
@@ -198,35 +180,29 @@ function rtc_inhib_mod_rtca!(dz, z, p, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     dz[1] = tscr_a - dil(rm_a) - deg(rm_a)
@@ -259,35 +235,29 @@ function rtc_inhib_model_rtcr(initial, params, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     drm_a = tscr_a - dil(rm_a) - deg(rm_a)
@@ -316,35 +286,29 @@ function rtc_inhib_mod_rtcr!(dz, z, p, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     dz[1] = tscr_a - dil(rm_a) - deg(rm_a)
@@ -384,35 +348,29 @@ function rtc_inhib_model_rt(initial, params, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     drm_a = tscr_a - dil(rm_a) - deg(rm_a)
@@ -441,35 +399,29 @@ function rtc_inhib_mod_rt!(dz, z, p, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     dz[1] = tscr_a - dil(rm_a) - deg(rm_a)
@@ -508,35 +460,29 @@ function rtc_inhib_model_rtcab(initial, params, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     drm_a = tscr_a - dil(rm_a) - deg(rm_a)
@@ -566,35 +512,29 @@ function rtc_inhib_mod_rtcab!(dz, z, p, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     dz[1] = tscr_a - dil(rm_a) - deg(rm_a)
@@ -636,35 +576,29 @@ function rtc_inhib_model_rtcbr(initial, params, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     drm_a = tscr_a - dil(rm_a) - deg(rm_a)
@@ -694,35 +628,29 @@ function rtc_inhib_mod_rtcbr!(dz, z, p, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     dz[1] = tscr_a - dil(rm_a) - deg(rm_a)
@@ -766,35 +694,29 @@ function rtc_inhib_model_rtcar(initial, params, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     drm_a = tscr_a - dil(rm_a) - deg(rm_a)
@@ -824,35 +746,29 @@ function rtc_inhib_mod_rtcar!(dz, z, p, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     dz[1] = tscr_a - dil(rm_a) - deg(rm_a)
@@ -892,35 +808,29 @@ function rtc_inhib_model_rtcat(initial, params, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     drm_a = tscr_a - dil(rm_a) - deg(rm_a)
@@ -950,35 +860,29 @@ function rtc_inhib_mod_rtcat!(dz, z, p, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     dz[1] = tscr_a - dil(rm_a) - deg(rm_a)
@@ -1014,35 +918,29 @@ function rtc_inhib_model_rtcbt(initial, params, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     drm_a = tscr_a - dil(rm_a) - deg(rm_a)
@@ -1072,35 +970,29 @@ function rtc_inhib_mod_rtcbt!(dz, z, p, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     dz[1] = tscr_a - dil(rm_a) - deg(rm_a)
@@ -1140,35 +1032,29 @@ function rtc_inhib_model_rtcrt(initial, params, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     drm_a = tscr_a - dil(rm_a) - deg(rm_a)
@@ -1198,35 +1084,29 @@ function rtc_inhib_mod_rtcrt!(dz, z, p, t)
     deg(species) = d*species
     
     # MWC
-    alpha = rt/kr 
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-    ra = fa*rtcr
+    alpha = rt/kr # unitless
+    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+    ra = fa*rtcr # uM 
     
     # transcription
-    Vinit = ra*Vmax_init*atp/(Km_init+atp)
-    tscr_el_a = ω_ab*atp/(θtscr+atp)
-    tscr_a = Vinit*tscr_el_a
-    tscr_el_b = ω_ab*atp/(θtscr+atp)
-    tscr_b = Vinit*tscr_el_b
-    tscr_r = ω_r*atp/(θtscr+atp)
+    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+    sig_o = ra*Voc/k_diss # uM
+
+    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_a = sig_o*tscr_el_a # uM min-1
+    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+    tscr_b = sig_o*tscr_el_b # uM min-1
+    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
     # translation
-    tlr_el = g_max*atp/(θtlr+atp)
+    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-
-    # rtcb_i = inhib*k_inhib*rtcb/((k_inhib*inhib)+k_inhib)
-    # rtcb_a = rtcb - rtcb_i
-
-    # ribosomes
-    rtca1 = (atp*rtca)/(atp+(km_a*rd)) 
-    rtcb1 = (atp*rtcb)/(atp+(km_b*rt)) 
-    # rtcb1 = k_b*atp*rtcb/(k_b*atp+krep*rt)
-
-    Vrep = krep*rtcb1*rt
-    Vdam = kdam*rh
-    Vinflux = kin*tlr_el
-    Vtag = ktag*rtca1*rd
+    # # ribosomes
+    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+    Vdam = kdam*rh # uM min-1
+    Vinflux = kin*tlr_el # uM min-1 
+    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
     # ODEs
     dz[1] = tscr_a - dil(rm_a) - deg(rm_a)

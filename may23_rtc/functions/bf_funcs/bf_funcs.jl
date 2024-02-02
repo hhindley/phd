@@ -12,28 +12,23 @@ norminf(x) = norm(x, Inf)
 # kdam =  0.01,
 # ω_ab = 2., ω_r = 0.0089, atp = 3000., kin = 0.022222, lam = 0.04)
 
-params_bf = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
-θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
-krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
-kdeg = 0.001, kin = 0.022222222, ω_ab = 0.05623413251903491, ω_r = 0.010000000000000002, 
-kdam =  0.01, lam = 0.014) 		
+# params_bf = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
+# θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
+# krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
+# kdeg = 0.001, kin = 0.022222222, ω_ab = 0.05623413251903491, ω_r = 0.010000000000000002, 
+# kdam =  0.01, lam = 0.014) 		
 #ω_ab = 1, ω_r = 0.0001
-
-
-initial = [0., 0., 0., 0., 0., 0., 11.29, 0., 0.]
-
-initial1 = [0., 0., 1., 0., 0., 0., 11.29, 0., 0.]
 
 function get_br(model, params, initial, kdam_max)
     # Bifurcation Problem
     prob = BifurcationProblem(model, initial, setproperties(params; kdam=0.), (@lens _.kdam);
     recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], trna = x[7], rd = x[8], rt = x[9]),)
-    opts_br = ContinuationPar(pMin = 0., pMax = kdam_max, ds = 0.001, 
-    dsmax = 0.1, # 0.15
+    opts_br = ContinuationPar(pMin = 0., pMax = kdam_max, ds = 0.001, a=0.1,
+    dsmax = 0.05, # 0.15
     # options to detect bifurcations
-    detectBifurcation = 3, nInversion = 4, maxBisectionSteps = 10, #3,2,10
+    detectBifurcation = 3, nInversion = 4, maxBisectionSteps = 20, #3,2,10
     # number of eigenvalues
-    nev = 2,  #4 
+    nev = 2, 
     # maximum number of continuation steps
     maxSteps = 50000,)# dsminBisection=1e-30, tolBisectionEigenvalue=1e-30)# a=0.9, )
     # tolStability=1e-10, tolBisectionEigenvalue=1e-10)#,tolParamBisectionEvent=1e-1)
@@ -176,22 +171,28 @@ function plot_rtc_bf(df, kdam1, kdam2, specie, legendgroup, colour, name)
     # rtcb3 = scatter(x=df.kdam[kdam2:end], y=df[!,specie][kdam2:end], name="", line=attr(width=5, color="#f04e53ff"),showlegend=false, legendgroup=legendgroup)
     # bf_rtcb = scatter(x=bf.kdam, y=bf[!,specie], mode="markers", name="Bifurcation point", line=attr(color=:black),showlegend=false, legendgroup=legendgroup)
     rtcb1 = scatter(x=df.kdam[1:kdam1], y=df[!,specie][1:kdam1], name=name, line=attr(width=6.5, color=colour), showlegend=true, legendgroup=legendgroup)#, fill="tozeroy")
-    rtcb2 = scatter(x=df.kdam[kdam1:kdam2], y=df[!,specie][kdam1:kdam2], name="", line=attr(width=6.5,dash="dash", color=colour),showlegend=false, legendgroup=legendgroup)
+    rtcb2 = scatter(x=df.kdam[kdam1:kdam2], y=df[!,specie][kdam1:kdam2], name="", mode="lines", line=attr(width=6.5,dash="dash", color=colour),showlegend=false, legendgroup=legendgroup)
     rtcb3 = scatter(x=df.kdam[kdam2:end], y=df[!,specie][kdam2:end], name="", line=attr(width=6.5, color=colour),showlegend=false, legendgroup=legendgroup)
     return rtcb1, rtcb2, rtcb3
 end
 
+function plot_rtc_bf_init(df, kdam1, kdam2, specie, legendgroup)
+    rtcb1 = scatter(x=df.kdam[1:kdam1], y=df[!,specie][1:kdam1], name="", line=attr(width=6.5, color="#117733ff"), showlegend=true, legendgroup=legendgroup)#, fill="tozeroy")
+    rtcb2 = scatter(x=df.kdam[kdam1:kdam2], y=df[!,specie][kdam1:kdam2], name="", mode="lines", line=attr(width=6.5,dash="dash", color=:black),showlegend=false, legendgroup=legendgroup)
+    rtcb3 = scatter(x=df.kdam[kdam2:end], y=df[!,specie][kdam2:end], name="", line=attr(width=6.5, color="#882255ff"),showlegend=false, legendgroup=legendgroup)
+    return rtcb1, rtcb2, rtcb3
+end
 # functions for the double param vary to produce fig3 banana plot 
 
-function double_param_vary(param_range1, param1, param_range2, param2, params_bf)
+function double_param_vary(param_range1, param1, param_range2, param2, params_bf, kdam_max)
     df = DataFrame(atp = Float64[], wab = Float64[], kdam1 = Float64[], kdam2 = Float64[], bs = Symbol[])
-    params = deepcopy(params_bf)
-    for i in param_range1
-        params = merge(params, (param1=>i,))
+    # params = deepcopy(params_bf)
+    for i in ProgressBar(param_range1)
+        params_bf = merge(params_bf, (param1=>i,))
         for j in param_range2
-            params = merge(params, (param2=>j,))
-            @show params[:ω_ab], params[:ω_r]
-            br = get_br(rtc_mod, params, rtc_init, 10.)
+            params_bf = merge(params_bf, (param2=>j,))
+            # @show params_bf[:ω_ab], params_bf[:ω_r], params_bf[:atp], params_bf[:lam]
+            br = get_br(rtc_mod, params_bf, init_rtc, kdam_max)
             if length(br.specialpoint) == 2
                 push!(df, (i, j, br.specialpoint[1].param, br.specialpoint[2].param, br.specialpoint[1].type))
             else
@@ -202,39 +203,46 @@ function double_param_vary(param_range1, param1, param_range2, param2, params_bf
     return df
 end
 
-function bistable_region(param_range1, param1, param_range2, param2, params_bf)
-    df = double_param_vary(param_range1, param1, param_range2, param2, params_bf)
+function bistable_region(param_range1, param1, param_range2, param2, params_bf, kdam_max)
+    df = double_param_vary(param_range1, param1, param_range2, param2, params_bf, kdam_max)
     bsp = df[df.bs .== :bp, :]
     # @show maximum(bsp[bsp[:,1] .== i, :][:,2])
     max_ = Float64[]
     min_ = Float64[]
+    param_vals = []
     for i in param_range1
         if bsp[bsp[:,1] .== i, :][:,2] == Float64[]
             @show i
         else
             push!(max_, maximum(bsp[bsp[:,1] .== i, :][:,2]))
             push!(min_, minimum(bsp[bsp[:,1] .== i, :][:,2]))
+            push!(param_vals, bsp[bsp[:,1] .== i, :][:,1][1])
         end
     end
-    return max_, min_
+    return max_, min_, param_vals
 end
-function get_bs_region_results(param_range1, param1, param_range2, param2, param_range3, param3, params_bf)
+function get_bs_region_results(param_range1, param1, param_range2, param2, param_range3, param3, params_bf, kdam_max)
     results_wr=[]
-    for i in ProgressBar(param_range3)
-        params_new = merge(params_bf, (param3=>i,))
-        @show (params_new[param3])
-        max_,min_ = bistable_region(param_range1, param1, param_range2, param2, params_new)
+    xvals=[]
+    params_new = deepcopy(params_bf)
+    for i in (param_range3)
+        params_new = merge(params_new, (param3=>i,))
+        # @show (params_new[param3])
+        max_,min_,param_vals = bistable_region(param_range1, param1, param_range2, param2, params_new, kdam_max)
         push!(results_wr, (max_,min_))
+        push!(xvals, param_vals)
     end
-    return results_wr
+
+
+    return results_wr, xvals
 end
 
-function plot_bs_region_same_plot(param_range1, param_range2, results, title, range1, param1, param2)
+function plot_bs_region_same_plot(xvals, param_range1, param_range2, results, title, range1, param1, param2)
     colours = ["#f4e5ffff","#e6c5ffff","#d7a1ffff","#c06affff","#a730ffff"]
     p = Plots.plot()
     for (i,j) in zip(range(1,length(results)), range(1,5))
         if length(results[i][1]) == length(param_range1)
-            p = Plots.plot!(param_range1, results[i][1]; fillrange=(results[i][2]), fillalpha = 0.45, fillcolor=colours[j], 
+            p = Plots.plot!(xvals[i], results[i][1]; fillrange=(results[i][2]), fillalpha = 0.45, fillcolor=colours[j], 
             linecolor=colours[j], title=title, label="$(@sprintf "%g" (range1[j]))", xlims=(minimum(param_range1), maximum(param_range1)), 
             ylims=(minimum(param_range2), maximum(param_range2)), xlabel="$param1 (μM)", ylabel="$param2 (min\$^{-1}\$)", tickfontsize=16,
             guidefontsize=20,guidefont="sans-serif",grid=false)
@@ -548,3 +556,8 @@ end
 #     first, middle, last = dashed_lines_species(df, bf, colors_r, "$type")
 #     return first, middle, last
 # end
+
+
+
+
+

@@ -10,52 +10,74 @@ include("/home/holliehindley/phd/may23_rtc/rtc_parameters/init.jl");
 
 
 
-svals_onoff = DataFrame(CSV.File("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis_orig_model/init_switch/on_off/data/PAPERswitch_vals_NEW.csv"))
+svals_onoff = DataFrame(CSV.File("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis_orig_model/init_switch/on_off/data/PAPERswitch_vals_NEW_2024.csv"))
 
-br = get_br(rtc_mod, params2, initial, 3.)
+br = get_br(rtc_mod, params_bf, rtc_init, 1.5)
 df = create_br_df(br)
 bf = bf_point_df(br)
 kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
 kdam2 = findall(x->x==bf.kdam[2],df.kdam)[1]
 kdam_range_onoff = range(df.kdam[kdam2]+0.01*df.kdam[kdam2], df.kdam[kdam1]-0.01*df.kdam[kdam1], length=100)
-rtcb_onoff = scatter(x=kdam_range_onoff, y=svals_onoff.rtcb, name="switch point", showlegend=false, line=attr(width=3, color="#9f9f9fff", dash="dot"))#, fill="tozeroy")
 
-rtcb_01, rtcb_02, rtcb_03, bf_rtcb0 = plot_rtc_bf(bf, df, kdam1, kdam2, :rtcb)
+rtcb_onoff = scatter(x=kdam_range_onoff, y=svals_onoff.rtcb, name="switch point", showlegend=false, line=attr(width=3, color="#5e5e5eff", dash="dot"))#, fill="tozeroy")
+rtcb_01, rtcb_02, rtcb_03 = plot_rtc_bf_init(df, kdam1, kdam2, :rtcb, "1")
 
-p_rtcb = plot([rtcb_01, rtcb_02, rtcb_03, bf_rtcb0, rtcb_onoff],
+p_rtcb = plot([rtcb_01, rtcb_02, rtcb_03, rtcb_onoff],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
-yaxis_title="RtcB (μM)",
-yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
-xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white", font=attr(size=20, color="black", family="sans-serif")))
+yaxis_title="RtcB (μM)", showlegend=false,
+yaxis=attr(showline=true,linewidth=3,linecolor="black",automargin=true),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
 
-rtcr_onoff = scatter(x=kdam_range_onoff, y=svals_onoff.rtcr, name="switch point", showlegend=false, line=attr(width=3, color="#9f9f9fff", dash="dot"))#, fill="tozeroy")
+rtcr_onoff = scatter(x=kdam_range_onoff, y=svals_onoff.rtcr, name="switch point", showlegend=false, line=attr(width=3, color="#5e5e5eff", dash="dot"))#, fill="tozeroy")
+rh_onoff = scatter(x=kdam_range_onoff, y=svals_onoff.rh, name="switch point", showlegend=false, line=attr(width=3, color="#5e5e5eff", dash="dot"))#, fill="tozeroy")
+rt_onoff = scatter(x=kdam_range_onoff, y=svals_onoff.rt, name="switch point", showlegend=false, line=attr(width=3, color="#5e5e5eff", dash="dot"))#, fill="tozeroy")
+rtca_onoff = scatter(x=kdam_range_onoff, y=svals_onoff.rtca, name="switch point", showlegend=false, line=attr(width=3, color="#5e5e5eff", dash="dot"))#, fill="tozeroy")
 
+rh1, rh2, rh3 = plot_rtc_bf_init(df, kdam1, kdam2, :rh, "1")
+rt1, rt2, rt3 = plot_rtc_bf_init(df, kdam1, kdam2, :rt, "1")
+rtcr1, rtcr2, rtcr3 = plot_rtc_bf_init(df, kdam1, kdam2, :rtcr, "1")
+rtca1, rtca2, rtca3 = plot_rtc_bf_init(df, kdam1, kdam2, :rtca, "1")
 
-
-rh_onoff = scatter(x=kdam_range_onoff, y=svals_onoff.rh, name="switch point", showlegend=false, line=attr(width=3, color="#9f9f9fff", dash="dot"))#, fill="tozeroy")
-rt_onoff = scatter(x=kdam_range_onoff, y=svals_onoff.rt, name="switch point", showlegend=false, line=attr(width=3, color="#9f9f9fff", dash="dot"))#, fill="tozeroy")
-
-rh1, rh2, rh3, bf_rh = plot_rtc_bf(bf0, df0, kdam01, kdam02, :rh)
-rt1, rt2, rt3, bf_rt = plot_rtc_bf(bf0, df0, kdam01, kdam02, :rt)
-
-rh_traces = [rh1, rh2, rh3, bf_rh, rh_onoff]
-rt_traces = [rt1, rt2, rt3, bf_rt, rt_onoff]
+rh_traces = [rh1, rh2, rh3, rh_onoff]
+rt_traces = [rt1, rt2, rt3, rt_onoff]
+rtcr_traces = [rtcr1, rtcr2, rtcr3, rtcr_onoff]
+rtca_traces = [rtca1, rtca2, rtca3, rtca_onoff]
 
 p_rh = plot([i for i in rh_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
-yaxis_title="RtcB (μM)",
+yaxis_title="Rh (μM)", showlegend=false,
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white", font=attr(size=20, color="black", family="sans-serif")))
 
 p_rt = plot([i for i in rt_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
-yaxis_title="Rt (μM)",
+yaxis_title="Rt (μM)", showlegend=false,
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=20, color="black", family="sans-serif")))
 
-savefig(p_rh, "/home/holliehindley/phd/may23_rtc/paper_plots/rh.svg")
-savefig(p_rt, "/home/holliehindley/phd/may23_rtc/paper_plots/rt.svg")
+p_rtcb = plot([rtcb_01, rtcb_02, rtcb_03, rtcb_onoff],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="RtcB (μM)", showlegend=false,
+yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
+
+p_rtcr = plot([i for i in rtcr_traces],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="RtcR (μM)", showlegend=false,
+yaxis=attr(showline=true,linewidth=3,linecolor="black",tickangle=77),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
+
+p_rtca = plot([i for i in rtca_traces],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="RtcA (μM)", showlegend=false,
+yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
+
+
+savefig(p_rtcb, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcb.svg")
+savefig(p_rtcr, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcr.svg")
+savefig(p_rtca, "/home/holliehindley/phd/may23_rtc/paper_plots/rtca.svg")
 
 
 
@@ -116,7 +138,7 @@ auc_initswitch_rtcb = auc_initswitch(x_rtcb, y_rtcb)
 
 rtcb_is_fill1 = scatter(x=auc_initswitch_rtcb.x,y=auc_initswitch_rtcb.f1.(auc_initswitch_rtcb.x), fill="tozeroy", showlegend=false, mode="none")
 
-p_rtcb = plot([rtcb_01, rtcb_02, rtcb_03, bf_rtcb0, rtcb_onoff, rtcb_fill1, rtcb_is_fill1],
+p_rtcb = plot([rtcb_01, rtcb_02, rtcb_03, rtcb_onoff, rtcb_fill1, rtcb_is_fill1],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="RtcB (μM)",
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
