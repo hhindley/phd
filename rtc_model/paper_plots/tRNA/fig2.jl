@@ -1,13 +1,100 @@
 using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, Statistics
-using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
-# using Plots
-using PlotlyJS, ProgressBars
-include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/set_ups.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); 
-include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/holliehindley/phd/may23_rtc/models/combinations_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
-include("/home/holliehindley/phd/colors_plotly.jl"); include("/home/holliehindley/phd/may23_rtc/models/inhibition_models/rtc_inhibition_model.jl");
-include("/home/holliehindley/phd/may23_rtc/models/rtc_trna_model.jl")
+using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf, ProgressBars, LabelledArrays, DataFrames, PlotlyJS
+
+include("/home/holliehindley/phd/rtc_model/models/rtc_trna_model.jl")
+include("/home/holliehindley/phd/rtc_model/parameters/trna_params.jl")
+include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
+include("/home/holliehindley/phd/general_funcs/solving.jl")
+
+params_trna.kdam = 0.0
+solu = sol(rtc_model_trna, init_trna, tspan, params_trna)
+df = create_solu_df(solu, trna_species)
+ssvals = ss_init_vals(df, trna_species)
+
+br = get_br(rtc_mod_trna, params_trna_bf, ssvals, 1.)
+bf = bf_point_df(br)
+df = create_br_df(br)
+kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
+kdam2 = findall(x->x==bf.kdam[2],df.kdam)[1]
+
+rtcb1, rtcb2, rtcb3 = plot_rtc_bf(df, kdam1, kdam2, :rtcb, "1", "b693ccff", "RtcB")
+rtcr1, rtcr2, rtcr3 = plot_rtc_bf(df, kdam1, kdam2, :rtcr, "2", "4ca7a2ff", "RtcR")
+rtca1, rtca2, rtca3 = plot_rtc_bf(df, kdam1, kdam2, :rtca, "3", "e48080ff", "RtcA")
+
+p = plot([rtcb1, rtcb2, rtcb3, rtcr1, rtcr2, rtcr3, rtca1, rtca2, rtca3],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="Rtc protein (μM)",
+yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
+
+rh1, rh2, rh3 = plot_rtc_bf(df, kdam1, kdam2, :rh, "1", "ffd30cff", "RtcB")
+rt1, rt2, rt3 = plot_rtc_bf(df, kdam1, kdam2, :rt, "2", "e96100ff", "rt")
+rd1, rd2, rd3 = plot_rtc_bf(df, kdam1, kdam2, :rd, "3", "ac0606ff", "rd")
+
+p1 = plot([rh1, rh2, rh3, rt1, rt2, rt3, rd1, rd2, rd3],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="Ribosomes (μM)", 
+yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
+
+[p1_sig p1]
+
+savefig(p, "/home/holliehindley/phd/may23_rtc/paper_plots/rtc_proteins.svg")
+savefig(p1, "/home/holliehindley/phd/may23_rtc/paper_plots/ribosomes.svg")
+
+
+
+kdam_range = range(0,1,length=1000)
+kdam_range2 = range(1,0,length=1000)
+
+
+res_trna1 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :trna, trna_species, kdam_range)
+res_trna2 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :trna, trna_species, kdam_range2)
+res_rd1 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :rd, trna_species, kdam_range)
+res_rd2 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :rd, trna_species, kdam_range2)
+res_rt1 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :rt, trna_species, kdam_range)
+res_rt2 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :rt, trna_species, kdam_range2)
+
+ptrna1 = scatter(x=kdam_range, y=res_trna1, name="tRNA_h ON", line=attr(color="ffd30cff",width=6.5))
+ptrna2 = scatter(x=kdam_range2, y=res_trna2, name="tRNA_h OFF", line=attr(color="ffd30cff",width=6.5))
+prd1 = scatter(x=kdam_range, y=res_rd1, name="tRNA_d ON", line=attr(color="ac0606ff",width=6.5))
+prd2 = scatter(x=kdam_range2, y=res_rd2, name="tRNA_d OFF", line=attr(color="ac0606ff",width=6.5))
+prt1 = scatter(x=kdam_range, y=res_rt1, name="tRNA_t ON", line=attr(color="e96100ff",width=6.5))
+prt2 = scatter(x=kdam_range2, y=res_rt2, name="tRNA_t OFF", line=attr(color="e96100ff",width=6.5))
+
+p_trnas = plot([ptrna1, ptrna2, prd1, prd2, prt1, prt2], 
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", title = "Numerical bistability analysis",
+yaxis_title="tRNAs (μM)", 
+yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
+
+res_rtcb1 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :rtcb, trna_species, kdam_range)
+res_rtcb2 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :rtcb, trna_species, kdam_range2)
+res_rtca1 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :rtca, trna_species, kdam_range)
+res_rtca2 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :rtca, trna_species, kdam_range2)
+res_rtcr1 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :rtcr, trna_species, kdam_range)
+res_rtcr2 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :rtcr, trna_species, kdam_range2)
+
+prtcb1 = scatter(x=kdam_range, y=res_rtcb1, name="RtcB ON", line=attr(color="b693ccff",width=6.5))
+prtcb2 = scatter(x=kdam_range2, y=res_rtcb2, name="RtcB OFF", line=attr(color="b693ccff",width=6.5))
+prtcr1 = scatter(x=kdam_range, y=res_rtcr1, name="RtcR ON", line=attr(color="4ca7a2ff",width=6.5))
+prtcr2 = scatter(x=kdam_range2, y=res_rtcr2, name="RtcR OFF", line=attr(color="4ca7a2ff",width=6.5))
+prtca1 = scatter(x=kdam_range, y=res_rtca1, name="RtcA ON", line=attr(color="e48080ff",width=6.5))
+prtca2 = scatter(x=kdam_range2, y=res_rtca2, name="RtcA OFF", line=attr(color="e48080ff",width=6.5))
+
+p_rtcs = plot([prtcb1, prtcb2, prtcr1, prtcr2, prtca1, prtca2], 
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", title = "Numerical bistability analysis",
+yaxis_title="Rtc proteins (μM)", 
+yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
+
+
+
+
+
+
+
+
 
 @consts begin
     L = 10; #10 
@@ -61,8 +148,8 @@ params_trna = @LArray [10., c, kr*12, Vmax_init, Km_init, 0.05623413251903491, 0
 
 # params_trna = @LArray [10., c, kr*12, Vmax_init, Km_init, 0.05623413251903491, 0.010000000000000002, θtscr, g_max, θtlr, km_a, km_b, d, krep, 0.5, ktag, kdeg_trna, kin_trna, 3578.9473684210525, na, nb, nr, 0.014, rh, thr_t] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam, :rh, :thr_t)
 
-kdam_range = range(0,400,length=1000)
-kdam_range2 = range(400,0,length=1000)
+kdam_range = range(0,100,length=50)
+kdam_range2 = range(100,0,length=50)
 
 params_trna2 = (L = 10., c = 0.001, kr = 0.125*12, Vmax_init = 39.51, Km_init = 250.,
 θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 

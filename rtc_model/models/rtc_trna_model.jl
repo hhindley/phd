@@ -1,8 +1,5 @@
-
-
-
 function rtc_model_trna(initial, params, t) 
-    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, rh, thr_t = params
+    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_diss, rh, thr_t = params
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, trna, rd, rt = initial
 
 
@@ -31,7 +28,7 @@ function rtc_model_trna(initial, params, t)
 
     # # ribosomes
     Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
-    Vdam = kdam*rh # uM min-1
+    Vdam = kdam*trna # uM min-1
     Vinflux = kin*tlr_el # uM min-1 
     Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
@@ -57,7 +54,7 @@ end
 
 
 function rtc_mod_trna!(dz, z, p, t)
-    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, rh, thr_t = p
+    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_diss, rh, thr_t = p
     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, trna, rd, rt = z
 
 
@@ -86,7 +83,7 @@ function rtc_mod_trna!(dz, z, p, t)
 
     # # ribosomes
     Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
-    Vdam = kdam*rh # uM min-1
+    Vdam = kdam*trna # uM min-1
     Vinflux = kin*tlr_el # uM min-1 
     Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 

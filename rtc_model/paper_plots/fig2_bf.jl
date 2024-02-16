@@ -3,13 +3,16 @@ using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
 # using Plots
 using PlotlyJS, ProgressBars
 
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
-include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl");
-include("/home/holliehindley/phd/may23_rtc/rtc_parameters/params.jl");
-include("/home/holliehindley/phd/may23_rtc/rtc_parameters/init.jl");
+include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl");
+include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl");
+include("/home/holliehindley/phd/rtc_model/parameters/params.jl")
+include("/home/holliehindley/phd/rtc_model/parameters/init.jl")
 
+solu = sol(rtc_model, init_rtc, tspan, params_rtc)
+df = create_solu_df(solu, species_rtc)
+ssvals = ss_init_vals(df, species_rtc)
 
-br = get_br(rtc_mod, params_bf, rtc_init, 1.5)
+br = get_br(rtc_mod, params_bf, init_rtc, 1.5)
 bf = bf_point_df(br)
 df = create_br_df(br)
 kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
@@ -74,3 +77,29 @@ savefig(p1, "/home/holliehindley/phd/may23_rtc/paper_plots/rh_bf.svg")
 savefig(p2, "/home/holliehindley/phd/may23_rtc/paper_plots/rt_bf.svg")
 savefig(p3, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcb_bf.svg")
 savefig(p4, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcr_bf.svg")
+
+
+
+
+kdam_range = range(0,1.5,length=1000)
+kdam_range2 = range(1.5,0,length=1000)
+
+res_trna1 = numerical_bistability_analysis(rtc_model, params_rtc, init_rtc, :rh, species_rtc, kdam_range)
+res_trna2 = numerical_bistability_analysis(rtc_model, params_rtc, init_rtc, :rh, species_rtc, kdam_range2)
+ptrna1 = scatter(x=kdam_range, y=res_trna1, name="Healthy tRNA", legendgroup=3, line=attr(color=:gold,linewidth=3))
+ptrna2 = scatter(x=kdam_range2, y=res_trna2, name="", legendgroup=3, showlegend=false, line=attr(color=:gold,linewidth=3))
+
+plot([ptrna1, ptrna2])
+
+res=[]
+ps = deepcopy(params_rtc)
+for i in kdam_range
+    ps.kdam = i
+    solu = sol(rtc_model, init_rtc, tspan, ps)
+    push!(res, get_all_ssvals(solu, species_rtc))
+end
+
+df_ssvals = DataFrame(vcat(transpose(res)...), :auto)
+rename!(df_ssvals, species_rtc)
+
+plot([scatter(x=kdam_range, y=col, name="$(names(df_ssvals)[i])") for (col,i) in zip(eachcol(df_ssvals), range(1,length(names(df_ssvals))))])

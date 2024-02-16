@@ -1,26 +1,26 @@
 
-L = 10; #10 # unitless 
+L = 10.; #10 # unitless 
 c = 0.001; # unitless
 kr = 0.125; # uM
 Vmax_init = 39.51; # min-1 
-Km_init = 250; # uM
+Km_init = 250.; # uM
 θtscr = 160.01; # uM
 θtlr = 255.73; # uM
 # k_b = 17.7; 
-nA = 338; # aa molec-1
-nB = 408; # aa molec-1
-nR = 532*6; # aa molec-1
+nA = 338.; # aa molec-1
+nB = 408.; # aa molec-1
+nR = (532.)*6; # aa molec-1
 d = 0.2; # min-1 
-krep = 137; # uM-1 min-1 ???
-ktag = 9780;#0.1; # uM-1 min-1 ???
-atp = 3000;#4000;#2500; # uM
-km_a = 20; # uM
-km_b = 16; # uM
-g_max = 1260; # aa min-1 molec-1
+krep = 137.; # uM-1 min-1 ???
+ktag = 9780.;#0.1; # uM-1 min-1 ???
+atp = 3000.;#4000;#2500; # uM
+km_a = 20.; # uM
+km_b = 16.; # uM
+g_max = 1260.; # aa min-1 molec-1
 kdeg = 0.001; # min-1
 kin = 0.022/100; #2.381 # uM molec aa-1 ??? 
-ω_ab = 1e-5; #0.056/1e2#4#0.093; #0.0828304057748932;#4; # unitless 
-ω_r = 1e-6; #0.01/1e4 #0.0019*6 #70.53; #0.0019*6#79.43865871861044; #0.0019*6;  # uM min-1
+ω_ab = 1.e-5; #0.056/1e2#4#0.093; #0.0828304057748932;#4; # unitless 
+ω_r = 1.e-6; #0.01/1e4 #0.0019*6 #70.53; #0.0019*6#79.43865871861044; #0.0019*6;  # uM min-1
 # ω_a = 4; 
 # ω_b = 4;
 kdam =  0.0#0.000147;#0.05; # min-1
@@ -28,7 +28,7 @@ kdam =  0.0#0.000147;#0.05; # min-1
 lam = 0.014; # min-1
 sf = 1e6/(6.022e23*1e-15) # uM molec-1
 kb_gm = 1/sf # min-1 uM-1
-ku_gm = 1 # min-1
+ku_gm = 1. # min-1
 kc = 0.6 # kc (uM-1) is the binding constant (kb/ku) (uM-1) for ribosomes to mRNAs - kc/sf = uM-1 
 k_diss = 0.006 # min-1
 
@@ -49,16 +49,15 @@ params_inhib = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max
 species_rtc = [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt]
 
 params_bf = (L = L, c = c, kr = kr, Vmax_init = Vmax_init, Km_init = Km_init,
-θtscr = θtscr, θtlr = θtlr, na = nA, nb = nB, nr = nR, d = d, 
-krep = krep, ktag = ktag, atp = atp, km_a = km_a, km_b = km_b, g_max = g_max, 
-kdeg = kdeg, kin = kin, ω_ab = ω_ab, ω_r = ω_r, 
-kdam =  kdam, lam = lam, kc = kc, k_diss = k_diss) 
+ω_ab = ω_ab, ω_r = ω_r, θtscr = θtscr, g_max = g_max, θtlr = θtlr, km_a = km_a, km_b = km_b, 
+d = d, krep = krep, kdam = kdam, ktag = ktag, kdeg = kdeg, kin = kin, atp = atp,
+na = nA, nb = nB, nr = nR, lam = lam, kc = kc, k_diss = k_diss) 
 
 params_bf_inhib = (L = L, c = c, kr = kr, Vmax_init = Vmax_init, Km_init = Km_init,
-θtscr = θtscr, θtlr = θtlr, na = nA, nb = nB, nr = nR, d = d, 
-krep = krep, ktag = ktag, atp = atp, km_a = km_a, km_b = km_b, g_max = g_max, 
-kdeg = kdeg, kin = kin, ω_ab = ω_ab, ω_r = ω_r, 
-kdam =  kdam, lam = lam, kc = kc, k_diss = k_diss, k_inhib1=k_inhib1, k_inhib2=k_inhib2, inhib=inhib) 
+ω_ab = ω_ab, ω_r = ω_r, θtscr = θtscr, g_max = g_max, θtlr = θtlr, km_a = km_a, km_b = km_b, 
+d = d, krep = krep, kdam = kdam, ktag = ktag, kdeg = kdeg, kin = kin, atp = atp,
+na = nA, nb = nB, nr = nR, lam = lam, kc = kc, k_diss = k_diss,
+k_inhib1=k_inhib1, k_inhib2=k_inhib2, inhib=inhib) 
 
 #atp = 3578.9473684210525
 

@@ -21,21 +21,39 @@ norminf(x) = norm(x, Inf)
 
 function get_br(model, params, initial, kdam_max)
     # Bifurcation Problem
-    prob = BifurcationProblem(model, initial, setproperties(params; kdam=0.), (@lens _.kdam);
-    recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], trna = x[7], rd = x[8], rt = x[9]),)
-    opts_br = ContinuationPar(pMin = 0., pMax = kdam_max, ds = 0.001, a=0.1,
-    dsmax = 0.05, # 0.15
-    # options to detect bifurcations
-    detectBifurcation = 3, nInversion = 4, maxBisectionSteps = 20, #3,2,10
-    # number of eigenvalues
-    nev = 2, 
-    # maximum number of continuation steps
-    maxSteps = 50000,)# dsminBisection=1e-30, tolBisectionEigenvalue=1e-30)# a=0.9, )
-    # tolStability=1e-10, tolBisectionEigenvalue=1e-10)#,tolParamBisectionEvent=1e-1)
-    # only using parameters that make a difference to solution
-    # continuation of equilibria
-    br = continuation(prob, PALC(θ=0.5), opts_br; plot = false, bothside=true, normC = norminf)
-    # br = continuation(prob, PALC(θ=0.75), opts_br; plot = false, bothside=true, normC = norminf)
+    if nameof(model) == :rtc_mod
+        print("original rtc model")
+        prob = BifurcationProblem(model, initial, setproperties(params; kdam=0.), (@lens _.kdam);
+        recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
+        opts_br = ContinuationPar(pMin = 0., pMax = kdam_max, ds = 0.001, a=0.1,
+        dsmax = 0.05, # 0.15
+        # options to detect bifurcations
+        detectBifurcation = 3, nInversion = 4, maxBisectionSteps = 20, #3,2,10
+        # number of eigenvalues
+        nev = 2, 
+        # maximum number of continuation steps
+        maxSteps = 50000,)# dsminBisection=1e-30, tolBisectionEigenvalue=1e-30)# a=0.9, )
+        # tolStability=1e-10, tolBisectionEigenvalue=1e-10)#,tolParamBisectionEvent=1e-1)
+        # only using parameters that make a difference to solution
+        # continuation of equilibria
+        br = continuation(prob, PALC(θ=0.5), opts_br; plot = false, bothside=true, normC = norminf)
+    else
+        print("tRNA rtc model")
+        prob = BifurcationProblem(model, initial, setproperties(params; kdam=0.), (@lens _.kdam); 
+        record_from_solution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], trna = x[7], rd = x[8], rt = x[9]),)
+        opts_br = ContinuationPar(p_min = 0., p_max = kdam_max, ds = 0.001, a=0.1,
+        dsmax = 0.005, # 0.15
+        # options to detect bifurcations
+        # detectBifurcation = 3, nInversion = 4, maxBisectionSteps = 20,) #3,2,10
+        # number of eigenvalues
+        #nev = 3, #tolParamBisectionEvent=1e-30, 
+        # maximum number of continuation steps
+        max_steps = 50000)#, dsminBisection=1e-10, tolBisectionEigenvalue=1e-10)# a=0.9, )
+        # tolStability=1e-10, tolBisectionEigenvalue=1e-10)#,tolParamBisectionEvent=1e-1)
+        # only using parameters that make a difference to solution
+        # continuation of equilibria
+        br = continuation(prob, PALC(θ=0.01), opts_br)#; plot = false, bothside=true)#, normC = norminf, verbose=true)
+    end
     return br
 end
 
@@ -49,16 +67,19 @@ function numerical_bistability_analysis(model, params, init, specie, all_species
     first_params = deepcopy(params)
     first_params[:kdam]=kdam_range[1]
     solu = sol(model, init, tspan, first_params)
-    ss = get_ssval(solu, specie, all_species)
-    init_first = ss_init_vals(solu, all_species)
+    df_sol = create_solu_df(solu, all_species)
+    ss = get_ssval(df_sol, specie)
+    init_first = ss_init_vals(df_sol, all_species)
     res =[]
     for i in range(2, length(kdam_range))
         param_init[:kdam]=kdam_range[i-1]
         solu_init = sol(model, init_first, tspan, param_init)
-        init_ss = ss_init_vals(solu_init, all_species)
+        df_sol_init = create_solu_df(solu_init, all_species)
+        init_ss = ss_init_vals(df_sol_init, all_species)
         new_params[:kdam] = kdam_range[i]
         solu_new = sol(model, init_ss, tspan, new_params)
-        push!(res, get_ssval(solu_new, specie, all_species))
+        df_sol_new = create_solu_df(solu_new, all_species)
+        push!(res, get_ssval(df_sol_new, specie))
     end
     pushfirst!(res, ss)
     return res
@@ -100,9 +121,7 @@ function create_br_df(br)
     else
         Nothing
     end
-    # for i in eachcol(df)
-    #     println(i)
-    # end
+
     for i in range(1,length(br.sol))
         for (s,d) in zip(range(1,length(br.sol[1][1])), eachcol(df))
             push!(d, br.sol[i][1][s])

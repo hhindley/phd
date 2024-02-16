@@ -29,9 +29,12 @@ function sol_with_t(model, init, params, tspan, t)
 end
 
 function sol(model, init, tspan, params)
-    # params, init = choose_param_vector(model)
     prob = ODEProblem(model, init, tspan, params)
-    solu = solve(prob, Rosenbrock23())#, abstol=1e-10, reltol=1e-10)
+    if nameof(model) == :combined_model
+        solu = solve(prob, Rosenbrock23())#, abstol=1e-10, reltol=1e-10)
+    else
+        solu = solve(prob, Rodas4())
+    end
     # solu = solve(prob, Rosenbrock23(), isoutofdomain=(y,p,t)->any(x->x<0,y), abstol=1e-18, reltol=1e-4);
     # @show solu.retcode
     # solu = solve(prob, alg_hints=[:auto], isoutofdomain=(y,p,t)->any(x->x<0,y))#, abstol=1e-15, reltol=1e-12);
@@ -112,9 +115,9 @@ function get_curve(df, species)
     return species
 end
 
-function get_ssval(df, species)
+function get_ssval(df, specie)
     # df = create_solu_df(sol, all_species)
-    species = df[end, species]
+    species = df[end, specie]
     return species
 end
 function get_all_ssvals(sol, all_species)
@@ -126,38 +129,38 @@ function get_all_ssvals(sol, all_species)
     return ssvals
 end
 
-function ss_init_vals(sol, species)
-    if length(species) == 9
-        rm_a = get_ssval(sol, :rm_a, species)
-        rm_b = get_ssval(sol, :rm_b, species)
-        rm_r = get_ssval(sol, :rm_r, species)
-        rtca = get_ssval(sol, :rtca, species)
-        rtcb = get_ssval(sol, :rtcb, species)
-        rtcr = get_ssval(sol, :rtcr, species)
-        rt = get_ssval(sol, :rt, species)
-        rd = get_ssval(sol, :rd, species)
-        if species[7] == :rh
-            rh = get_ssval(sol, :rh, species)
+function ss_init_vals(df, all_species)
+    if length(all_species) == 9
+        rm_a = get_ssval(df, :rm_a)
+        rm_b = get_ssval(df, :rm_b)
+        rm_r = get_ssval(df, :rm_r)
+        rtca = get_ssval(df, :rtca)
+        rtcb = get_ssval(df, :rtcb)
+        rtcr = get_ssval(df, :rtcr)
+        rt = get_ssval(df, :rt)
+        rd = get_ssval(df, :rd)
+        if all_species[7] == :rh
+            rh = get_ssval(df, :rh)
             return [rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt]
         else
-            trna = get_ssval(sol, :trna, species)
+            trna = get_ssval(df, :trna)
             return [rm_a, rtca, rm_b, rtcb, rm_r, rtcr, trna, rd, rt]
         end
     else
-        rm_a = get_ssval(sol, :rm_a, species)
-        rm_b = get_ssval(sol, :rm_b, species)
-        rm_r = get_ssval(sol, :rm_r, species)
-        rtca = get_ssval(sol, :rtca, species)
-        rtcb = get_ssval(sol, :rtcb, species)
-        rtcr = get_ssval(sol, :rtcr, species)
-        rt = get_ssval(sol, :rt, species)
-        rd = get_ssval(sol, :rd, species)
-        rtc_i = get_ssval(sol, :rtc_i, species)
-        if species[7] == :rh
-            rh = get_ssval(sol, :rh, species)
+        rm_a = get_ssval(df, :rm_a)
+        rm_b = get_ssval(df, :rm_b)
+        rm_r = get_ssval(df, :rm_r)
+        rtca = get_ssval(df, :rtca)
+        rtcb = get_ssval(df, :rtcb)
+        rtcr = get_ssval(df, :rtcr)
+        rt = get_ssval(df, :rt)
+        rd = get_ssval(df, :rd)
+        rtc_i = get_ssval(df, :rtc_i)
+        if all_species[7] == :rh
+            rh = get_ssval(df, :rh)
             return [rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rtc_i]
         else
-            trna = get_ssval(sol, :trna, species)
+            trna = get_ssval(df, :trna)
             return [rm_a, rtca, rm_b, rtcb, rm_r, rtcr, trna, rd, rt, rtc_i]
         end
     end
