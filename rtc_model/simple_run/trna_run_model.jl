@@ -7,20 +7,17 @@ include("/home/holliehindley/phd/general_funcs/solving.jl")
 
 colours =["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", :blue]
 
-params_trna.kdam = 0.1
-solu = sol(rtc_model_trna, init_trna, tspan, params_trna)
+solu = sol(rtc_trna_model, init_trna, tspan, params_trna)
 df = create_solu_df(solu, trna_species)
 plot([scatter(x=df.time, y=col, name="$(names(df)[i])", legendgroup="$i", marker_color=colours[i]) for (col, i) in zip(eachcol(df[:,2:end]), range(2,length(names(df))))], Layout(xaxis_type="log", yaxis_tickformat=".2e", title="kdam = $(params_trna.kdam)"))
-
-ssvals = ss_init_vals(df, trna_species)
 
 
 kdam_range = range(0,1, length=100)
 res=[]
 ps = deepcopy(params_trna)
 for i in kdam_range
-    ps.kdam = i
-    solu = sol(rtc_model_trna, ssvals, tspan, ps)
+    ps[kdam] = i
+    solu = sol(rtc_trna_model, ssvals_trna, tspan, ps)
     push!(res, get_all_ssvals(solu, trna_species))
 end
 
@@ -42,12 +39,12 @@ kdam_range = range(0,1,length=11)
 kdam_range2 = range(1,0,length=11)
 
 
-res_trna1 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :trna, trna_species, kdam_range)
-res_trna2 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :trna, trna_species, kdam_range2)
-res_rd1 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :rd, trna_species, kdam_range)
-res_rd2 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :rd, trna_species, kdam_range2)
-res_rt1 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :rt, trna_species, kdam_range)
-res_rt2 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :rt, trna_species, kdam_range2)
+res_trna1 = numerical_bistability_analysis(rtc_trna_model, params_trna, ssvals_trna, :trna, trna_species, kdam_range)
+res_trna2 = numerical_bistability_analysis(rtc_trna_model, params_trna, ssvals_trna, :trna, trna_species, kdam_range2)
+res_rd1 = numerical_bistability_analysis(rtc_trna_model, params_trna, ssvals_trna, :rd, trna_species, kdam_range)
+res_rd2 = numerical_bistability_analysis(rtc_trna_model, params_trna, ssvals_trna, :rd, trna_species, kdam_range2)
+res_rt1 = numerical_bistability_analysis(rtc_trna_model, params_trna, ssvals_trna, :rt, trna_species, kdam_range)
+res_rt2 = numerical_bistability_analysis(rtc_trna_model, params_trna, ssvals_trna, :rt, trna_species, kdam_range2)
 
 ptrna1 = scatter(x=kdam_range, y=res_trna1, name="tRNA_h ON", line=attr(color="ffd30cff",width=6.5))
 ptrna2 = scatter(x=kdam_range2, y=res_trna2, name="tRNA_h OFF", line=attr(color="ffd30cff",width=6.5))

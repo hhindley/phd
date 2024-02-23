@@ -3,20 +3,22 @@ using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf, Labelled
 # using Plots
 using PlotlyJS, ProgressBars
 
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
-include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl");
-include("/home/holliehindley/phd/may23_rtc/rtc_parameters/params.jl");
-include("/home/holliehindley/phd/may23_rtc/rtc_parameters/init.jl");
-include("/home/holliehindley/phd/may23_rtc/functions/solving.jl")
+
+include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
+include("/home/holliehindley/phd/general_funcs/solving.jl")
+include("/home/holliehindley/phd/rtc_model/parameters/params.jl")
+include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
+
+
 
 wr_range = 10 .^ range(log10(2e-7),log10(2e-6),length=3)
-wr_range = 10 .^ range(log10(1e-8),log10(1e-4),length=3)
+# wr_range = 10 .^ range(log10(1e-8),log10(1e-4),length=3)
 
 bfs=[]; dfs=[];
+copyparams = deepcopy(params_rtc)
 for i in ProgressBar(wr_range)
-    copyparams = deepcopy(params_bf)
-    params = merge(copyparams, (:ω_r=>i,))
-    br = get_br(rtc_mod, params, init_rtc, 1.5)
+    copyparams[ω_r] = i
+    br = get_br(rtc_model, ssvals_rtc, copyparams, 1.5)
     bf = bf_point_df(br)
     df = create_br_df(br)
     push!(bfs, bf)
@@ -49,10 +51,10 @@ PlotlyJS.savefig(wr, "/home/holliehindley/phd/may23_rtc/paper_plots/wr_rtcb.svg"
 wab_range = 10 .^range(log10(2e-6),log10(2e-5),length=3)
 
 bfs=[]; dfs=[];
+copyparams = deepcopy(params_rtc)
 for i in ProgressBar(wab_range)
-    copyparams = deepcopy(params_bf)
-    params = merge(copyparams, (:ω_ab=>i,))
-    br = get_br(rtc_mod, params, rtc_init, 1.5)
+    copyparams[ω_ab] = i
+    br = get_br(rtc_model, ssvals_rtc, copyparams, 1.5)
     bf = bf_point_df(br)
     df = create_br_df(br)
     push!(bfs, bf)
@@ -80,10 +82,10 @@ PlotlyJS.savefig(wab, "/home/holliehindley/phd/may23_rtc/paper_plots/wab_rtcb.sv
 atp_range = range(1000,stop=5000,length=3)
 
 bfs=[]; dfs=[];
+copyparams = deepcopy(params_rtc)
 for i in ProgressBar(atp_range)
-    copyparams = deepcopy(params_bf)
-    params = merge(copyparams, (:atp=>i,))
-    br = get_br(rtc_mod, params, rtc_init, 1.5)
+    copyparams[atp] = i
+    br = get_br(rtc_model, ssvals_rtc, copyparams, 1.5)
     bf = bf_point_df(br)
     df = create_br_df(br)
     push!(bfs, bf)
@@ -108,10 +110,10 @@ PlotlyJS.savefig(atp_p, "/home/holliehindley/phd/may23_rtc/paper_plots/atp_rtcb.
 lam_range = range(0.01,stop=0.02,length=3)
 
 bfs=[]; dfs=[];
+copyparams = deepcopy(params_rtc)
 for i in ProgressBar(lam_range)
-    copyparams = deepcopy(params_bf)
-    params = merge(copyparams, (:lam=>i,))
-    br = get_br(rtc_mod, params, rtc_init, 1.5)
+    copyparams[lam] = i
+    br = get_br(rtc_model, ssvals_rtc, copyparams, 1.5)
     bf = bf_point_df(br)
     df = create_br_df(br)
     push!(bfs, bf)

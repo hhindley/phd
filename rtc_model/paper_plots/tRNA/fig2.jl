@@ -1,17 +1,13 @@
 using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, Statistics
-using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf, ProgressBars, LabelledArrays, DataFrames, PlotlyJS
+using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf, ProgressBars, LabelledArrays, DataFrames, PlotlyJS, ModelingToolkit
 
+include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
 include("/home/holliehindley/phd/rtc_model/models/rtc_trna_model.jl")
+include("/home/holliehindley/phd/general_funcs/solving.jl")
 include("/home/holliehindley/phd/rtc_model/parameters/trna_params.jl")
 include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
-include("/home/holliehindley/phd/general_funcs/solving.jl")
 
-params_trna.kdam = 0.0
-solu = sol(rtc_model_trna, init_trna, tspan, params_trna)
-df = create_solu_df(solu, trna_species)
-ssvals = ss_init_vals(df, trna_species)
-
-br = get_br(rtc_mod_trna, params_trna_bf, ssvals, 1.)
+br = get_br(rtc_trna_model, ssvals_trna, params_trna, 20.)
 bf = bf_point_df(br)
 df = create_br_df(br)
 kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
@@ -34,7 +30,7 @@ rd1, rd2, rd3 = plot_rtc_bf(df, kdam1, kdam2, :rd, "3", "ac0606ff", "rd")
 p1 = plot([rh1, rh2, rh3, rt1, rt2, rt3, rd1, rd2, rd3],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="Ribosomes (μM)", 
-yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),#yaxis_type="log",
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
 [p1_sig p1]
@@ -44,12 +40,19 @@ savefig(p1, "/home/holliehindley/phd/may23_rtc/paper_plots/ribosomes.svg")
 
 
 
-kdam_range = range(0,1,length=1000)
-kdam_range2 = range(1,0,length=1000)
+kdam_range = range(0,1000,length=100)
+kdam_range2 = range(1000,0,length=100)
 
 
-res_trna1 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :trna, trna_species, kdam_range)
-res_trna2 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :trna, trna_species, kdam_range2)
+res_trna1 = numerical_bistability_analysis(rtc_trna_model, params_trna, ssvals_trna, :trna, trna_species, kdam_range)
+res_trna2 = numerical_bistability_analysis(rtc_trna_model, params_trna, ssvals_trna, :trna, trna_species, kdam_range2)
+plot([scatter(x=kdam_range, y=res_trna1), scatter(x=kdam_range2, y=res_trna2)])
+
+res_rtcb1 = numerical_bistability_analysis(rtc_trna_model, params_trna, ssvals_trna, :rtcb, trna_species, kdam_range)
+res_rtcb2 = numerical_bistability_analysis(rtc_trna_model, params_trna, ssvals_trna, :rtcb, trna_species, kdam_range2)
+plot([scatter(x=kdam_range, y=res_rtcb1), scatter(x=kdam_range2, y=res_rtcb2)])
+
+
 res_rd1 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :rd, trna_species, kdam_range)
 res_rd2 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :rd, trna_species, kdam_range2)
 res_rt1 = numerical_bistability_analysis(rtc_model_trna, params_trna, ssvals, :rt, trna_species, kdam_range)

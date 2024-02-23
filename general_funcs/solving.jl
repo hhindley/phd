@@ -3,35 +3,37 @@ using DifferentialEquations
 # module Solving
 
 all_species = [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt]
-all_species_OD = [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :OD]
-all_species_atp = [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :atp]
+# all_species_OD = [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :OD]
+# all_species_atp = [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :atp]
 
 # export solcb, sol_with_t, sol, get_all_curves, get_all_curves_df, check_get_ssval, get_curve, get_ssval
 
-function simple_solve!(model, init, tspan, params)
-    prob = ODEProblem(model, init, tspan, params);
-    solu = solve(prob, Rosenbrock23(), isoutofdomain=(y,p,t)->any(x->x<0,y), abstol=1e-6, reltol=1e-3);
-    return solu
-end
+# function simple_solve!(model, init, tspan, params)
+#     prob = ODEProblem(model, init, tspan, params);
+#     solu = solve(prob, Rosenbrock23(), isoutofdomain=(y,p,t)->any(x->x<0,y), abstol=1e-6, reltol=1e-3);
+#     return solu
+# end
 
-function solcb(model, init, tspan, params, callback)
-    # params, init = choose_param_vector(model)
-    prob = ODEProblem(model, init, tspan, params, callback=callback)
-    solu = solve(prob, Rodas4())
-    return solu
-end
+# function solcb(model, init, tspan, params, callback)
+#     # params, init = choose_param_vector(model)
+#     prob = ODEProblem(model, init, tspan, params, callback=callback)
+#     solu = solve(prob, Rodas4())
+#     return solu
+# end
 
-function sol_with_t(model, init, params, tspan, t)
-    # params, init = choose_param_vector(model)
-    prob = ODEProblem(model, init, tspan, params)
-    solu = solve(prob, Rodas4(), saveat=t)
-    return solu
-end
+# function sol_with_t(model, init, params, tspan, t)
+#     # params, init = choose_param_vector(model)
+#     prob = ODEProblem(model, init, tspan, params)
+#     solu = solve(prob, Rodas4(), saveat=t)
+#     return solu
+# end
 
 function sol(model, init, tspan, params)
-    prob = ODEProblem(model, init, tspan, params)
-    if nameof(model) == :combined_model
+    prob = ODEProblem(model, init, tspan, params; jac=true)
+    if nameof(model) == :combined_model 
         solu = solve(prob, Rosenbrock23())#, abstol=1e-10, reltol=1e-10)
+    # elseif nameof(model) == :rtc_trna_inhib_model
+        # solu = solve(prob, TRBDF2())
     else
         solu = solve(prob, Rodas4())
     end

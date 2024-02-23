@@ -3,16 +3,17 @@ using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
 # using Plots
 using PlotlyJS, ProgressBars
 
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
-include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl");
-include("/home/holliehindley/phd/may23_rtc/rtc_parameters/params.jl");
-include("/home/holliehindley/phd/may23_rtc/rtc_parameters/init.jl");
+
+include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
+include("/home/holliehindley/phd/general_funcs/solving.jl")
+include("/home/holliehindley/phd/rtc_model/parameters/params.jl")
+include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
 
 
+# svals_onoff = DataFrame(CSV.File("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis_orig_model/init_switch/on_off/data/PAPERswitch_vals_NEW_2024.csv"))
+svals_onoff = DataFrame(CSV.File("/home/holliehindley/phd/rtc_model/paper_plots/switch_vals_paper_2202.csv"))
 
-svals_onoff = DataFrame(CSV.File("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis_orig_model/init_switch/on_off/data/PAPERswitch_vals_NEW_2024.csv"))
-
-br = get_br(rtc_mod, params_bf, rtc_init, 1.5)
+br = get_br(rtc_model, ssvals_rtc, params_rtc, 1.5)
 df = create_br_df(br)
 bf = bf_point_df(br)
 kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
@@ -20,20 +21,12 @@ kdam2 = findall(x->x==bf.kdam[2],df.kdam)[1]
 kdam_range_onoff = range(df.kdam[kdam2]+0.01*df.kdam[kdam2], df.kdam[kdam1]-0.01*df.kdam[kdam1], length=100)
 
 rtcb_onoff = scatter(x=kdam_range_onoff, y=svals_onoff.rtcb, name="switch point", showlegend=false, line=attr(width=3, color="#5e5e5eff", dash="dot"))#, fill="tozeroy")
-rtcb_01, rtcb_02, rtcb_03 = plot_rtc_bf_init(df, kdam1, kdam2, :rtcb, "1")
-
-p_rtcb = plot([rtcb_01, rtcb_02, rtcb_03, rtcb_onoff],
-Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
-yaxis_title="RtcB (μM)", showlegend=false,
-yaxis=attr(showline=true,linewidth=3,linecolor="black",automargin=true),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
-xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
-
-
 rtcr_onoff = scatter(x=kdam_range_onoff, y=svals_onoff.rtcr, name="switch point", showlegend=false, line=attr(width=3, color="#5e5e5eff", dash="dot"))#, fill="tozeroy")
 rh_onoff = scatter(x=kdam_range_onoff, y=svals_onoff.rh, name="switch point", showlegend=false, line=attr(width=3, color="#5e5e5eff", dash="dot"))#, fill="tozeroy")
 rt_onoff = scatter(x=kdam_range_onoff, y=svals_onoff.rt, name="switch point", showlegend=false, line=attr(width=3, color="#5e5e5eff", dash="dot"))#, fill="tozeroy")
 rtca_onoff = scatter(x=kdam_range_onoff, y=svals_onoff.rtca, name="switch point", showlegend=false, line=attr(width=3, color="#5e5e5eff", dash="dot"))#, fill="tozeroy")
 
+rtcb_01, rtcb_02, rtcb_03 = plot_rtc_bf_init(df, kdam1, kdam2, :rtcb, "1")
 rh1, rh2, rh3 = plot_rtc_bf_init(df, kdam1, kdam2, :rh, "1")
 rt1, rt2, rt3 = plot_rtc_bf_init(df, kdam1, kdam2, :rt, "1")
 rtcr1, rtcr2, rtcr3 = plot_rtc_bf_init(df, kdam1, kdam2, :rtcr, "1")
@@ -78,6 +71,9 @@ xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="wh
 savefig(p_rtcb, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcb.svg")
 savefig(p_rtcr, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcr.svg")
 savefig(p_rtca, "/home/holliehindley/phd/may23_rtc/paper_plots/rtca.svg")
+
+
+
 
 
 

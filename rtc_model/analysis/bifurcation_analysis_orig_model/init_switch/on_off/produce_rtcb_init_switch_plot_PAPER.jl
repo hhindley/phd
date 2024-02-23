@@ -3,14 +3,13 @@ using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
 # using Plots
 using PlotlyJS, ProgressBars
 
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
-include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl");
-include("/home/holliehindley/phd/may23_rtc/rtc_parameters/params.jl");
-include("/home/holliehindley/phd/may23_rtc/rtc_parameters/init.jl");
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/init_switch_funcs.jl");
-include("/home/holliehindley/phd/may23_rtc/functions/solving.jl");
+include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
+include("/home/holliehindley/phd/general_funcs/solving.jl")
+include("/home/holliehindley/phd/rtc_model/parameters/params.jl")
+include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
+include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/init_switch_funcs.jl");
 
-br = get_br(rtc_mod, params_bf, rtc_init, 1.5)
+br = get_br(rtc_model, ssvals_rtc, params_rtc, 1.5)
 bf0 = bf_point_df(br)
 df0 = create_br_df(br)
 kdam01 = findall(x->x==bf0.kdam[1],df0.kdam)[1]
@@ -22,8 +21,8 @@ svals_onoff = DataFrame(rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd
 
 for kdam_val in ProgressBar(kdam_range_onoff)
     psm = deepcopy(params_rtc)
-    psm.kdam = kdam_val
-    branches1 = setup_ssvals_from_bfkit(rtc_mod, kdam_val, params_bf, rtc_init, 1.5)
+    psm[kdam] = kdam_val
+    branches1 = setup_ssvals_from_bfkit(rtc_model, kdam_val, params_rtc, ssvals_rtc, 1.5)
     # @show psm
     
     n = 600; l = 1000;
@@ -46,11 +45,11 @@ end
 
 CSV.write("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis_orig_model/init_switch/on_off/data/PAPERswitch_vals_NEW_2024.csv", svals_onoff)
 
-rtcb1 = scatter(x=df.kdam[1:kdam1], y=df.rtcb[1:kdam1], name="RtcB", line=attr(width=3, color="#005356ff"), showlegend=false, legendgroup="1")#, fill="tozeroy")
-rtcb2 = scatter(x=df.kdam[kdam1:kdam2], y=df.rtcb[kdam1:kdam2], name="", line=attr(width=3,dash="dash", color=:black),showlegend=false, legendgroup="1")
-rtcb3 = scatter(x=df.kdam[kdam2:end], y=df.rtcb[kdam2:end], name="", line=attr(width=3, color="#f04e53ff"),showlegend=false, legendgroup="1")
-bf_rtcb = scatter(x=bf.kdam, y=bf.rtcb, mode="markers", name="Bifurcation point", line=attr(color=:black),showlegend=false, legendgroup="1")
+# rtcb1 = scatter(x=df.kdam[1:kdam1], y=df.rtcb[1:kdam1], name="RtcB", line=attr(width=3, color="#005356ff"), showlegend=false, legendgroup="1")#, fill="tozeroy")
+# rtcb2 = scatter(x=df.kdam[kdam1:kdam2], y=df.rtcb[kdam1:kdam2], name="", line=attr(width=3,dash="dash", color=:black),showlegend=false, legendgroup="1")
+# rtcb3 = scatter(x=df.kdam[kdam2:end], y=df.rtcb[kdam2:end], name="", line=attr(width=3, color="#f04e53ff"),showlegend=false, legendgroup="1")
+# bf_rtcb = scatter(x=bf.kdam, y=bf.rtcb, mode="markers", name="Bifurcation point", line=attr(color=:black),showlegend=false, legendgroup="1")
 
-rtcb_onoff = scatter(x=kdam_range_onoff, y=svals_onoff.rtcb, name="switch point", showlegend=false, line=attr(color="#9f9f9fff", dash="dot"))#, fill="tozeroy")
+# rtcb_onoff = scatter(x=kdam_range_onoff, y=svals_onoff.rtcb, name="switch point", showlegend=false, line=attr(color="#9f9f9fff", dash="dot"))#, fill="tozeroy")
 
-plot([rtcb1,rtcb2,rtcb3,bf_rtcb,rtcb_onoff])
+# plot([rtcb1,rtcb2,rtcb3,bf_rtcb,rtcb_onoff])

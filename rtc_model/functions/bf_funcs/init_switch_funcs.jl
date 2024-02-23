@@ -86,7 +86,8 @@ function get_rh_init_switch_all_ranges(rtc_model, ranges, branch_ssval, specie, 
             # if solu.retcode == ReturnCode.Unstable
             #     push!(unstable, initial)
             # end
-            push!(res, get_ssval(solu,specie,all_species))
+            df = create_solu_df(solu, species_rtc)
+            push!(res, get_ssval(df,specie))
             push!(init_vals, initial[i])
         end
         # push!(all_res,res)
@@ -397,12 +398,8 @@ function split_curves(df, df_bf)
 end
 
 function setup_ssvals_from_bfkit(rtc_mod, kdam_val, params2, initial, kdam)
-    # params2 = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
-    # θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
-    # krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
-    # kdeg = 0.001, kin = 0.022222222, ω_ab = 0.05623413251903491, ω_r = 0.010000000000000002, 
-    # kdam =  0.01, lam = 0.014)
-    br2 = get_br(rtc_mod, params2, initial, kdam)
+
+    br2 = get_br(rtc_mod, initial, params2, kdam)
     df = create_br_df(br2)
     df_bf = bf_point_df(br2)
     first,middle,last=split_curves(df, df_bf)

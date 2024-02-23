@@ -1,101 +1,217 @@
+indexof(sym, syms) = findfirst(isequal(sym),syms)
 
-function rtc_model(initial, params, t) 
-    L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_diss = params
-    rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt = initial
-
-    # dilution by growth and degradation 
-    dil(species) = lam*species # uM min-1
-    deg(species) = d*species # uM min-1 
+@variables t 
+@parameters L c kr Vmax_init Km_init ω_ab ω_r θtscr g_max θtlr km_a km_b d krep kdam ktag kdeg kin atp na nb nr lam kc k_diss 
+@syms rm_a(t) rtca(t) rm_b(t) rtcb(t) rm_r(t) rtcr(t) rh(t) rd(t) rt(t) 
     
-    # MWC
-    alpha = rt/kr # unitless
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
-    ra = fa*rtcr # uM 
+D = Differential(t)
+
+@mtkmodel RTC begin
+    @parameters begin
+        L 
+        c 
+        kr
+        Vmax_init 
+        Km_init 
+        ω_ab  
+        ω_r 
+        θtscr
+        g_max
+        θtlr 
+        km_a 
+        km_b 
+        d 
+        krep 
+        kdam 
+        ktag 
+        kdeg 
+        kin 
+        atp 
+        na 
+        nb 
+        nr 
+        lam 
+        kc 
+        k_diss 
+    end
+    @variables begin
+        rm_a(t) 
+        rtca(t) 
+        rm_b(t) 
+        rtcb(t) 
+        rm_r(t) 
+        rtcr(t) 
+        rh(t) 
+        rd(t) 
+        rt(t) 
+
+        rhs_rm_a(t) 
+        rhs_rtca(t) 
+        rhs_rm_b(t) 
+        rhs_rtcb(t) 
+        rhs_rm_r(t) 
+        rhs_rtcr(t) 
+        rhs_rh(t) 
+        rhs_rd(t) 
+        rhs_rt(t) 
+
+        alpha(t)
+        fa(t)
+        ra(t)
+        Voc(t)
+        sig_o(t)
+        tscr_ab(t)
+        tscr_r(t)
+        Vrep(t)
+        Vdam(t)
+        Vinflux(t)
+        Vtag(t)
+        
+
+    end
+
+    @equations begin
+        alpha ~ rt/kr # unitless
+        fa ~ (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+        ra ~ fa*rtcr # uM 
+        
+        # transcription
+        Voc ~ Vmax_init*atp/(Km_init+atp) # uM min-1 
+        sig_o ~ ra*Voc/k_diss # uM
     
-    # transcription
-    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
-    sig_o = ra*Voc/k_diss # uM
+        tscr_ab ~ sig_o*ω_ab*atp/(θtscr+atp) # uM min-1
+        tscr_r ~ ω_r*atp/(θtscr+atp) # uM min-1
 
-    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
-    tscr_a = sig_o*tscr_el_a # uM min-1
-    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
-    tscr_b = sig_o*tscr_el_b # uM min-1
-    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
+        # # ribosomes
+        Vrep ~ rtcb*rt*krep/(rt+km_b) # uM min-1 
+        Vdam ~ kdam*rh # uM min-1
+        Vinflux ~ kin* g_max*atp/(θtlr+atp) # uM min-1 
+        Vtag ~ rtca*rd*ktag/(rd+km_a) # uM min-1 
 
-    # translation
-    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
-    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
+        rhs_rm_a ~ tscr_ab - lam*(rm_a) - d*(rm_a)
+        rhs_rtca ~ (1/na)*kc*rh*rm_a*(g_max*atp/(θtlr+atp)) - lam*(rtca)     
+        rhs_rm_b ~ tscr_ab - lam*(rm_b) - d*(rm_b)
+        rhs_rtcb ~ (1/nb)*kc*rh*rm_b*(g_max*atp/(θtlr+atp)) - lam*(rtcb)
+        rhs_rm_r ~ tscr_r - lam*(rm_r) - d*(rm_r)
+        rhs_rtcr ~ (1/nr)*kc*rh*rm_r*(g_max*atp/(θtlr+atp)) - lam*(rtcr)
+        rhs_rh ~ Vrep - Vdam + Vinflux - lam*(rh)
+        rhs_rd ~ Vdam - Vtag - kdeg*rd - lam*(rd)
+        rhs_rt ~ Vtag - Vrep - lam*(rt)
 
-    # # ribosomes
-    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
-    Vdam = kdam*rh # uM min-1
-    Vinflux = kin*tlr_el # uM min-1 
-    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
-
-    # ODEs
-    drm_a = tscr_a - dil(rm_a) - deg(rm_a)
-    drtca = tlr(rm_a, na) - dil(rtca)    
-    drm_b = tscr_b - dil(rm_b) - deg(rm_b)
-    drtcb = tlr(rm_b, nb) - dil(rtcb) 
-    drm_r = tscr_r - dil(rm_r) - deg(rm_r)
-    drtcr = tlr(rm_r, nr) - dil(rtcr)
-    drh = Vrep - Vdam + Vinflux - dil(rh)
-    drd = Vdam - Vtag - kdeg*rd - dil(rd)
-    drt = Vtag - Vrep - dil(rt)
-
-    [drm_a, drtca, drm_b, drtcb, drm_r, drtcr, drh, drd, drt]
-
+        D(rm_a) ~ rhs_rm_a
+        D(rtca) ~ rhs_rtca
+        D(rm_b) ~ rhs_rm_b
+        D(rtcb) ~ rhs_rtcb 
+        D(rm_r) ~ rhs_rm_r
+        D(rtcr) ~ rhs_rtcr
+        D(rh) ~ rhs_rh
+        D(rd) ~ rhs_rd
+        D(rt) ~ rhs_rt
+    end
 end
 
-function rtc_mod!(dz, z, p, t) 
-    @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc = p
-    rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt = z
+@mtkbuild rtc_model = RTC()
 
-    # dilution by growth and degradation 
-    dil(species) = lam*species # uM min-1
-    deg(species) = d*species # uM min-1 
+
+
+
+# function rtc_model(initial, params, t) 
+#     L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_diss = params
+#     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt = initial
+
+#     # dilution by growth and degradation 
+#     dil(species) = lam*species # uM min-1
+#     deg(species) = d*species # uM min-1 
     
-    # MWC
-    alpha = rt/kr # unitless
-    fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
-    ra = fa*rtcr # uM 
+#     # MWC
+#     alpha = rt/kr # unitless
+#     fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+#     ra = fa*rtcr # uM 
     
-    # transcription
-    Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
-    sig_o = ra*Voc/k_diss # uM
+#     # transcription
+#     Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+#     sig_o = ra*Voc/k_diss # uM
 
-    tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
-    tscr_a = sig_o*tscr_el_a # uM min-1
-    tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
-    tscr_b = sig_o*tscr_el_b # uM min-1
-    tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
+#     tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+#     tscr_a = sig_o*tscr_el_a # uM min-1
+#     tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+#     tscr_b = sig_o*tscr_el_b # uM min-1
+#     tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
 
-    # translation
-    tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
-    tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
+#     # translation
+#     tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
+#     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
 
-    # # ribosomes
-    Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
-    Vdam = kdam*rh # uM min-1
-    Vinflux = kin*tlr_el # uM min-1 
-    Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
+#     # # ribosomes
+#     Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+#     Vdam = kdam*rh # uM min-1
+#     Vinflux = kin*tlr_el # uM min-1 
+#     Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
 
-    # ODEs
-    dz[1] = tscr_a - dil(rm_a) - deg(rm_a)
-    dz[2] = tlr(rm_a, na) - dil(rtca)    
-    dz[3] = tscr_b - dil(rm_b) - deg(rm_b)
-    dz[4] = tlr(rm_b, nb) - dil(rtcb) 
-    dz[5] = tscr_r - dil(rm_r) - deg(rm_r)
-    dz[6] = tlr(rm_r, nr) - dil(rtcr)
-    dz[7] = Vrep - Vdam + Vinflux - dil(rh)
-    dz[8] = Vdam - Vtag - kdeg*rd - dil(rd)
-    dz[9] = Vtag - Vrep - dil(rt)
+#     # ODEs
+#     drm_a = tscr_a - dil(rm_a) - deg(rm_a)
+#     drtca = tlr(rm_a, na) - dil(rtca)    
+#     drm_b = tscr_b - dil(rm_b) - deg(rm_b)
+#     drtcb = tlr(rm_b, nb) - dil(rtcb) 
+#     drm_r = tscr_r - dil(rm_r) - deg(rm_r)
+#     drtcr = tlr(rm_r, nr) - dil(rtcr)
+#     drh = Vrep - Vdam + Vinflux - dil(rh)
+#     drd = Vdam - Vtag - kdeg*rd - dil(rd)
+#     drt = Vtag - Vrep - dil(rt)
 
-    dz
+#     [drm_a, drtca, drm_b, drtcb, drm_r, drtcr, drh, drd, drt]
 
-end
+# end
 
-rtc_mod(z, p) = rtc_mod!(similar(z), z, p, 0)
+# function rtc_mod!(dz, z, p, t) 
+#     @unpack L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc = p
+#     rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt = z
+
+#     # dilution by growth and degradation 
+#     dil(species) = lam*species # uM min-1
+#     deg(species) = d*species # uM min-1 
+    
+#     # MWC
+#     alpha = rt/kr # unitless
+#     fa = (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6) # unitless 
+#     ra = fa*rtcr # uM 
+    
+#     # transcription
+#     Voc = Vmax_init*atp/(Km_init+atp) # uM min-1 
+#     sig_o = ra*Voc/k_diss # uM
+
+#     tscr_el_a = ω_ab*atp/(θtscr+atp) # min-1
+#     tscr_a = sig_o*tscr_el_a # uM min-1
+#     tscr_el_b = ω_ab*atp/(θtscr+atp) # min-1
+#     tscr_b = sig_o*tscr_el_b # uM min-1
+#     tscr_r = ω_r*atp/(θtscr+atp) # uM min-1
+
+#     # translation
+#     tlr_el = g_max*atp/(θtlr+atp) # aa min-1 molec-1
+#     tlr(rm_x, nx) = (1/nx)*kc*rh*rm_x*tlr_el # uM min-1
+
+#     # # ribosomes
+#     Vrep = rtcb*rt*krep/(rt+km_b) # uM min-1 
+#     Vdam = kdam*rh # uM min-1
+#     Vinflux = kin*tlr_el # uM min-1 
+#     Vtag = rtca*rd*ktag/(rd+km_a) # uM min-1 
+
+#     # ODEs
+#     dz[1] = tscr_a - dil(rm_a) - deg(rm_a)
+#     dz[2] = tlr(rm_a, na) - dil(rtca)    
+#     dz[3] = tscr_b - dil(rm_b) - deg(rm_b)
+#     dz[4] = tlr(rm_b, nb) - dil(rtcb) 
+#     dz[5] = tscr_r - dil(rm_r) - deg(rm_r)
+#     dz[6] = tlr(rm_r, nr) - dil(rtcr)
+#     dz[7] = Vrep - Vdam + Vinflux - dil(rh)
+#     dz[8] = Vdam - Vtag - kdeg*rd - dil(rd)
+#     dz[9] = Vtag - Vrep - dil(rt)
+
+#     dz
+
+# end
+
+# rtc_mod(z, p) = rtc_mod!(similar(z), z, p, 0)
 
 # old model before found all the unit errors 
 # function rtc_model(initial, params, t) 

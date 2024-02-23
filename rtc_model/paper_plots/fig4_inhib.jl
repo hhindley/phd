@@ -3,21 +3,27 @@ using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
 # using Plots
 using PlotlyJS, ProgressBars, QuadGK, Interpolations
 
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
-include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl");
-include("/home/holliehindley/phd/may23_rtc/rtc_parameters/params.jl");
-include("/home/holliehindley/phd/may23_rtc/rtc_parameters/init.jl");
-include("/home/holliehindley/phd/may23_rtc/models/inhibition_models/rtc_inhibition_model.jl");
-
+include("/home/holliehindley/phd/rtc_model/models/inhibition_models/rtc_inhibition_model.jl")
+include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
+include("/home/holliehindley/phd/general_funcs/solving.jl")
+include("/home/holliehindley/phd/rtc_model/parameters/params.jl")
+include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
 
 colours_rtcb = ["7e5c94ff", "c48fe7ff", "e4bbffff"]
 colours_rtcr = ["28726dff", "46c6beff", "8ef8f1ff"]
 colours_rtca = ["a1403fff", "e25a58ff", "ff9c9bff"]
 
+solu_inhib_rtca = sol(rtca_inhib_model, init_inhib_rtca, tspan, params_inhib)
+ssvals_rtca = get_all_ssvals(solu_inhib_rtca, species_inhib)
+
+solu_inhib_rtcb = sol(rtcb_inhib_model, init_inhib_rtcb, tspan, params_inhib)
+ssvals_rtcb = get_all_ssvals(solu_inhib_rtcb, species_inhib)
+
+solu_inhib_rtcr = sol(rtcr_inhib_model, init_inhib_rtcr, tspan, params_inhib)
+ssvals_rtcr = get_all_ssvals(solu_inhib_rtcr, species_inhib)
 
 
-
-rtcb_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcb, :rtcb, 1.5, colours_rtcb)
+rtcb_traces = creating_rtc_inhib_plot(rtc_model, ssvals_rtc, params_rtc, rtcb_inhib_model, ssvals_rtcb, params_inhib, :rtcb, 1.5, colours_rtcb, k_inhib_vals)
 p_rtcb = plot([i for i in rtcb_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="RtcB (μM)", showlegend=false,
@@ -25,14 +31,14 @@ yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white", font=attr(size=24, color="black", family="sans-serif")))
 
 
-rtca_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtca, :rtca, 1.5, colours_rtca)
+rtca_traces = creating_rtc_inhib_plot(rtc_model, ssvals_rtc, params_rtc, rtca_inhib_model, ssvals_rtca, params_inhib, :rtca, 1.5, colours_rtca, k_inhib_vals)
 p_rtca = plot([i for i in rtca_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="RtcA (μM)",showlegend=false,
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-rtcr_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcr, :rtcr, 1.5, colours_rtcr)
+rtcr_traces = creating_rtc_inhib_plot(rtc_model, ssvals_rtc, params_rtc, rtcr_inhib_model, ssvals_rtcr, params_inhib, :rtcr, 1.5, colours_rtcr, k_inhib_vals)
 p_rtcr = plot([i for i in rtcr_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="RtcR (μM)", showlegend=false,#yaxis_tickformat=".1e",
@@ -40,21 +46,21 @@ yaxis=attr(showline=true,linewidth=3,linecolor="black",tickangle=77),xaxis=attr(
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
 
-rtcb_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcb, :rh, 1.5, colours_rtcb)
+rtcb_rh_traces = creating_rtc_inhib_plot(rtc_model, ssvals_rtc, params_rtc, rtcb_inhib_model, ssvals_rtcb, params_inhib, :rh, 1.5, colours_rtcb, k_inhib_vals)
 p_rtcb_rh = plot([i for i in rtcb_rh_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="Rh (μM)",showlegend=false,
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-rtca_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtca, :rh, 1.5, colours_rtca)
+rtca_rh_traces = creating_rtc_inhib_plot(rtc_model, ssvals_rtc, params_rtc, rtca_inhib_model, ssvals_rtca, params_inhib, :rh, 1.5, colours_rtca, k_inhib_vals)
 p_rtca_rh = plot([i for i in rtca_rh_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="Rh (μM)",showlegend=false,
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-rtcr_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcr, :rh, 1.5, colours_rtcr)
+rtcr_rh_traces = creating_rtc_inhib_plot(rtc_model, ssvals_rtc, params_rtc, rtcr_inhib_model, ssvals_rtcr, params_inhib, :rh, 1.5, colours_rtcr, k_inhib_vals)
 p_rtcr_rh = plot([i for i in rtcr_rh_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="Rh (μM)",showlegend=false,
@@ -74,9 +80,9 @@ savefig(p_rtcr_rh, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcr_rh.svg")
 
 
 
-rtcb_auc = all_area_under_curve_rh(rtc_inhib_mod_rtcb, 1.5)
-rtcr_auc = all_area_under_curve_rh(rtc_inhib_mod_rtcr, 1.5)
-rtca_auc = all_area_under_curve_rh(rtc_inhib_mod_rtca, 1.5)
+rtcb_auc = all_area_under_curve_rh(rtcb_inhib_model, params_inhib, ssvals_rtcb, 1.5, k_inhib_vals)
+rtcr_auc = all_area_under_curve_rh(rtcr_inhib_model, params_inhib, ssvals_rtcr, 1.5, k_inhib_vals)
+rtca_auc = all_area_under_curve_rh(rtca_inhib_model, params_inhib, ssvals_rtca, 1.5, k_inhib_vals)
 
 a = 0.3
 colours_rtcb_rgba = ["rgba(126,92,148,$a)", "rgba(196,143,231,$a)", "rgba(228,187,255,$a)"]
@@ -100,7 +106,7 @@ rtcr_fill4 = scatter(x=rtcr_auc[4].x,y=rtcr_auc[4].f1.(rtcr_auc[4].x), fill="toz
 
 
 
-rtcb_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcb, :rh, 1.5, colours_rtcb)
+# rtcb_rh_traces = creating_rtc_inhib_plot(rtc_model, ssvals_rtc, params_rtc, rtc_inhib_mod_rtcb, :rh, 1.5, colours_rtcb)
 push!(rtcb_rh_traces, rtcb_fill1, rtcb_fill2, rtcb_fill3, rtcb_fill4)
 p_rtcb_rh = plot([i for i in rtcb_rh_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
@@ -108,7 +114,7 @@ yaxis_title="Rh (μM)",showlegend=false,
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-rtca_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtca, :rh, 1.5, colours_rtca)
+# rtca_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtca, :rh, 1.5, colours_rtca)
 push!(rtca_rh_traces, rtca_fill1, rtca_fill2, rtca_fill3, rtca_fill4)
 p_rtca_rh = plot([i for i in rtca_rh_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
@@ -116,7 +122,7 @@ yaxis_title="Rh (μM)",showlegend=false,
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-rtcr_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcr, :rh, 1.5, colours_rtcr)
+# rtcr_rh_traces = creating_rtc_inhib_plot(rtc_inhib_mod_rtcr, :rh, 1.5, colours_rtcr)
 push!(rtcr_rh_traces, rtcr_fill1, rtcr_fill2, rtcr_fill3, rtcr_fill4)
 p_rtcr_rh = plot([i for i in rtcr_rh_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
@@ -129,15 +135,15 @@ savefig(p_rtcb_rh, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcb_rh_plusfi
 savefig(p_rtca_rh, "/home/holliehindley/phd/may23_rtc/paper_plots/rtca_rh_plusfill.svg")
 savefig(p_rtcr_rh, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcr_rh_plusfill.svg")
 
-percentage_size_rtcb = bf_size(rtc_inhib_mod_rtcb, 10.)
-percentage_size_rtca = bf_size(rtc_inhib_mod_rtca, 10.)
-percentage_size_rtcr = bf_size(rtc_inhib_mod_rtcr, 10.)
+percentage_size_rtcb = bf_size(rtcb_inhib_model, ssvals_rtcb, 10., k_inhib_vals)
+percentage_size_rtca = bf_size(rtca_inhib_model, ssvals_rtca, 10., k_inhib_vals)
+percentage_size_rtcr = bf_size(rtcr_inhib_model, ssvals_rtcr, 10., k_inhib_vals)
 
-rtcb_dec = protein_decrease(rtc_inhib_mod_rtcb, :rtcb, 10.)
+rtcb_dec = protein_decrease(rtcb_inhib_model, ssvals_rtcb, :rtcb, 10., k_inhib_vals)
 # rtcb_dec_rh = protein_decrease(rtc_inhib_mod_rtcb, :rh)
-rtca_dec = protein_decrease(rtc_inhib_mod_rtca, :rtca, 10.)
+rtca_dec = protein_decrease(rtca_inhib_model, ssvals_rtca, :rtca, 10., k_inhib_vals)
 # rtca_dec_rh = protein_decrease(rtc_inhib_mod_rtca, :rh)
-rtcr_dec = protein_decrease(rtc_inhib_mod_rtcr, :rtcr, 10.)
+rtcr_dec = protein_decrease(rtcr_inhib_model, ssvals_rtcr, :rtcr, 10., k_inhib_vals)
 # rtcr_dec_rh = protein_decrease(rtc_inhib_mod_rtcr, :rh)
 
 

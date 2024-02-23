@@ -1,63 +1,53 @@
 using BifurcationKit
 const BK = BifurcationKit
 
-
 # sup norm
 norminf(x) = norm(x, Inf)
 
-# parameter values
-# params = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
-# θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
-# krep = 137., ktag = 9780., km_a = 20., km_b = 16., g_max = 2.0923, kdeg = 0.001, 
-# kdam =  0.01,
-# ω_ab = 2., ω_r = 0.0089, atp = 3000., kin = 0.022222, lam = 0.04)
-
-# params_bf = (L = 10., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
-# θtscr = 160.01, θtlr = 255.73, na = 338., nb = 408., nr = 532. *6, d = 0.2, 
-# krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_max = 2.0923, 
-# kdeg = 0.001, kin = 0.022222222, ω_ab = 0.05623413251903491, ω_r = 0.010000000000000002, 
-# kdam =  0.01, lam = 0.014) 		
-#ω_ab = 1, ω_r = 0.0001
-
-function get_br(model, params, initial, kdam_max)
+function get_br(model, init, params, kdam_max)
+    prob = ODEProblem(model, init, tspan, params; jac=true)
+    odefun = prob.f
+    F = (u,p) -> odefun(u,p,0)
+    J = (u,p) -> odefun.jac(u,p,0)
+    id_kdam = indexof(kdam, parameters(model))
+    par_tm = prob.p
     # Bifurcation Problem
-    if nameof(model) == :rtc_mod
-        print("original rtc model")
-        prob = BifurcationProblem(model, initial, setproperties(params; kdam=0.), (@lens _.kdam);
-        recordFromSolution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-        opts_br = ContinuationPar(pMin = 0., pMax = kdam_max, ds = 0.001, a=0.1,
+    if nameof(model) == :rtc_model || nameof(model) == :rtc_inhib_model
+        # print("original rtc model")
+        prob = BifurcationProblem(F, prob.u0, setproperties(par_tm), (@lens _[id_kdam]); J=J,
+        record_from_solution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
+        opts_br = ContinuationPar(p_min = 0., p_max = kdam_max, ds = 0.001, a=0.1,
         dsmax = 0.05, # 0.15
         # options to detect bifurcations
-        detectBifurcation = 3, nInversion = 4, maxBisectionSteps = 20, #3,2,10
+        detect_bifurcation = 3, n_inversion = 4, max_bisection_steps = 20, #3,2,10
         # number of eigenvalues
         nev = 2, 
         # maximum number of continuation steps
-        maxSteps = 50000,)# dsminBisection=1e-30, tolBisectionEigenvalue=1e-30)# a=0.9, )
+        max_steps = 50000,)# dsminBisection=1e-30, tolBisectionEigenvalue=1e-30)# a=0.9, )
         # tolStability=1e-10, tolBisectionEigenvalue=1e-10)#,tolParamBisectionEvent=1e-1)
         # only using parameters that make a difference to solution
         # continuation of equilibria
         br = continuation(prob, PALC(θ=0.5), opts_br; plot = false, bothside=true, normC = norminf)
     else
-        print("tRNA rtc model")
-        prob = BifurcationProblem(model, initial, setproperties(params; kdam=0.), (@lens _.kdam); 
+        # print("tRNA rtc model")
+        prob = BifurcationProblem(F, prob.u0, setproperties(par_tm), (@lens _[id_kdam]); J=J,
         record_from_solution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], trna = x[7], rd = x[8], rt = x[9]),)
-        opts_br = ContinuationPar(p_min = 0., p_max = kdam_max, ds = 0.001, a=0.1,
-        dsmax = 0.005, # 0.15
+        opts_br = ContinuationPar(p_min = 0., p_max = kdam_max, ds = 0.001,# a=0.1,
+        dsmax = 0.15, dsmin = 0.0001,# 0.15
         # options to detect bifurcations
-        # detectBifurcation = 3, nInversion = 4, maxBisectionSteps = 20,) #3,2,10
+        detect_bifurcation = 3, n_inversion = 2, max_bisection_steps = 20, #3,2,10
         # number of eigenvalues
-        #nev = 3, #tolParamBisectionEvent=1e-30, 
+        # nev =100, #tolParamBisectionEvent=1e-30, 
         # maximum number of continuation steps
-        max_steps = 50000)#, dsminBisection=1e-10, tolBisectionEigenvalue=1e-10)# a=0.9, )
+        max_steps = 50000,)# dsmin_bisection=1e-30)#, tol_bisection_eigenvalue=1e-10)# a=0.9, )
         # tolStability=1e-10, tolBisectionEigenvalue=1e-10)#,tolParamBisectionEvent=1e-1)
         # only using parameters that make a difference to solution
         # continuation of equilibria
-        br = continuation(prob, PALC(θ=0.01), opts_br)#; plot = false, bothside=true)#, normC = norminf, verbose=true)
+
+        br = continuation(prob, PALC(θ=0.5), opts_br; plot = false, bothside=true, normC = norminf)
     end
     return br
 end
-
-
 
 
 
@@ -65,18 +55,18 @@ function numerical_bistability_analysis(model, params, init, specie, all_species
     param_init = deepcopy(params)
     new_params = deepcopy(params)
     first_params = deepcopy(params)
-    first_params[:kdam]=kdam_range[1]
+    first_params[kdam]=kdam_range[1]
     solu = sol(model, init, tspan, first_params)
     df_sol = create_solu_df(solu, all_species)
     ss = get_ssval(df_sol, specie)
     init_first = ss_init_vals(df_sol, all_species)
     res =[]
     for i in range(2, length(kdam_range))
-        param_init[:kdam]=kdam_range[i-1]
+        param_init[kdam]=kdam_range[i-1]
         solu_init = sol(model, init_first, tspan, param_init)
         df_sol_init = create_solu_df(solu_init, all_species)
         init_ss = ss_init_vals(df_sol_init, all_species)
-        new_params[:kdam] = kdam_range[i]
+        new_params[kdam] = kdam_range[i]
         solu_new = sol(model, init_ss, tspan, new_params)
         df_sol_new = create_solu_df(solu_new, all_species)
         push!(res, get_ssval(df_sol_new, specie))
@@ -173,10 +163,10 @@ function create_br_df_inhib(br)
 end
 
 
-function different_levels_inhibition(rtc_inhib_mod, params_br_inhib, k_inhib1, kdam_max)
-    params1 = deepcopy(params_br_inhib)
-    params = merge(params1, (:k_inhib1=>k_inhib1,))
-    br = get_br(rtc_inhib_mod, params, init_inhib, kdam_max)
+function different_levels_inhibition(rtc_inhib_mod, init_inhib, params_br_inhib, k_inhib1_val, kdam_max)
+    params = deepcopy(params_br_inhib)
+    params[k_inhib1] = k_inhib1_val
+    br = get_br(rtc_inhib_mod, init_inhib, params, kdam_max)
     bf = bf_point_df_inhib(br)
     df = create_br_df_inhib(br)
     kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
@@ -185,10 +175,6 @@ function different_levels_inhibition(rtc_inhib_mod, params_br_inhib, k_inhib1, k
 end
 
 function plot_rtc_bf(df, kdam1, kdam2, specie, legendgroup, colour, name)
-    # rtcb1 = scatter(x=df.kdam[1:kdam1], y=df[!,specie][1:kdam1], name="$specie", line=attr(width=5, color="#005356ff"), showlegend=true, legendgroup=legendgroup)#, fill="tozeroy")
-    # rtcb2 = scatter(x=df.kdam[kdam1:kdam2], y=df[!,specie][kdam1:kdam2], name="", line=attr(width=5,dash="dash", color=:black),showlegend=false, legendgroup=legendgroup)
-    # rtcb3 = scatter(x=df.kdam[kdam2:end], y=df[!,specie][kdam2:end], name="", line=attr(width=5, color="#f04e53ff"),showlegend=false, legendgroup=legendgroup)
-    # bf_rtcb = scatter(x=bf.kdam, y=bf[!,specie], mode="markers", name="Bifurcation point", line=attr(color=:black),showlegend=false, legendgroup=legendgroup)
     rtcb1 = scatter(x=df.kdam[1:kdam1], y=df[!,specie][1:kdam1], name=name, line=attr(width=6.5, color=colour), showlegend=true, legendgroup=legendgroup)#, fill="tozeroy")
     rtcb2 = scatter(x=df.kdam[kdam1:kdam2], y=df[!,specie][kdam1:kdam2], name="", mode="lines", line=attr(width=6.5,dash="dash", color=colour),showlegend=false, legendgroup=legendgroup)
     rtcb3 = scatter(x=df.kdam[kdam2:end], y=df[!,specie][kdam2:end], name="", line=attr(width=6.5, color=colour),showlegend=false, legendgroup=legendgroup)
@@ -203,15 +189,17 @@ function plot_rtc_bf_init(df, kdam1, kdam2, specie, legendgroup)
 end
 # functions for the double param vary to produce fig3 banana plot 
 
-function double_param_vary(param_range1, param1, param_range2, param2, params_bf, kdam_max)
+function double_param_vary(rtc_model, ssvals_rtc, param_range1, param1, param_range2, param2, params_bf, kdam_max)
     df = DataFrame(atp = Float64[], wab = Float64[], kdam1 = Float64[], kdam2 = Float64[], bs = Symbol[])
     # params = deepcopy(params_bf)
     for i in ProgressBar(param_range1)
-        params_bf = merge(params_bf, (param1=>i,))
+        # params_bf = merge(params_bf, (param1=>i,))
+        params_bf[param1] = i
         for j in param_range2
-            params_bf = merge(params_bf, (param2=>j,))
+            # params_bf = merge(params_bf, (param2=>j,))
+            params_bf[param2] = j
             # @show params_bf[:ω_ab], params_bf[:ω_r], params_bf[:atp], params_bf[:lam]
-            br = get_br(rtc_mod, params_bf, init_rtc, kdam_max)
+            br = get_br(rtc_model, ssvals_rtc, params_bf, kdam_max)
             if length(br.specialpoint) == 2
                 push!(df, (i, j, br.specialpoint[1].param, br.specialpoint[2].param, br.specialpoint[1].type))
             else
@@ -222,8 +210,8 @@ function double_param_vary(param_range1, param1, param_range2, param2, params_bf
     return df
 end
 
-function bistable_region(param_range1, param1, param_range2, param2, params_bf, kdam_max)
-    df = double_param_vary(param_range1, param1, param_range2, param2, params_bf, kdam_max)
+function bistable_region(rtc_model, ssvals_rtc, param_range1, param1, param_range2, param2, params_bf, kdam_max)
+    df = double_param_vary(rtc_model, ssvals_rtc, param_range1, param1, param_range2, param2, params_bf, kdam_max)
     bsp = df[df.bs .== :bp, :]
     # @show maximum(bsp[bsp[:,1] .== i, :][:,2])
     max_ = Float64[]
@@ -240,14 +228,15 @@ function bistable_region(param_range1, param1, param_range2, param2, params_bf, 
     end
     return max_, min_, param_vals
 end
-function get_bs_region_results(param_range1, param1, param_range2, param2, param_range3, param3, params_bf, kdam_max)
+function get_bs_region_results(rtc_model, ssvals_rtc, param_range1, param1, param_range2, param2, param_range3, param3, params_bf, kdam_max)
     results_wr=[]
     xvals=[]
     params_new = deepcopy(params_bf)
     for i in (param_range3)
-        params_new = merge(params_new, (param3=>i,))
+        # params_new = merge(params_new, (param3=>i,))
+        params_new[param3] = i
         # @show (params_new[param3])
-        max_,min_,param_vals = bistable_region(param_range1, param1, param_range2, param2, params_new, kdam_max)
+        max_,min_,param_vals = bistable_region(rtc_model, ssvals_rtc, param_range1, param1, param_range2, param2, params_new, kdam_max)
         push!(results_wr, (max_,min_))
         push!(xvals, param_vals)
     end
@@ -273,8 +262,19 @@ function plot_bs_region_same_plot(xvals, param_range1, param_range2, results, ti
     return p 
 end
 
-function creating_rtc_inhib_plot(rtc_inhib_mod, specie, kdam_max, colours)
-    br = get_br(rtc_mod, params_bf_inhib, rtc_init, kdam_max)
+function area_under_curve(xvals,yvals)
+    x=xvals
+    y=yvals
+    int_orig = Interpolations.LinearInterpolation(x, y)
+    f(x) = int_orig(x)
+    a = minimum(x)
+    b = maximum(x)
+
+    result, error = quadgk(f, a, b)
+    return @LArray [x,y,f,result] (:x,:y,:f1,:result)
+end
+function creating_rtc_inhib_plot(rtc_model, ssvals_rtc, params_rtc, rtc_inhib_mod, ssvals_inhib, params_inhib, specie, kdam_max, colours, k_inhib_vals)
+    br = get_br(rtc_model, ssvals_rtc, params_rtc, kdam_max)
     bf0 = bf_point_df(br)
     df0 = create_br_df(br)
     kdam01 = findall(x->x==bf0.kdam[1],df0.kdam)[1]
@@ -282,13 +282,13 @@ function creating_rtc_inhib_plot(rtc_inhib_mod, specie, kdam_max, colours)
 
     rtcb_01, rtcb_02, rtcb_03 = plot_rtc_bf(df0, kdam01, kdam02, specie, "1", "969696ff", "orig")
 
-    bf, df, kdam1, kdam2 = different_levels_inhibition(rtc_inhib_mod, params_bf_inhib, k_inhib1a, kdam_max)
+    bf, df, kdam1, kdam2 = different_levels_inhibition(rtc_inhib_mod, ssvals_inhib, params_inhib, k_inhib_vals[1], kdam_max)
     rtcb1, rtcb2, rtcb3 = plot_rtc_bf(df, kdam1, kdam2, specie, "2", colours[1], "least inhib")
 
-    bfa, dfa, kdam1a, kdam2a = different_levels_inhibition(rtc_inhib_mod, params_bf_inhib, k_inhib1b, kdam_max)
+    bfa, dfa, kdam1a, kdam2a = different_levels_inhibition(rtc_inhib_mod, ssvals_inhib, params_inhib, k_inhib_vals[2], kdam_max)
     rtcb1a, rtcb2a, rtcb3a = plot_rtc_bf(dfa, kdam1a, kdam2a, specie, "3", colours[2], "mid inhib")
 
-    bfb, dfb, kdam1b, kdam2b = different_levels_inhibition(rtc_inhib_mod, params_bf_inhib, k_inhib1, kdam_max)
+    bfb, dfb, kdam1b, kdam2b = different_levels_inhibition(rtc_inhib_mod, ssvals_inhib, params_inhib, k_inhib_vals[3], kdam_max)
     rtcb1b, rtcb2b, rtcb3b = plot_rtc_bf(dfb, kdam1b, kdam2b, specie, "4", colours[3], "most inhib")
     return [rtcb_01, rtcb_02, rtcb_03, rtcb1, rtcb2, rtcb3, rtcb1a, rtcb2a, rtcb3a, rtcb1b, rtcb2b, rtcb3b]
 end
@@ -307,18 +307,18 @@ function area_under_curve_rh(df,kdam1)
     return @LArray [x,y,f,result] (:x,:y,:f1,:result)
 end
 
-function all_area_under_curve_rh(rtc_inhib_mod, kdam_max)
-    br = get_br(rtc_mod, params_bf, rtc_init, kdam_max)
+function all_area_under_curve_rh(rtc_inhib_mod, params_bf_inhib, ssvals_inhib, kdam_max, k_inhib_vals)
+    br = get_br(rtc_model, ssvals_rtc, params_rtc, kdam_max)
     bf0 = bf_point_df(br)
     df0 = create_br_df(br)
     kdam01 = findall(x->x==bf0.kdam[1],df0.kdam)[1]
     kdam02 = findall(x->x==bf0.kdam[2],df0.kdam)[1]
 
-    bf, df, kdam1, kdam2 = different_levels_inhibition(rtc_inhib_mod, params_bf_inhib, k_inhib1, kdam_max)
+    bf, df, kdam1, kdam2 = different_levels_inhibition(rtc_inhib_mod, ssvals_inhib, params_bf_inhib, k_inhib_vals[1], kdam_max)
 
-    bfa, dfa, kdam1a, kdam2a = different_levels_inhibition(rtc_inhib_mod, params_bf_inhib, k_inhib1a, kdam_max)
+    bfa, dfa, kdam1a, kdam2a = different_levels_inhibition(rtc_inhib_mod, ssvals_inhib, params_bf_inhib, k_inhib_vals[2], kdam_max)
 
-    bfb, dfb, kdam1b, kdam2b = different_levels_inhibition(rtc_inhib_mod, params_bf_inhib, k_inhib1b, kdam_max)
+    bfb, dfb, kdam1b, kdam2b = different_levels_inhibition(rtc_inhib_mod, ssvals_inhib, params_bf_inhib, k_inhib_vals[3], kdam_max)
 
     res0 = area_under_curve_rh(df0,kdam01)
     res = area_under_curve_rh(df,kdam1)
@@ -329,19 +329,19 @@ function all_area_under_curve_rh(rtc_inhib_mod, kdam_max)
 end
 
 
-function bf_size(rtc_inhib_mod, kdam_max)
+function bf_size(rtc_inhib_mod, ssvals_inhib, params_inhib, kdam_max, k_inhib_vals)
 
-    br = get_br(rtc_mod, params_bf, rtc_init, kdam_max)
+    br = get_br(rtc_model, ssvals_rtc, params_rtc, kdam_max)
     bf0 = bf_point_df(br)
     df0 = create_br_df(br)
     kdam01 = findall(x->x==bf0.kdam[1],df0.kdam)[1]
     kdam02 = findall(x->x==bf0.kdam[2],df0.kdam)[1]
 
-    bf, df, kdam1, kdam2 = different_levels_inhibition(rtc_inhib_mod, params_bf_inhib, k_inhib1, kdam_max)
+    bf, df, kdam1, kdam2 = different_levels_inhibition(rtc_inhib_mod, ssvals_inhib, params_inhib, k_inhib_vals[1], kdam_max)
 
-    bfa, dfa, kdam1a, kdam2a = different_levels_inhibition(rtc_inhib_mod, params_bf_inhib, k_inhib1a, kdam_max)
+    bfa, dfa, kdam1a, kdam2a = different_levels_inhibition(rtc_inhib_mod, ssvals_inhib, params_inhib, k_inhib_vals[2], kdam_max)
 
-    bfb, dfb, kdam1b, kdam2b = different_levels_inhibition(rtc_inhib_mod, params_bf_inhib, k_inhib1b, kdam_max)
+    bfb, dfb, kdam1b, kdam2b = different_levels_inhibition(rtc_inhib_mod, ssvals_inhib, params_inhib, k_inhib_vals[3], kdam_max)
 
     s0 = bf0.kdam[1]-bf0.kdam[2]
     s1 = bf.kdam[1]-bf.kdam[2]
@@ -356,18 +356,18 @@ function bf_size(rtc_inhib_mod, kdam_max)
 end
 
 
-function protein_decrease(rtc_inhib_mod, specie, kdam_max)
-    br = get_br(rtc_mod, params_bf, rtc_init, kdam_max)
+function protein_decrease(rtc_inhib_mod, ssvals_inhib, params_inhib, specie, kdam_max, k_inhib_vals)
+    br = get_br(rtc_model, ssvals_rtc, params_rtc, kdam_max)
     bf0 = bf_point_df(br)
     df0 = create_br_df(br)
     kdam01 = findall(x->x==bf0.kdam[1],df0.kdam)[1]
     kdam02 = findall(x->x==bf0.kdam[2],df0.kdam)[1]
 
-    bf, df, kdam1, kdam2 = different_levels_inhibition(rtc_inhib_mod, params_bf_inhib, k_inhib1, kdam_max)
+    bf, df, kdam1, kdam2 = different_levels_inhibition(rtc_inhib_mod, ssvals_inhib, params_inhib, k_inhib_vals[1], kdam_max)
 
-    bfa, dfa, kdam1a, kdam2a = different_levels_inhibition(rtc_inhib_mod, params_bf_inhib, k_inhib1a, kdam_max)
+    bfa, dfa, kdam1a, kdam2a = different_levels_inhibition(rtc_inhib_mod, ssvals_inhib, params_inhib, k_inhib_vals[2], kdam_max)
 
-    bfb, dfb, kdam1b, kdam2b = different_levels_inhibition(rtc_inhib_mod, params_bf_inhib, k_inhib1b, kdam_max)
+    bfb, dfb, kdam1b, kdam2b = different_levels_inhibition(rtc_inhib_mod, ssvals_inhib, params_inhib, k_inhib_vals[3], kdam_max)
 
     df=Float64.(df)
     df0=Float64.(df0)

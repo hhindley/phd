@@ -1,33 +1,20 @@
 using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, Statistics
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
 # using Plots
-using PlotlyJS, ProgressBars, Interpolations, QuadGK
+using PlotlyJS, ProgressBars, Interpolations, QuadGK, ModelingToolkit
 
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
-include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl");
-include("/home/holliehindley/phd/may23_rtc/rtc_parameters/params.jl");
-include("/home/holliehindley/phd/may23_rtc/rtc_parameters/init.jl");
-include("/home/holliehindley/phd/may23_rtc/functions/solving.jl");
+include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
+include("/home/holliehindley/phd/general_funcs/solving.jl")
+include("/home/holliehindley/phd/rtc_model/parameters/params.jl")
+include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
 
 colours = ["#f4e5ffff","#e6c5ffff","#d7a1ffff","#c06affff","#a730ffff"]
 
-atp_range = range(500,stop=5500,length=100)
-lam_range = range(0.001,stop=0.04,length=100)
+atp_range = range(500,stop=5500,length=50)
+lam_range = range(0.001,stop=0.04,length=50)
 
 wab_range1 = 10 .^range(log10(1e-7),log10(1e-3),length=5)
-results_wab, xvals = get_bs_region_results(atp_range, :atp, lam_range, :lam, wab_range1, :ω_ab, params_bf, 1.5)
-
-function area_under_curve(xvals,yvals)
-    x=xvals
-    y=yvals
-    int_orig = Interpolations.LinearInterpolation(x, y)
-    f(x) = int_orig(x)
-    a = minimum(x)
-    b = maximum(x)
-
-    result, error = quadgk(f, a, b)
-    return @LArray [x,y,f,result] (:x,:y,:f1,:result)
-end
+results_wab, xvals = get_bs_region_results(rtc_model, ssvals_rtc, atp_range, atp, lam_range, lam, wab_range1, ω_ab, params_rtc, 1.5)
 
 auc1 = area_under_curve(xvals[1],results_wab[1][1])
 auc2 = area_under_curve(xvals[2],results_wab[2][1])
@@ -50,7 +37,7 @@ savefig(wab_banana, "/home/holliehindley/phd/may23_rtc/paper_plots/wab_banana_fi
 
 
 wr_range1 = 10 .^ range(log10(1e-8),log10(1e-4),length=5)
-results_wr, xvals_wr = get_bs_region_results(atp_range, :atp, lam_range, :lam, wr_range1, :ω_r, params_bf, 1.5)
+results_wr, xvals_wr = get_bs_region_results(rtc_model, ssvals_rtc, tp_range, atp, lam_range, lam, wr_range1, ω_r, params_rtc, 1.5)
 
 
 auc1_wr = area_under_curve(xvals_wr[1],results_wr[1][1])
@@ -78,12 +65,16 @@ savefig(wr_banana, "/home/holliehindley/phd/may23_rtc/paper_plots/wr_banana_fina
 
 
 
+
+
+
+
 wr_range = 10 .^ range(log10(1e-7),log10(1e-4),length=50)
 wab_range = 10 .^range(log10(1e-6),log10(1e-3),length=50)
 atp_range = range(500,5000, length=2)
 lam_range = range(0.01,0.04, length=2)
 
-results_wab, xvals = get_bs_region_results(wab_range, :ω_ab, wr_range, :ω_r, lam_range, :lam, params_bf, 1.5)
+results_wab, xvals = get_bs_region_results(wab_range, ω_ab, wr_range, ω_r, lam_range, lam, params_rtc, 1.5)
 
 
 function area_under_curve(xvals,yvals)
