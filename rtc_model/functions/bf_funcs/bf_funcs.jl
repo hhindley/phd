@@ -51,30 +51,54 @@ end
 
 
 
-function numerical_bistability_analysis(model, params, init, specie, all_species, kdam_range) # used to be 'checking_bistability' - used when bifurcationkit not working 
+# function numerical_bistability_analysis(model, params, init, specie, all_species, kdam_range, kdam) # used to be 'checking_bistability' - used when bifurcationkit not working 
+#     param_init = deepcopy(params)
+#     new_params = deepcopy(params)
+#     first_params = deepcopy(params)
+#     first_params[kdam]=kdam_range[1]
+#     solu = sol(model, init, tspan, first_params)
+#     df_sol = create_solu_df(solu, all_species)
+#     ss = get_ssval(df_sol, specie)
+#     init_first = ss_init_vals(df_sol, all_species)
+#     res =[]
+#     for i in ProgressBar(range(2, length(kdam_range)))
+#         param_init[kdam]=kdam_range[i-1]
+#         solu_init = sol(model, init_first, tspan, param_init)
+#         df_sol_init = create_solu_df(solu_init, all_species)
+#         init_ss = ss_init_vals(df_sol_init, all_species)
+#         new_params[kdam] = kdam_range[i]
+#         solu_new = sol(model, init_ss, tspan, new_params)
+#         df_sol_new = create_solu_df(solu_new, all_species)
+#         push!(res, get_ssval(df_sol_new, specie))
+#     end
+#     pushfirst!(res, ss)
+#     return res
+# end
+
+function numerical_bistability_analysis(model, params, init1, specie, all_species, kdam_range, kdam) # used to be 'checking_bistability' - used when bifurcationkit not working 
     param_init = deepcopy(params)
     new_params = deepcopy(params)
     first_params = deepcopy(params)
     first_params[kdam]=kdam_range[1]
-    solu = sol(model, init, tspan, first_params)
-    df_sol = create_solu_df(solu, all_species)
-    ss = get_ssval(df_sol, specie)
-    init_first = ss_init_vals(df_sol, all_species)
+    init = steady_states(model, init1, first_params)
+    ss_vals = Dict(zip(all_species, init))
     res =[]
-    for i in range(2, length(kdam_range))
+    for i in ProgressBar(range(2, length(kdam_range)))
         param_init[kdam]=kdam_range[i-1]
-        solu_init = sol(model, init_first, tspan, param_init)
-        df_sol_init = create_solu_df(solu_init, all_species)
-        init_ss = ss_init_vals(df_sol_init, all_species)
+        init_ss = steady_states(model, init, param_init)
         new_params[kdam] = kdam_range[i]
-        solu_new = sol(model, init_ss, tspan, new_params)
-        df_sol_new = create_solu_df(solu_new, all_species)
-        push!(res, get_ssval(df_sol_new, specie))
+        final_ss = Dict(zip(all_species, steady_states(model, init_ss, new_params)))
+        push!(res, final_ss[specie])
     end
-    pushfirst!(res, ss)
+    pushfirst!(res, ss_vals[specie])
     return res
 end
 
+function full_numerical_bistab(model, params, init1, specie, all_species, kdam_range, kdam_range_rev, kdam)
+    res = numerical_bistability_analysis(model, params, init1, specie, all_species, kdam_range, kdam)
+    res2 = numerical_bistability_analysis(model, params, init1, specie, all_species, kdam_range_rev, kdam)
+    return res, res2
+end
 
 function bf_point_df(br2)
     df_bf = DataFrame(rm_a=Float64[],rtca=Float64[],rm_b=Float64[],rtcb=Float64[],rm_r=Float64[],rtcr=Float64[],rh=Float64[],rd=Float64[],rt=Float64[],kdam=Float64[]);
@@ -296,8 +320,10 @@ end
 
 function area_under_curve_rh(df,kdam1)
     df=Float64.(df)
-    x = df.kdam[1:kdam1]
-    y = df.rh[1:kdam1]
+    x = df.kdam[1:2:kdam1]
+    y = df.rh[1:2:kdam1]
+    # Interpolations.deduplicate_knots!(x, move_knots=false)
+    # Interpolations.deduplicate_knots!(y, move_knots=false)
     int_orig = Interpolations.LinearInterpolation(x, y)
     f(x) = int_orig(x)
     a = minimum(x)
@@ -307,7 +333,7 @@ function area_under_curve_rh(df,kdam1)
     return @LArray [x,y,f,result] (:x,:y,:f1,:result)
 end
 
-function all_area_under_curve_rh(rtc_inhib_mod, params_bf_inhib, ssvals_inhib, kdam_max, k_inhib_vals)
+function all_area_under_curve_rh(rtc_inhib_mod, params_bf_inhib, ssvals_inhib, kdam_max, k_inhib_vals, rtc_model, ssvals_rtc, params_rtc)
     br = get_br(rtc_model, ssvals_rtc, params_rtc, kdam_max)
     bf0 = bf_point_df(br)
     df0 = create_br_df(br)
@@ -329,7 +355,7 @@ function all_area_under_curve_rh(rtc_inhib_mod, params_bf_inhib, ssvals_inhib, k
 end
 
 
-function bf_size(rtc_inhib_mod, ssvals_inhib, params_inhib, kdam_max, k_inhib_vals)
+function bf_size(rtc_inhib_mod, ssvals_inhib, params_inhib, kdam_max, k_inhib_vals, rtc_model, ssvals_rtc, params_rtc)
 
     br = get_br(rtc_model, ssvals_rtc, params_rtc, kdam_max)
     bf0 = bf_point_df(br)
@@ -356,7 +382,7 @@ function bf_size(rtc_inhib_mod, ssvals_inhib, params_inhib, kdam_max, k_inhib_va
 end
 
 
-function protein_decrease(rtc_inhib_mod, ssvals_inhib, params_inhib, specie, kdam_max, k_inhib_vals)
+function protein_decrease(rtc_inhib_mod, ssvals_inhib, params_inhib, specie, kdam_max, k_inhib_vals, rtc_model, ssvals_rtc, params_rtc)
     br = get_br(rtc_model, ssvals_rtc, params_rtc, kdam_max)
     bf0 = bf_point_df(br)
     df0 = create_br_df(br)

@@ -1,8 +1,8 @@
-using DifferentialEquations, PlotlyJS, DataFrames, Measures, LabelledArrays
+using DifferentialEquations, PlotlyJS, DataFrames, Measures, LabelledArrays, BenchmarkTools, ModelingToolkit, TickTock
 
 include("/home/holliehindley/phd/growth_model/model/model.jl")
-include("/home/holliehindley/phd/growth_model/parameters/parameters.jl")
 include("/home/holliehindley/phd/general_funcs/solving.jl")
+include("/home/holliehindley/phd/growth_model/parameters/parameters.jl")
 include("/home/holliehindley/phd/growth_model/parameters/uM_parameters.jl")
 
 tspan = (0,1e9)
@@ -11,13 +11,36 @@ labels = ["cr" "em" "cp" "cq" "ct" "et" "cm" "mt" "mm" "q" "p" "si" "mq" "mp" "m
 
 # params_uM = [0, 0.1, 0.00166, 0.00166, 0, 15594.7, 0, 1661, 2.0923, 0, 160.01, 1.66, 1e8, 0.00687, 1.66, 5800, 300, 252.77, 0.299, 726, 1.54, 1.576, 0.00687, 4, 7459, 0.5, 255.7]
 
-solu_gm = simple_solve!(growth_model_incl_abx, init_abx, tspan, params_abx)
+init_abx=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 1000, 0, 0, 0, 0]
+params_abx = [dm_val, kb_val, ku_val, thetar_val, s0_val, gmax_val, thetax_val, Kt_val, M_val, we_val, Km_val, vm_val, nx_val, Kq_val, vt_val, wr_val, wq_val, nq_val, nr_val, ns_val, Kgamma_val, Cm_val, k_cm_val]
 
-gm_species = [:cr, :em, :cq, :ct, :et, :cm, :mt, :mm, :q, :si, :mq, :mr, :r, :a]
-gm_species_abx = [:cr, :em, :cq, :ct, :et, :cm, :mt, :mm, :q, :si, :mq, :mr, :r, :a, :zmr, :zmq, :zmt, :zmm]
-
-df_gm = create_solu_df(solu_gm, gm_species_abx)
+prob = ODEProblem(growth_model_incl_abx, init_abx, tspan, params_abx);
+solu = solve(prob, Rodas4(), abstol=1e-12, reltol=1e-9);
+df_gm = create_solu_df(solu, species_gm);
 p = plot([scatter(x=df_gm.time, y=col, name="$(names(df_gm)[i])") for (col, i) in zip(eachcol(df_gm[:,2:end]), range(2,length(names(df_gm))))], Layout(xaxis_type="log"))
+
+prob2 = ODEProblem(growth_model, init_gm, tspan, params_gm; jac=true);
+solu2 = solve(prob2, Rodas4(), abstol=1e-12, reltol=1e-9);
+df = create_solu_df(solu2, species_gm);
+p = plot([scatter(x=df.time, y=col, name="$(names(df)[i])") for (col, i) in zip(eachcol(df[:,2:end]), range(2,length(names(df))))], Layout(xaxis_type="log"))
+
+
+# tick(); solve(prob, Rodas4(), abstol=1e-12, reltol=1e-9); tock() 
+
+# tick(); solve(prob2, Rodas4(), abstol=1e-12, reltol=1e-9); tock() 
+# solu_gm = simple_solve!(growth_model_incl_abx, init_abx, tspan, params_abx)
+
+# gm_species = [:cr, :em, :cq, :ct, :et, :cm, :mt, :mm, :q, :si, :mq, :mr, :r, :a]
+# gm_species_abx = [:cr, :em, :cq, :ct, :et, :cm, :mt, :mm, :q, :si, :mq, :mr, :r, :a, :zmr, :zmq, :zmt, :zmm]
+
+# solu_gm = solve(prob, Rodas4(), abstol=1e-12, reltol=1e-9);
+df_gm = create_solu_df(solu, species_gm);
+p = plot([scatter(x=df_gm.time, y=col, name="$(names(df_gm)[i])") for (col, i) in zip(eachcol(df_gm[:,2:end]), range(2,length(names(df_gm))))], Layout(xaxis_type="log"))
+
+df_gm_uM = create_solu_df(solu_gm_uM, species_gm);
+p = plot([scatter(x=df_gm_uM.time, y=col, name="$(names(df_gm_uM)[i])") for (col, i) in zip(eachcol(df_gm_uM[:,2:end]), range(2,length(names(df_gm_uM))))], Layout(xaxis_type="log"))
+
+
 
 
 gamma = @. gmax*df_gm.a/(Kgamma+df_gm.a) # aa min-1

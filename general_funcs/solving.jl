@@ -1,39 +1,17 @@
-
-using DifferentialEquations
-# module Solving
-
-all_species = [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt]
-# all_species_OD = [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :OD]
-# all_species_atp = [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :atp]
-
-# export solcb, sol_with_t, sol, get_all_curves, get_all_curves_df, check_get_ssval, get_curve, get_ssval
-
-# function simple_solve!(model, init, tspan, params)
-#     prob = ODEProblem(model, init, tspan, params);
-#     solu = solve(prob, Rosenbrock23(), isoutofdomain=(y,p,t)->any(x->x<0,y), abstol=1e-6, reltol=1e-3);
-#     return solu
-# end
-
-# function solcb(model, init, tspan, params, callback)
-#     # params, init = choose_param_vector(model)
-#     prob = ODEProblem(model, init, tspan, params, callback=callback)
-#     solu = solve(prob, Rodas4())
-#     return solu
-# end
-
-# function sol_with_t(model, init, params, tspan, t)
-#     # params, init = choose_param_vector(model)
-#     prob = ODEProblem(model, init, tspan, params)
-#     solu = solve(prob, Rodas4(), saveat=t)
-#     return solu
-# end
+function steady_states(model, init, params)
+    prob = SteadyStateProblem(model, init, params; jac=true)
+    return solve(prob, DynamicSS())#; abstol=1e-15, reltol=1e-12)
+end 
 
 function sol(model, init, tspan, params)
     prob = ODEProblem(model, init, tspan, params; jac=true)
     if nameof(model) == :combined_model 
-        solu = solve(prob, Rosenbrock23())#, abstol=1e-10, reltol=1e-10)
+        # solu = solve(prob, Rosenbrock23())#, abstol=1e-10, reltol=1e-10)
+        solu = solve(prob, QNDF(), abstol=1e-9, reltol=1e-6);
     # elseif nameof(model) == :rtc_trna_inhib_model
         # solu = solve(prob, TRBDF2())
+    elseif nameof(model) == :growth_model 
+        solu = solve(prob, QNDF());
     else
         solu = solve(prob, Rodas4())
     end
@@ -42,6 +20,21 @@ function sol(model, init, tspan, params)
     # solu = solve(prob, alg_hints=[:auto], isoutofdomain=(y,p,t)->any(x->x<0,y))#, abstol=1e-15, reltol=1e-12);
 
     return solu
+end
+
+function calc_lam(params, ssvals_dict)
+    gamma = params[gmax] * ssvals_dict[:a]/(params[Kgamma] + ssvals_dict[:a])
+    ttrate = (ssvals_dict[:c_q] + ssvals_dict[:c_rh] + ssvals_dict[:c_t] + ssvals_dict[:c_m] + ssvals_dict[:c_R] + ssvals_dict[:c_A] + ssvals_dict[:c_B])*gamma
+    return ttrate/params[M]
+end
+
+function calc_rmf(params, ssvals_dict)
+    # rmf = params[nrh]*(ssvals_dict[:rh] + ssvals_dict[:rt] + ssvals_dict[:rd] + ssvals_dict[:c_rh] + ssvals_dict[:c_t] + ssvals_dict[:c_m] + ssvals_dict[:c_q] + ssvals_dict[:c_A] + ssvals_dict[:c_B] + ssvals_dict[:c_R] + ssvals_dict[:z_rh] + ssvals_dict[:z_t] + ssvals_dict[:z_m] + ssvals_dict[:z_q] + ssvals_dict[:z_A] + ssvals_dict[:z_R] + ssvals_dict[:z_B])/params[M]
+    return params[nrh]*(ssvals_dict[:rh] + ssvals_dict[:c_rh] + ssvals_dict[:c_t] + ssvals_dict[:c_m] + ssvals_dict[:c_q] + ssvals_dict[:c_A] + ssvals_dict[:c_B] + ssvals_dict[:c_R])/params[M]
+end
+
+function plot_solu(df)
+    return plot([scatter(x=df.time, y=col, name="$(names(df)[i])") for (col, i) in zip(eachcol(df[:,2:end]), range(2,length(names(df))))], Layout(xaxis_type="log",  yaxis_tickformat=".2e"))
 end
 
 function get_all_curves(sol, species) 
@@ -132,40 +125,7 @@ function get_all_ssvals(sol, all_species)
 end
 
 function ss_init_vals(df, all_species)
-    if length(all_species) == 9
-        rm_a = get_ssval(df, :rm_a)
-        rm_b = get_ssval(df, :rm_b)
-        rm_r = get_ssval(df, :rm_r)
-        rtca = get_ssval(df, :rtca)
-        rtcb = get_ssval(df, :rtcb)
-        rtcr = get_ssval(df, :rtcr)
-        rt = get_ssval(df, :rt)
-        rd = get_ssval(df, :rd)
-        if all_species[7] == :rh
-            rh = get_ssval(df, :rh)
-            return [rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt]
-        else
-            trna = get_ssval(df, :trna)
-            return [rm_a, rtca, rm_b, rtcb, rm_r, rtcr, trna, rd, rt]
-        end
-    else
-        rm_a = get_ssval(df, :rm_a)
-        rm_b = get_ssval(df, :rm_b)
-        rm_r = get_ssval(df, :rm_r)
-        rtca = get_ssval(df, :rtca)
-        rtcb = get_ssval(df, :rtcb)
-        rtcr = get_ssval(df, :rtcr)
-        rt = get_ssval(df, :rt)
-        rd = get_ssval(df, :rd)
-        rtc_i = get_ssval(df, :rtc_i)
-        if all_species[7] == :rh
-            rh = get_ssval(df, :rh)
-            return [rm_a, rtca, rm_b, rtcb, rm_r, rtcr, rh, rd, rt, rtc_i]
-        else
-            trna = get_ssval(df, :trna)
-            return [rm_a, rtca, rm_b, rtcb, rm_r, rtcr, trna, rd, rt, rtc_i]
-        end
-    end
+    return [get_ssval(df, i) for i in all_species]
 end
 
 

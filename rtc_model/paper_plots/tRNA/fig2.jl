@@ -1,10 +1,10 @@
 using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, Statistics
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf, ProgressBars, LabelledArrays, DataFrames, PlotlyJS, ModelingToolkit
 
+
+include("/home/holliehindley/phd/general_funcs/solving.jl")
 include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
 include("/home/holliehindley/phd/rtc_model/models/rtc_trna_model.jl")
-include("/home/holliehindley/phd/general_funcs/solving.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/trna_params.jl")
 include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
 
 br = get_br(rtc_trna_model, ssvals_trna, params_trna, 20.)
@@ -35,8 +35,8 @@ xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="wh
 
 [p1_sig p1]
 
-savefig(p, "/home/holliehindley/phd/may23_rtc/paper_plots/rtc_proteins.svg")
-savefig(p1, "/home/holliehindley/phd/may23_rtc/paper_plots/ribosomes.svg")
+savefig(p, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/rtc_proteins.svg")
+savefig(p1, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/ribosomes.svg")
 
 
 

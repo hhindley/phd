@@ -1,30 +1,91 @@
-# module SweepParams
-# export sweep_paramx2, sweep_paramx3, change_param, change_param_atp, sweep_paramx2_new, sweep_paramx2_few_t
-function sweep_paramx2(model, parameters, all_species, species, func, param1, param2, param_range1, param_range2)
+function sweep_param(model, ss_init, params, param_range, param, species, title)
+    new_params = deepcopy(params)
+    new_species = deepcopy(species)
+    ssvals=[]
+    for i in ProgressBar(param_range)
+        new_params[param] = i
+        ss = steady_states(model, ss_init, new_params)
+        ssvals_dict = Dict([i => j for (i,j) in zip(species, ss)])
+        lam = calc_lam(new_params, ssvals_dict)
+        ss_lam = collect(ss)
+        rmf = calc_rmf(new_params, ssvals_dict)
+        push!(ss_lam, lam)
+        push!(ss_lam, rmf)
+        push!(ssvals, ss_lam)
+    end
+    # return ssvals
+    df_ssvals = DataFrame(vcat(transpose(ssvals)...), :auto)
+    push!(new_species, :lam)
+    push!(new_species, :rmf)
+    rename!(df_ssvals, new_species)
+    return plot([scatter(x=param_range, y=col, name="$(names(df_ssvals)[i])") for (col,i) in zip(eachcol(df_ssvals), range(1,length(names(df_ssvals))))],
+    Layout(xaxis_title="$param", title=title))#, xaxis_type="log"))
+
+end
+
+
+function sweep_paramx2(model, ss_init, parameters, species, param1, param2, param_range1, param_range2)
     all_res = []
-    # params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
     params = deepcopy(parameters)
-    for i in param_range1
+    for i in ProgressBar(param_range1)
         params[param1] = i
         res1 = []
         for val in param_range2 
             params[param2] = val
-            solu = sol(model, initial, tspan, params)
-            push!(res1, func(solu, species, all_species))
+            ss = steady_states(model, ss_init, params)
+            ss_lam = ([ss...])
+            # ss_lam = collect(ss1)
+            ssvals_dict = Dict([i => j for (i,j) in zip(species, ss)])
+            push!(ss_lam, calc_lam(params, ssvals_dict))
+            push!(ss_lam, calc_rmf(params, ssvals_dict))
+            push!(res1, ss_lam)
         end
         push!(all_res, res1)
-
     end
     # @show size(all_res)
-    vec = []
-    for i in (1:length(param_range1))
-        append!(vec, values(all_res[i]))
+    new_species = deepcopy(species)
+    push!(new_species, :lam)
+    push!(new_species, :rmf)
+    df = DataFrame([name => [] for name in new_species])
+    for i in range(1, length(all_res))
+        for j in all_res[i]
+            push!(df, j)
+        end
     end
-    # @show (vec)
-    vec = reshape(vec, (length(param_range1),length(param_range1)))
-    @show (vec)
-    return plot(contour(x=param_range1, y=param_range2, z=vec, colorbar=attr(title="$species", titleside="right")), Layout(xaxis_title="$param1", yaxis_title="$param2", title="$func of $species"))
+    return df
 end
+
+function plot_contour(res, specie, param_range1, param_range2, param1, param2)
+    rh_res = reshape(res[!,specie], length(param_range1),length(param_range2))
+    return plot(contour(x=param_range1, y=param_range2, z=rh_res, colorbar=attr(title="$specie", titleside="right")), Layout(xaxis_title=param1, yaxis_title=param2, title="$specie"))
+end
+
+
+# function sweep_paramx2(model, parameters, all_species, species, func, param1, param2, param_range1, param_range2)
+#     all_res = []
+#     # params = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, atp, na, nb, nr, lam] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
+#     params = deepcopy(parameters)
+#     for i in param_range1
+#         params[param1] = i
+#         res1 = []
+#         for val in param_range2 
+#             params[param2] = val
+#             solu = sol(model, initial, tspan, params)
+#             push!(res1, func(solu, species, all_species))
+#         end
+#         push!(all_res, res1)
+
+#     end
+#     # @show size(all_res)
+#     vec = []
+#     for i in (1:length(param_range1))
+#         append!(vec, values(all_res[i]))
+#     end
+#     # @show (vec)
+#     vec = reshape(vec, (length(param_range1),length(param_range1)))
+#     @show (vec)
+#     return plot(contour(x=param_range1, y=param_range2, z=vec, colorbar=attr(title="$species", titleside="right")), Layout(xaxis_title="$param1", yaxis_title="$param2", title="$func of $species"))
+# end
 
 function sweep_paramx3(model, lam, species, func, param1, param2, param3, param_range)
     all_res = []

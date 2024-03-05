@@ -1,8 +1,13 @@
+include("/home/holliehindley/phd/general_funcs/all_model_funcs.jl")
+include("/home/holliehindley/phd/rtc_model/parameters/rtc_params.jl")
+include("/home/holliehindley/phd/rtc_model/parameters/trna_params.jl")
+
 indexof(sym,syms) = findfirst(isequal(sym),syms)
 @variables t 
 @parameters L c kr Vmax_init Km_init ω_ab ω_r θtscr g_max θtlr km_a km_b d krep kdam ktag kdeg kin atp na nb nr lam kc k_diss rh thr_t
-@syms rm_a(t) rtca(t) rm_b(t) rtcb(t) rm_r(t) rtcr(t) trna(t) rd(t) rt(t) 
-    
+species_trna1 = @syms rm_a(t) rtca(t) rm_b(t) rtcb(t) rm_r(t) rtcr(t) trna(t) rd(t) rt(t) 
+species_trna = [Symbol(i) for i in species_trna1]
+
 D = Differential(t)
 
 @mtkmodel RTC_TRNA begin
@@ -85,23 +90,24 @@ D = Differential(t)
         tscr_r ~ ω_r*atp/(θtscr+atp) # uM min-1
 
         tlr_el ~ (g_max*atp/(θtlr+atp)) * trna/(thr_t+trna) 
+
         # # ribosomes
         Vrep ~ rtcb*rt*krep/(rt+km_b) # uM min-1 
         Vdam ~ kdam*trna # uM min-1
         Vinflux ~ kin* g_max*atp/(θtlr+atp) #* trna/(thr_t+trna)  # uM min-1 
         Vtag ~ rtca*rd*ktag/(rd+km_a) # uM min-1 
 
-        rhs_rm_a ~ tscr_ab - lam*(rm_a) - d*(rm_a)
-        rhs_rm_b ~ tscr_ab - lam*(rm_b) - d*(rm_b)
-        rhs_rm_r ~ tscr_r - lam*(rm_r) - d*(rm_r)
+        rhs_rm_a ~ tscr_ab - dil(rm_a,lam) - deg(rm_a)
+        rhs_rm_b ~ tscr_ab - lam*(rm_b) - deg(rm_b)
+        rhs_rm_r ~ tscr_r - lam*(rm_r) - deg(rm_r)
 
-        rhs_rtca ~ (1/na)*kc*rh*rm_a*tlr_el - lam*(rtca)     
-        rhs_rtcb ~ (1/nb)*kc*rh*rm_b*tlr_el - lam*(rtcb)
-        rhs_rtcr ~ (1/nr)*kc*rh*rm_r*tlr_el - lam*(rtcr)
+        rhs_rtca ~ tlr(rm_a, na, rh, tlr_el) - dil(rtca,lam)     
+        rhs_rtcb ~ tlr(rm_b, nb, rh, tlr_el) - dil(rtcb,lam)
+        rhs_rtcr ~ tlr(rm_r, nr, rh, tlr_el) - dil(rtcr,lam)
 
-        rhs_trna ~ Vrep - Vdam + Vinflux - lam*(trna)
-        rhs_rd ~ Vdam - Vtag - kdeg*rd - lam*(rd)
-        rhs_rt ~ Vtag - Vrep - lam*(rt)
+        rhs_trna ~ Vrep - Vdam + Vinflux - dil(trna,lam)
+        rhs_rd ~ Vdam - Vtag - kdeg*rd - dil(rd,lam)
+        rhs_rt ~ Vtag - Vrep - dil(rt,lam)
 
         D(rm_a) ~ rhs_rm_a
         D(rtca) ~ rhs_rtca
@@ -118,8 +124,14 @@ end
 
 @mtkbuild rtc_trna_model = RTC_TRNA()
 
+init_trna = [rtc_trna_model.rm_a=>0.0,rtc_trna_model.rtca=>0.0,rtc_trna_model.rm_b=>0.0,rtc_trna_model.rtcb=>0.0,rtc_trna_model.rm_r=>0.0,rtc_trna_model.rtcr=>0.0,rtc_trna_model.trna=>135.5,rtc_trna_model.rd=>0.0,rtc_trna_model.rt=>0.0] # tRNA initial conc = 135.5
 
+tspan = (0, 1e9);
 
+params_trna = Dict(L=>L_val, c=>c_val, kr=>kr_val*12, Vmax_init=>Vmax_init_val, Km_init=>Km_init_val, θtscr=>θtscr_val, θtlr=>θtlr_val, na=>nA_val, nb=>nB_val, nr=>nR_val, d=>d_val, krep=>krep_val, ktag=>ktag_val,
+atp=>atp_val, km_a=>km_a_val, km_b=>km_b_val, g_max=>g_max_val, kdeg=>kdeg_trna_val, kin=>kin_trna_val, ω_ab=>ω_ab_val, ω_r=>ω_r_val, kdam=>kdam_val, lam=>lam_val, kc=>kc_val, k_diss=>k_diss_val, rh=>rh_val, thr_t=>thr_t_val)
+
+ssvals_trna = steady_states(rtc_trna_model, init_trna, params_trna)
 
 # function rtc_model_trna(initial, params, t) 
 #     L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin, atp, na, nb, nr, lam, kc, k_diss, rh, thr_t = params

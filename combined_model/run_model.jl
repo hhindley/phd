@@ -1,127 +1,94 @@
-using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, Statistics, Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf, PlotlyJS, ProgressBars
+using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, Statistics, Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf, PlotlyJS, ProgressBars, ModelingToolkit
 
 include("/home/holliehindley/phd/general_funcs/solving.jl")
-include("/home/holliehindley/phd/combined_model/params.jl")
+include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
+include("/home/holliehindley/phd/rtc_model/functions/sweep_params.jl")
+
+include("/home/holliehindley/phd/growth_model/parameters/growth_model_params.jl")
+include("/home/holliehindley/phd/growth_model/parameters/gm_uM_parameters.jl")
+include("/home/holliehindley/phd/rtc_model/parameters/rtc_params.jl")
+include("/home/holliehindley/phd/combined_model/combined_params.jl")
+
+include("/home/holliehindley/phd/growth_model/model/growth_model.jl")
 include("/home/holliehindley/phd/combined_model/combined_model.jl")
+include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
 
-comb_species = [:m_rh, :m_t, :m_m, :m_q, :m_R, :m_A, :m_B, :c_rh, :c_t, :c_m, :c_q, :c_R, :c_A, :c_B, :et, :em, :q, :R, :A, :B, :rh, :rt, :rd, :z_rh, :z_t, :z_m, :z_q, :z_R, :z_A, :z_B, :si, :a]
 
-tspan = (0,1e9)
+solu = sol(combined_model, init_comb, tspan, params_comb)
+df = create_solu_df(solu, species_comb); plot_solu(df)
 
-comb_params.Kgamma = 7*sf
-comb_params.θ_rh = 426.8693338968694*sf
-comb_params.θ_nr = 4.379733394834643*sf
-comb_params.abx = 10  
+abx_range = range(0,350,length=100)
+abx_rev = reverse(abx_range)
 
-solu = sol(combined_model, comb_init, tspan, comb_params)
-df = create_solu_df(solu, comb_species)
-p = plot([scatter(x=df.time, y=col, name="$(names(df)[i])", legendgroup=i) for (col, i) in zip(eachcol(df[:,2:end]), range(2,length(names(df))))], Layout(xaxis_type="log", yaxis_tickformat=".2e"))
+new_params = deepcopy(params_comb)
+new_params[ns] = 0.1
+new_params[kdam_p] = 0.3
 
-# comb_species_v2 = [:m_rh, :m_t, :m_m, :m_q, :m_R, :m_A, :m_B, :c_rh, :c_t, :c_m, :c_q, :c_R, :c_A, :c_B, :et, :em, :q, :R, :A, :B, :rh, :rt, :rd, :z_rh, :z_t, :z_m, :z_q, :z_R, :z_A, :z_B, :c_rhD, :c_tD, :c_mD, :c_qD, :c_RD, :c_AD, :c_BD, :si, :a]
-# solu_v2 = sol(combined_model_v2, comb_init_v2, tspan, comb_params)
-# df_v2 = create_solu_df(solu_v2, comb_species_v2)
-# p_v2 = plot([scatter(x=df_v2.time, y=col, name="$(names(df_v2)[i])", legendgroup=i) for (col, i) in zip(eachcol(df_v2[:,2:end]), range(2,length(names(df_v2))))], Layout(xaxis_type="log", yaxis_tickformat=".2e"))
+res, res2 = full_numerical_bistab(combined_model, new_params, ssvals_comb, :B, species_comb, abx_range, abx_rev, abx)
+plot([scatter(x=abx_range, y=res), scatter(x=abx_rev, y=res2)])
 
-# [p p_v2]
-
-abx_range = range(0,60,length=101)
-pabx = deepcopy(comb_params)
-ssvals=[]
-for i in abx_range
-    pabx.abx = i
-    solu = sol(combined_model, comb_init, tspan, pabx)
-    push!(ssvals, get_all_ssvals(solu, comb_species))
-
+kdam_p_range = range(0.3,0.6,length=3)
+full_res=[]
+for i in kdam_p_range
+    # new_params = deepcopy(params_comb)
+    new_params[kdam_p] = i
+    res, res2 = full_numerical_bistab(combined_model, new_params, ssvals_comb, :B, species_comb, abx_range, abx_rev, abx)
+    push!(full_res, [res,res2])
 end
 
-df_ssvals = DataFrame(vcat(transpose(ssvals)...), :auto)
-rename!(df_ssvals, comb_species)
+traces=[]
+for i in range(1, length(full_res))
+    t1 = scatter(x=abx_range, y=full_res[i][1], name="% dam $(kdam_p_range[i]) forw") #for i in range(1,length(full_res))
+    t2 = scatter(x=abx_rev, y=full_res[i][2], name="% dam $(kdam_p_range[i]) rev") #for i in range(1,length(full_res))
+    push!(traces, t1)
+    push!(traces, t2)
+end
 
-plot([scatter(x=abx_range, y=col, name="$(names(df_ssvals)[i])") for (col,i) in zip(eachcol(df_ssvals), range(1,length(names(df_ssvals))))])
+plot([i for i in traces])
 
 
+new_params = deepcopy(params_comb)
+# new_params[kdam_p] = 0.3
+solu = sol(combined_model, init_comb, tspan, new_params); df = create_solu_df(solu, species_comb); plot_solu(df)
+
+
+
+abx_range = range(0,12,length=50)
+sweep_abx = sweep_param(combined_model, ssvals_comb, new_params, abx_range, abx, species_comb, "with repair")
+
+open("/home/holliehindley/phd/general_funcs/model_solutions/test.html", "w") do io
+    PlotlyBase.to_html(io, sweep_abx.plot)
+end
+
+
+
+params_abx = deepcopy(params_comb)
+params_abx[abx] = 2
 kdamp_range = range(0,1,length=50)
-pabx = deepcopy(comb_params)
-ssvals=[]
-pabx.abx = 25
-for i in kdamp_range
-    pabx.kdam = i
-    solu = sol(combined_model, comb_init, tspan, pabx)
-    push!(ssvals, get_all_ssvals(solu, comb_species))
+sweep_kdamp = sweep_param(combined_model, ssvals_comb, params_abx, kdamp_range, kdam_p, species_comb, "")
 
-end
+ns_range = range(0.01,1,length=100)
+sweep_ns = sweep_param(combined_model, ssvals_comb, params_abx, ns_range, ns, species_comb, "")
 
-df_ssvals = DataFrame(vcat(transpose(ssvals)...), :auto)
-rename!(df_ssvals, comb_species)
+s0_range = 10 .^ range(log10(0.001),log10(1e4),length=1000)
+sweep_s0 = sweep_param(combined_model, ssvals_comb, params_abx, s0_range, s0, species_comb, "")
 
-plot([scatter(x=kdamp_range, y=col, name="$(names(df_ssvals)[i])") for (col,i) in zip(eachcol(df_ssvals), range(1,length(names(df_ssvals))))])
+wab_range = 10 .^ range(log10(1e-6),log10(1e-1),length=100)
+sweep_wab = sweep_param(combined_model, ssvals_comb, params_abx, wab_range, w_BA, species_comb, "")
 
+wr_range = 10 .^ range(log10(1e-6),log10(1e-1),length=100)
+sweep_wr = sweep_param(combined_model, ssvals_comb, params_abx, wr_range, w_R, species_comb, "")
 
 
 
 
-alpha = df.rt/kr 
-fa = @. (1+alpha)^6/(L*((1+c*alpha)^6)+(1+alpha)^6)
-ra = @. fa*df.R
+abx_range = range(0,12,length=50)
+kdamp_range = range(0,1,length=50)
 
-ω_p(w_x, θ_x) = @. w_x*df.a/(θ_x + df.a)
-plot(scatter(x=df.time, y=ω_p(w_rh, θ_nr)), Layout(xaxis_type="log"))
 
-ω_q(θ_x) = @. (w_q*df.a/(θ_x + df.a))/(1+(df.q/Kq)^hq) # transcription rate for q # uM min-1
-plot(scatter(x=df.time, y=ω_q(θ_nr)), Layout(xaxis_type="log"))
 
-ω_rtcBA(θ_x) = @. (w_BA*df.a/(θ_x + df.a)) * ra*Vmax_init*df.a/(Km_init+df.a) # transcription rate for RtcBA # uM min-1 ???
-plot(scatter(x=df.time, y=ω_rtcBA(θ_nr)), Layout(xaxis_type="log"))
+res = sweep_paramx2(combined_model, ssvals_comb, params_comb, species_comb, abx, kdam_p, abx_range, kdamp_range)
 
-gamma = @. gmax*df.a/(Kgamma+df.a) # aa min-1
-v_x(c_x, nx) = @. df[:,c_x]*gamma/nx # uM min-1
-ttrate = @. (df.c_q+df.c_rh+df.c_t+df.c_m+df.c_R+df.c_A+df.c_B)*gamma
-plot(scatter(x=df.time, y=v_x(:c_rh, nrh)), Layout(xaxis_type="log"))
-plot(scatter(x=df.time, y=v_x(:c_t, nx)), Layout(xaxis_type="log"))
-plot(scatter(x=df.time, y=v_x(:c_B, nx)), Layout(xaxis_type="log"))
-plot(scatter(x=df.time, y=ttrate), Layout(xaxis_type="log"))
-
-λ = @. ttrate/M # min-1
-plot(scatter(x=df.time, y=λ), Layout(xaxis_type="log"))
-
-dil(x) = @. λ*x # uM min-1 
-plot(scatter(x=df.time, y=dil(df.a)), Layout(xaxis_type="log"))
-plot(scatter(x=df.time, y=dil(df.rh)), Layout(xaxis_type="log"))
-plot(scatter(x=df.time, y=dil(df.B)), Layout(xaxis_type="log"))
-
-deg(x) = @. d*x # uM min-1 
-plot(scatter(x=df.time, y=deg(df.m_q)), Layout(xaxis_type="log"))
-plot(scatter(x=df.time, y=deg(df.m_rh)), Layout(xaxis_type="log"))
-plot(scatter(x=df.time, y=deg(df.a)), Layout(xaxis_type="log"))
-
-rh_bind(m_x) = @. kb*df.rh*m_x # uM min-1 
-plot(scatter(x=df.time, y=rh_bind(df.m_rh)), Layout(xaxis_type="log"))
-plot(scatter(x=df.time, y=rh_bind(df.m_B)), Layout(xaxis_type="log"))
-
-rh_unbind(c_x) = @. ku*c_x # uM min-1 
-plot(scatter(x=df.time, y=rh_unbind(df.c_B)), Layout(xaxis_type="log"))
-plot(scatter(x=df.time, y=rh_unbind(df.c_rh)), Layout(xaxis_type="log"))
-
-zm(c_x) = @. c_x*abx*kon # uM min-1
-plot(scatter(x=df.time, y=zm(df.c_B)), Layout(xaxis_type="log"))
-plot(scatter(x=df.time, y=zm(df.c_A)), Layout(xaxis_type="log"))
-
-zm_diss(z_x) = @. koff*z_x # uM min-1 
-plot(scatter(x=df.time, y=zm_diss(df.z_B)), Layout(xaxis_type="log"))
-
-vimp = @. (df.et*vt*s0/(Kt+s0)) # uM min-1 
-vcat = @. (df.em*vm*df.si/(Km+df.si)) # uM min-1 
-plot(scatter(x=df.time, y=vcat), Layout(xaxis_type="log"))
-
-A1 = @. (df.a*df.A)/(df.a+(km_a*df.rd)) # uM
-B1 = @. (df.a*df.B)/(df.a+(km_b*df.rt)) # uM
-plot(scatter(x=df.time, y=A1), Layout(xaxis_type="log"))
-plot(scatter(x=df.time, y=B1), Layout(xaxis_type="log"))
-
-Vrep = @. krep*B1*df.rt # uM min-1 technically should be uM^2 min-1
-Vdam = @. (df.z_rh + df.z_t + df.z_m + df.z_q + df.z_R + df.z_A + df.z_B)*koff*kdam # uM min-1
-Vtag = @. ktag*A1*df.rd # uM min-1 
-plot(scatter(x=df.time, y=Vrep), Layout(xaxis_type="log"))
-plot(scatter(x=df.time, y=Vdam), Layout(xaxis_type="log"))
-plot(scatter(x=df.time, y=Vtag), Layout(xaxis_type="log"))
+new_species = deepcopy(species_comb); push!(new_species, :lam, :rmf);
+[display(plot_contour(res, i, abx_range, kdamp_range, "abx", "kdam_p")) for i in new_species]
 
