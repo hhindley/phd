@@ -1,8 +1,8 @@
 using CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, PlotlyJS, Statistics
-include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
-include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
-include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
-include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
+include("$PATHrtc_models/Oct2022_model/rtc_model.jl")
+include("$PATHrtc_models/sol_species_funcs.jl")
+include("$PATHrtc_models/params_init_tspan.jl")
+include("$PATHParam_inf/inf_setup.jl")
 
 # run model to steady state 
 tspan = (0, 1e9)

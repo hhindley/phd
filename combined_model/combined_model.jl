@@ -1,4 +1,4 @@
-include("/home/holliehindley/phd/general_funcs/all_model_funcs.jl")
+include("$PATH/general_funcs/all_model_funcs.jl")
 indexof(sym, syms) = findfirst(isequal(sym),syms)
 
 @variables t
@@ -148,7 +148,7 @@ D = Differential(t)
         sig_o ~ ra*Voc/k_diss
 
         # translation 
-        gamma ~ gmax*a/(Kgamma+a) # aa min-1 uM-1
+        gamma ~ gmax*a/(Kgamma+a) # aa uM-1 min-1 
         ttrate ~ (c_q+c_rh+c_t+c_m+c_R+c_A+c_B)*gamma # aa min-1
 
         # growth rate 
@@ -160,7 +160,7 @@ D = Differential(t)
 
         # rtc
         Vrep ~ B*rt*krep/(rt+km_b) # uM min-1
-        Vdam ~ (z_rh + z_t + z_m + z_q + z_R + z_A + z_B)*koff*kdam_p*ku #(z_rh + z_t + z_m + z_q + z_R + z_A + z_B)*koff*kdam # uM min-1
+        Vdam ~ (z_rh + z_t + z_m + z_q + z_R + z_A + z_B)*koff*kdam_p # would be sum(z_x)*koff*kdam_p*ku but dont include ku here as koff is the rate limiting step # uM min-1
         Vtag ~ A*rd*ktag/(rd+km_a) # uM min-1
 
         # ODEs
@@ -249,10 +249,37 @@ end
 
 init_comb = [combined_model.m_rh=>0.0,combined_model.m_t=>0.0,combined_model.m_m=>0.0,combined_model.m_q=>0.0,combined_model.m_R=>0.0,combined_model.m_A=>0.0,combined_model.m_B=>0.0,combined_model.c_rh=>0.0,combined_model.c_t=>0.0,combined_model.c_m=>0.0,combined_model.c_q=>0.0,combined_model.c_R=>0.0,combined_model.c_A=>0.0,combined_model.c_B=>0.0,combined_model.et=>0.0,combined_model.em=>0.0,combined_model.q=>0.0,combined_model.R=>0.0,combined_model.A=>0.0,combined_model.B=>0.0,combined_model.rh=>0.0166,combined_model.rt=>0.0,combined_model.rd=>0.0,combined_model.z_rh=>0.0,combined_model.z_t=>0.0,combined_model.z_m=>0.0,combined_model.z_q=>0.0,combined_model.z_R=>0.0,combined_model.z_A=>0.0,combined_model.z_B=>0.0,combined_model.si=>0.0,combined_model.a=>1.66]
 
-params_comb = Dict(d=>d_val, kr=>kr_val, L=>L_val, c=>c_val, w_rh=>wr_uM_val, w_t=>we_uM_val, w_m=>we_uM_val, w_q=>wq_uM_val, w_BA=>ω_ab_val_comb, w_R=>ω_r_val_comb, θ_rh=>thetar_uM_val, θ_nr=>thetax_uM_val, Kq=>Kq_uM_val, nq=>nq_val, Vmax_init=>Vmax_init_val, Km_init=>Km_init_val, nrh=>nr_val, nx=>nx_val, nR=>nR_val, nA=>nA_val, nB=>nB_val, gmax=>gmax_val, Kgamma=>Kgamma_uM_val, M=>M_uM_val, kb=>kb_uM_val, ku=>ku_val, abx=>abx_val, kon=>kon_val, koff=>koff_val, vt=>vt_val, vm=>vm_val, s0=>s0_uM_val, Kt=>Kt_uM_val, Km=>Km_uM_val, km_a=>km_a_val, km_b=>km_b_val, krep=>krep_val, kdam_p=>kdam_p_val, ktag=>ktag_val, kdeg=>kdeg_val, k_diss=>k_diss_val, ns=>ns_val)
+params_comb = Dict(
+    # rtc params
+    d=>d_val, kr=>kr_val, L=>L_val, c=>c_val, Vmax_init=>Vmax_init_val, Km_init=>Km_init_val,
+    w_BA=>ω_ab_val_comb, w_R=>ω_r_val_comb, nR=>nR_val, nA=>nA_val, nB=>nB_val, km_a=>km_a_val, km_b=>km_b_val, 
+    krep=>krep_val, kdam_p=>kdam_p_val, ktag=>ktag_val, kdeg=>kdeg_val, k_diss=>k_diss_val,
+    # growth model params
+    w_rh=>wr_uM_val, w_t=>we_uM_val, w_m=>we_uM_val, w_q=>wq_uM_val, gmax=>gmax_val, 
+    θ_rh=>thetar_uM_val, θ_nr=>thetax_uM_val, Kq=>Kq_uM_val, Kt=>Kt_uM_val, Km=>Km_uM_val, Kgamma=>Kgamma_uM_val, 
+    nq=>nq_val, nrh=>nr_val, nx=>nx_val, 
+    kb=>kb_uM_val, ku=>ku_val, 
+    abx=>abx_val, kon=>kon_val, koff=>koff_val, 
+    s0=>s0_uM_val, M=>M_uM_val, ns=>ns_val, vt=>vt_val, vm=>vm_val)
+
+
+params_comb_new = Dict(
+    # rtc params
+    d=>d_val, kr=>kr_val, L=>L_val, c=>c_val, Vmax_init=>Vmax_init_val, Km_init=>Km_init_val,
+    w_BA=>ω_ab_val_comb_new, w_R=>ω_r_val_comb_new, nR=>nR_val, nA=>nA_val, nB=>nB_val, km_a=>km_a_val, km_b=>km_b_val, 
+    krep=>krep_val, kdam_p=>kdam_p_val, ktag=>ktag_val, kdeg=>kdeg_val, k_diss=>k_diss_val,
+    # growth model params
+    w_rh=>wr_val_comb_new, w_t=>we_val_comb_new, w_m=>we_val_comb_new, w_q=>wq_val_comb_new, gmax=>gmax_val_comb_new, 
+    θ_rh=>thetar_uM_val, θ_nr=>thetax_uM_val, Kq=>Kq_uM_val, Kt=>Kt_uM_val, Km=>Km_uM_val, Kgamma=>Kgamma_uM_val, 
+    nq=>nq_val, nrh=>nr_val, nx=>nx_val, 
+    kb=>kb_uM_val, ku=>ku_val, 
+    abx=>abx_val, kon=>kon_val_comb_new, koff=>koff_val, 
+    s0=>s0_uM_val, M=>M_uM_val, ns=>ns_val, vt=>vt_val_comb_new, vm=>vm_val)
 
 ssvals_comb = steady_states(combined_model, init_comb, params_comb)
+ssvals_comb_new = steady_states(combined_model, init_comb, params_comb_new)
 
+n
 # prob2 = ODEProblem(growth_model, init_gm, tspan, params_gm; jac=true);
 # solu2 = solve(prob2, Rodas4(), abstol=1e-12, reltol=1e-9);
 

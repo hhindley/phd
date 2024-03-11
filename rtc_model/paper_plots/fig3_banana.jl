@@ -3,10 +3,10 @@ using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
 # using Plots
 using PlotlyJS, ProgressBars, Interpolations, QuadGK, ModelingToolkit
 
-include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
-include("/home/holliehindley/phd/general_funcs/solving.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/params.jl")
-include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
+include("$PATH/rtc_model/models/rtc_orig.jl")
+include("$PATH/general_funcs/solving.jl")
+include("$PATH/rtc_model/parameters/rtc_params.jl")
+include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
 
 colours = ["#f4e5ffff","#e6c5ffff","#d7a1ffff","#c06affff","#a730ffff"]
 
@@ -33,7 +33,7 @@ yaxis=attr(showline=true,linewidth=3,linecolor="black",range=(0.001,0.04)),xaxis
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
 
-savefig(wab_banana, "/home/holliehindley/phd/may23_rtc/paper_plots/wab_banana_final.svg")
+savefig(wab_banana, "$PATHmay23_rtc/paper_plots/wab_banana_final.svg")
 
 
 wr_range1 = 10 .^ range(log10(1e-8),log10(1e-4),length=5)
@@ -56,7 +56,7 @@ Layout(xaxis_title="ATP (μM)", yaxis_title="λ (min<sup>-1</sup>)", showlegend=
 yaxis=attr(showline=true,linewidth=3,linecolor="black",range=(0.001,0.04)),xaxis=attr(showline=true,linewidth=3,linecolor="black", range=(500,5500)),# showlegend=false,
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-savefig(wr_banana, "/home/holliehindley/phd/may23_rtc/paper_plots/wr_banana_final.svg")
+savefig(wr_banana, "$PATHmay23_rtc/paper_plots/wr_banana_final.svg")
 
 
 
@@ -307,12 +307,12 @@ kdam_range = range(0,1.5,length=10)
 
 # wab_range1 = 10 .^range(log10(2e-6),log10(2e-3),length=2)
 p_atplam_wab = numerical_triple_param_plotting(rtc_model, params_rtc, rtc_init, species_rtc, atp_range, :atp, lam_range, :lam, kdam_range, wab_range1, :ω_ab)
-Plots.savefig(p_atplam_wab, "/home/holliehindley/phd/may23_rtc/paper_plots/tRNA/p_atlam_wab.svg")
+Plots.savefig(p_atplam_wab, "$PATHmay23_rtc/paper_plots/tRNA/p_atlam_wab.svg")
 
 wr_range1 = 10 .^ range(log10(0.01/5e7),log10(0.01/1e4),length=5)
 
 p_atplam_wr = numerical_triple_param_plotting(atp_range, :atp, lam_range, :lam, params_trna, kdam_range, wr_range1, :ω_r)
-Plots.savefig(p_atplam_wr, "/home/holliehindley/phd/may23_rtc/paper_plots/tRNA/p_atlam_wr.svg")
+Plots.savefig(p_atplam_wr, "$PATHmay23_rtc/paper_plots/tRNA/p_atlam_wr.svg")
 
 println(wab_range1)
 

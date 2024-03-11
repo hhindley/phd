@@ -126,13 +126,13 @@ xaxis_type="log"))
 # Layout(xaxis_title="kdam",yaxis_title="fold-change from ssval", title="switching from off to on",
 # yaxis_type="log"))
 
-# open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_fold_offon.html", "w") do io
+# open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/init_switch_fold_offon.html", "w") do io
 #     PlotlyBase.to_html(io, p_fold.plot)
 # end
 # open("/home/hollie_hindley/Documents/may23_rtc/analysis/bifurcation_analysis/init_switch/rh_comp.html", "w") do io
 #     PlotlyBase.to_html(io, p_perc.plot)
 # end
-# open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_diff_offon.html", "w") do io
+# open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/init_switch_diff_offon.html", "w") do io
 #     PlotlyBase.to_html(io, p_diff.plot)
 # end
 

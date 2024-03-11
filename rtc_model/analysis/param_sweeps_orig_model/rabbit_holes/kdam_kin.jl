@@ -1,5 +1,5 @@
 using Parameters, LabelledArrays, StaticArrays, CSV, DataFrames, DifferentialEquations, BenchmarkTools, OrderedCollections, DataInterpolations, PlotlyJS, Statistics
-include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); include("/home/holliehindley/phd/may23_rtc/analysis/t_param_setup.jl");
+include("$PATHmay23_rtc/functions/solving.jl"); include("$PATHmay23_rtc/functions/plotting.jl"); include("$PATHmay23_rtc/functions/sweep_params.jl"); include("$PATHmay23_rtc/models/rtc_orig.jl"); include("$PATHmay23_rtc/models/atp_lam_kin_t.jl"); include("$PATHmay23_rtc/analysis/t_param_setup.jl");
 
 @consts begin   
     L = 10; #10 
@@ -54,7 +54,7 @@ kdam_range = collect(0:0.01:1)
 params[:kin] = 0.054#3
 kdam_list = collect(0:0.01:0.1)#[0.6,0.68,0.75,0.8,1]
 for i in all_species
-    open("/home/holliehindley/phd/may23_rtc/analysis/results/rabbit_holes/kdam_kin/$(i)_change_kdam.html", "w") do io
+    open("$PATHmay23_rtc/analysis/results/rabbit_holes/kdam_kin/$(i)_change_kdam.html", "w") do io
         PlotlyBase.to_html(io, param_comparison(rtc_model, initial, tspan, params, i, :kdam, kdam_list, "kin=$(params[:kin])", "log").plot)
     end
     
@@ -63,7 +63,7 @@ end
 params[:kdam] = 0.01#0.71
 kin_list = collect(2.5:0.2:4.5)
 for i in all_species
-    open("/home/holliehindley/phd/may23_rtc/analysis/results/rabbit_holes/kdam_kin/$(i)_change_kin.html", "w") do io
+    open("$PATHmay23_rtc/analysis/results/rabbit_holes/kdam_kin/$(i)_change_kin.html", "w") do io
         PlotlyBase.to_html(io, param_comparison(rtc_model, initial, tspan, params, i, :kin, kin_list, "kdam=$(params[:kdam])", "log").plot)
     end
 end
@@ -72,7 +72,7 @@ end
 param_list = [[0.95,0.73,0.56,0.1],[5,3.6,2.7,1]]
 param = [:kdam, :kin]
 for i in all_species
-    open("/home/holliehindley/phd/may23_rtc/analysis/results/rabbit_holes/kdam_kin/$(i)_change_both.html", "w") do io
+    open("$PATHmay23_rtc/analysis/results/rabbit_holes/kdam_kin/$(i)_change_both.html", "w") do io
         PlotlyBase.to_html(io, param_comparison(rtc_model, initial, tspan, params, i, param, param_list, "kin=$(params[:kin]), kdam=$(params[:kdam])", "log").plot)
     end
 end

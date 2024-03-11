@@ -166,7 +166,7 @@ p2 = scatter(x=last_lam, y=test_last)
 plot([p1,p2])
 
 # load data growth rate 
-csv_lam = DataFrame(CSV.File("/home/holliehindley/phd/data/results_colD_grfit.csv"))
+csv_lam = DataFrame(CSV.File("$PATHdata/results_colD_grfit.csv"))
 csv_lam = select!(csv_lam, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
 # csv_lam."gr"[csv_lam."gr".< 0] .= 0 #zero(eltype(lam_colD))
 plot(scatter(x=csv_lam."t", y=csv_lam."gr"))
@@ -231,11 +231,11 @@ p
 atp_lam_data = DataFrame(t = new_df.t, atp = new_atp, gr = new_df.gr)
 # atp_lam_data = DataFrame(t = new_df.t, atp = new_atp[1:end-1], gr = [first_dlam; last_dlam][1:end-1])
 
-CSV.write("/home/holliehindley/phd/data/atp_for_rtcmodel.csv", atp_lam_data)
+CSV.write("$PATHdata/atp_for_rtcmodel.csv", atp_lam_data)
 
 
-# csv_atp = DataFrame(CSV.File("/home/holliehindley/phd/data/atp_for_rtcmodel.csv"))
-# # csv_atp = DataFrame(CSV.File("/home/holliehindley/phd/data/atp_for_rtcmodel_OLD.csv"))
+# csv_atp = DataFrame(CSV.File("$PATHdata/atp_for_rtcmodel.csv"))
+# # csv_atp = DataFrame(CSV.File("$PATHdata/atp_for_rtcmodel_OLD.csv"))
 
 # csv_atp.atp = csv_atp.atp/5
 
@@ -258,14 +258,14 @@ CSV.write("/home/holliehindley/phd/data/atp_for_rtcmodel.csv", atp_lam_data)
 # relayout!(p, showlegend=false, xaxis_range=(0,1500))
 # p
 
-# CSV.write("/home/holliehindley/phd/data/time_vars_atp_lam.csv", time_vars_atp_lam)
-# CSV.write("/home/holliehindley/phd/data/time_vars_kin.csv", time_vars_kin)
-# CSV.write("/home/holliehindley/phd/data/time.csv", time_df)
+# CSV.write("$PATHdata/time_vars_atp_lam.csv", time_vars_atp_lam)
+# CSV.write("$PATHdata/time_vars_kin.csv", time_vars_kin)
+# CSV.write("$PATHdata/time.csv", time_df)
 
 
-# atp_lam = DataFrame(CSV.File("/home/holliehindley/phd/data/time_vars_atp_lam.csv"))
-# kin = DataFrame(CSV.File("/home/holliehindley/phd/data/time_vars_kin.csv"))
-# t = DataFrame(CSV.File("/home/holliehindley/phd/data/time.csv"))
+# atp_lam = DataFrame(CSV.File("$PATHdata/time_vars_atp_lam.csv"))
+# kin = DataFrame(CSV.File("$PATHdata/time_vars_kin.csv"))
+# t = DataFrame(CSV.File("$PATHdata/time.csv"))
 
 # p = make_subplots(rows=3, cols=1, shared_xaxes=true, vertical_spacing=0.08, subplot_titles=["λ" "ATP" "kin"])
 # add_trace!(p, (scatter(x=t, y=atp_lam.lam)), row=1, col=1)

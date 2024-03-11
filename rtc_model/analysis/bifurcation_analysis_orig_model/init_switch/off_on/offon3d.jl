@@ -73,7 +73,7 @@ sss, init1s, init2s, init3s = triple_init(branches1.ss_val_off, lower_ranges, br
 
 # p = plot_binary(sss, set_shared_range_0ton(n,l), branches1.ss_val_off[7], "rtcr", "rt", "lower to upper - kdam = 1")
 
-# # # open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_lowertoupper1.html", "w") do io
+# # # open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/init_switch_lowertoupper1.html", "w") do io
 # # #     PlotlyBase.to_html(io, p.plot)
 # # # end
 # binary = get_binary(branches1.ss_val_off[7], sss)

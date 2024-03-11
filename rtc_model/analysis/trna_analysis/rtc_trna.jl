@@ -2,12 +2,12 @@ using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, Labelled
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
 # using Plots
 using PlotlyJS, ProgressBars
-include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/set_ups.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); 
-include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/holliehindley/phd/may23_rtc/models/combinations_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
-include("/home/holliehindley/phd/colors_plotly.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_trna_model.jl")
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/init_switch_funcs.jl"); include("/home/holliehindley/phd/may23_rtc/models/inhibition_models/rtc_inhibition_model.jl");
+include("$PATHmay23_rtc/functions/solving.jl"); include("$PATHmay23_rtc/functions/set_ups.jl"); include("$PATHmay23_rtc/functions/plotting.jl"); 
+include("$PATHmay23_rtc/functions/sweep_params.jl"); include("$PATHmay23_rtc/models/rtc_orig.jl"); include("$PATHmay23_rtc/models/atp_lam_kin_t.jl"); 
+include("$PATHmay23_rtc/models/single_t.jl"); include("$PATHmay23_rtc/models/combinations_t.jl"); 
+include("$PATHmay23_rtc/functions/bf_funcs/bf_funcs.jl");
+include("$PATHcolors_plotly.jl"); include("$PATHmay23_rtc/models/rtc_trna_model.jl")
+include("$PATHmay23_rtc/functions/bf_funcs/init_switch_funcs.jl"); include("$PATHmay23_rtc/models/inhibition_models/rtc_inhibition_model.jl");
 
 @consts begin
     L = 10; #10 
@@ -112,7 +112,7 @@ krep = 137., ktag = 9780., atp = 3578.9473684210525, km_a = 20., km_b = 16., g_m
 kdeg = 0.001, kin = kin_trna, ω_ab = 0.05623413251903491, ω_r = 0.010000000000000002, 
 kdam =  0.01, lam = 0.014, rh = rh, thr_t = thr_t)
 
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/bf_funcs.jl");
+include("$PATHmay23_rtc/analysis/bifurcation_analysis/bf_funcs.jl");
 
 br = get_br(rtc_mod_trna, params_trna2, init_trna, 5.)
 # bs = plot_all_curves_bistable(br, colors2, colorsr, "Original, L = 10")
@@ -307,7 +307,7 @@ trna2 = plot([ptrna1, ptrna2, trna_h_p, stable1, unstable1, stable2, unstable2, 
 
 p = [orig trna2]
 
-open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/ss_proof.html", "w") do io
+open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/ss_proof.html", "w") do io
     PlotlyBase.to_html(io, p.plot)
 end
 
@@ -339,7 +339,7 @@ yaxis_title="RtcB (μM)", yaxis2_title="Healthy tRNA (μM)",
 yaxis=attr(showline=true,linewidth=1,linecolor="black",mirror=true),xaxis=attr(showline=true,linewidth=1,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white"))
 
-savefig(trna, "/home/holliehindley/phd/may23_rtc/analysis/trna_analysis/trna_bf.svg")
+savefig(trna, "$PATHmay23_rtc/analysis/trna_analysis/trna_bf.svg")
 
 
 

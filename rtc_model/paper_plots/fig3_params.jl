@@ -3,11 +3,12 @@ using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf, Labelled
 # using Plots
 using PlotlyJS, ProgressBars
 
+PATH = "/home/holliehindley/phd"
 
-include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
-include("/home/holliehindley/phd/general_funcs/solving.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/params.jl")
-include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
+include("$PATH/rtc_model/models/rtc_orig.jl")
+include("$PATH/general_funcs/solving.jl")
+include("$PATH/rtc_model/parameters/rtc_params.jl")
+include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
 
 
 
@@ -44,7 +45,7 @@ yaxis_title="RtcB (μM)",
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-PlotlyJS.savefig(wr, "/home/holliehindley/phd/may23_rtc/paper_plots/wr_rtcb.svg")
+PlotlyJS.savefig(wr, "$PATHmay23_rtc/paper_plots/wr_rtcb.svg")
 
 
 
@@ -76,7 +77,7 @@ xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="wh
 
 
 
-PlotlyJS.savefig(wab, "/home/holliehindley/phd/may23_rtc/paper_plots/wab_rtcb.svg")
+PlotlyJS.savefig(wab, "$PATHmay23_rtc/paper_plots/wab_rtcb.svg")
 
 
 atp_range = range(1000,stop=5000,length=3)
@@ -104,7 +105,7 @@ yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
 
-PlotlyJS.savefig(atp_p, "/home/holliehindley/phd/may23_rtc/paper_plots/atp_rtcb.svg")
+PlotlyJS.savefig(atp_p, "$PATHmay23_rtc/paper_plots/atp_rtcb.svg")
 
 
 lam_range = range(0.01,stop=0.02,length=3)
@@ -133,7 +134,7 @@ yaxis_title="RtcB (μM)",
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-PlotlyJS.savefig(lam_p, "/home/holliehindley/phd/may23_rtc/paper_plots/lam_rtcb.svg")
+PlotlyJS.savefig(lam_p, "$PATHmay23_rtc/paper_plots/lam_rtcb.svg")
 
 
 
@@ -280,7 +281,7 @@ yaxis_title="RtcB (μM)",
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-PlotlyJS.savefig(wr, "/home/holliehindley/phd/may23_rtc/paper_plots/wr_rtcb.svg")
+PlotlyJS.savefig(wr, "$PATHmay23_rtc/paper_plots/wr_rtcb.svg")
 
 
 

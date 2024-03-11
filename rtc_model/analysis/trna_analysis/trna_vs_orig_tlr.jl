@@ -2,12 +2,12 @@ using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, Labelled
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
 # using Plots
 using PlotlyJS, ProgressBars
-include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/set_ups.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); 
-include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/holliehindley/phd/may23_rtc/models/combinations_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/bf_funcs.jl");
-include("/home/holliehindley/phd/colors_plotly.jl")
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/funcs.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_inhibition_model.jl");
+include("$PATHmay23_rtc/functions/solving.jl"); include("$PATHmay23_rtc/functions/set_ups.jl"); include("$PATHmay23_rtc/functions/plotting.jl"); 
+include("$PATHmay23_rtc/functions/sweep_params.jl"); include("$PATHmay23_rtc/models/rtc_orig.jl"); include("$PATHmay23_rtc/models/atp_lam_kin_t.jl"); 
+include("$PATHmay23_rtc/models/single_t.jl"); include("$PATHmay23_rtc/models/combinations_t.jl"); 
+include("$PATHmay23_rtc/analysis/bifurcation_analysis/bf_funcs.jl");
+include("$PATHcolors_plotly.jl")
+include("$PATHmay23_rtc/analysis/bifurcation_analysis/init_switch/funcs.jl"); include("$PATHmay23_rtc/models/rtc_inhibition_model.jl");
 
 @consts begin
     L = 10; #10 

@@ -2,11 +2,11 @@ using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, Labelled
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra
 
 using PlotlyJS, Printf
-include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/set_ups.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); 
-include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/holliehindley/phd/may23_rtc/models/combinations_t.jl"); include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
+include("$PATHmay23_rtc/functions/solving.jl"); include("$PATHmay23_rtc/functions/set_ups.jl"); include("$PATHmay23_rtc/functions/plotting.jl"); 
+include("$PATHmay23_rtc/functions/sweep_params.jl"); include("$PATHmay23_rtc/models/rtc_orig.jl"); include("$PATHmay23_rtc/models/atp_lam_kin_t.jl"); 
+include("$PATHmay23_rtc/models/single_t.jl"); include("$PATHmay23_rtc/models/combinations_t.jl"); include("$PATHmay23_rtc/functions/bf_funcs/bf_funcs.jl");
 
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/init_switch_funcs.jl");
+include("$PATHmay23_rtc/functions/bf_funcs/init_switch_funcs.jl");
 
 
 @consts begin

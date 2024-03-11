@@ -1,6 +1,6 @@
-include("/home/holliehindley/phd/general_funcs/all_model_funcs.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/rtc_params.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/trna_params.jl")
+include("$PATH/general_funcs/all_model_funcs.jl")
+include("$PATH/rtc_model/parameters/rtc_params.jl")
+include("$PATH/rtc_model/parameters/trna_params.jl")
 
 
 indexof(sym,syms) = findfirst(isequal(sym),syms)

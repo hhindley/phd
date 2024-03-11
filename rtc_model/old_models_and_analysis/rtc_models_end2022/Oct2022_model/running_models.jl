@@ -1,16 +1,16 @@
 using CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, PlotlyJS, Statistics
-include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
-include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
-include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
-include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
+include("$PATHrtc_models/Oct2022_model/rtc_model.jl")
+include("$PATHrtc_models/sol_species_funcs.jl")
+include("$PATHrtc_models/params_init_tspan.jl")
+include("$PATHParam_inf/inf_setup.jl")
 
-csv = DataFrame(CSV.File("/home/holliehindley/phd/data/results_colD_grfit.csv")) # read csv to a datafram
+csv = DataFrame(CSV.File("$PATHdata/results_colD_grfit.csv")) # read csv to a datafram
 csv = select!(csv, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
-csv_wt = DataFrame(CSV.File("/home/holliehindley/phd/data/results_rtcOFF_grfit.csv"))
+csv_wt = DataFrame(CSV.File("$PATHdata/results_rtcOFF_grfit.csv"))
 csv_wt = select!(csv_wt, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
-csv_new = DataFrame(CSV.File("/home/holliehindley/phd/data/results_od1303_grfit.csv"))
+csv_new = DataFrame(CSV.File("$PATHdata/results_od1303_grfit.csv"))
 csv_new = select!(csv_new, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
-csv_new2 = DataFrame(CSV.File("/home/holliehindley/phd/data/results_od1303_grfit2.csv"))
+csv_new2 = DataFrame(CSV.File("$PATHdata/results_od1303_grfit2.csv"))
 csv_new2 = select!(csv_new2, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
 
 lam_colD, new_df = extend_gr_curve(csv)

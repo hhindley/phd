@@ -2,13 +2,13 @@ using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, Labelled
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
 # using Plots
 using PlotlyJS, ProgressBars
-include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/set_ups.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); 
-include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/holliehindley/phd/may23_rtc/models/combinations_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
-include("/home/holliehindley/phd/colors_plotly.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_trna_model.jl")
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/init_switch_funcs.jl"); include("/home/holliehindley/phd/may23_rtc/models/inhibition_models/rtc_inhibition_model.jl");
-include("/home/holliehindley/phd/may23_rtc/models/inhibition_models/trna_inhib.jl")
+include("$PATHmay23_rtc/functions/solving.jl"); include("$PATHmay23_rtc/functions/set_ups.jl"); include("$PATHmay23_rtc/functions/plotting.jl"); 
+include("$PATHmay23_rtc/functions/sweep_params.jl"); include("$PATHmay23_rtc/models/rtc_orig.jl"); include("$PATHmay23_rtc/models/atp_lam_kin_t.jl"); 
+include("$PATHmay23_rtc/models/single_t.jl"); include("$PATHmay23_rtc/models/combinations_t.jl"); 
+include("$PATHmay23_rtc/functions/bf_funcs/bf_funcs.jl");
+include("$PATHcolors_plotly.jl"); include("$PATHmay23_rtc/models/rtc_trna_model.jl")
+include("$PATHmay23_rtc/functions/bf_funcs/init_switch_funcs.jl"); include("$PATHmay23_rtc/models/inhibition_models/rtc_inhibition_model.jl");
+include("$PATHmay23_rtc/models/inhibition_models/trna_inhib.jl")
 
 @consts begin
     L = 10; #10 
@@ -126,7 +126,7 @@ bs4 = scatter(x=kdam_range, y=res_trna7, name="RtcR inhib")
 
 p = plot([bs3, bs2, bs1, bs4], Layout(title="tRNA"))
 
-open("/home/holliehindley/phd/may23_rtc/analysis/trna_analysis/inhib.html", "w") do io
+open("$PATHmay23_rtc/analysis/trna_analysis/inhib.html", "w") do io
     PlotlyBase.to_html(io, p.plot)
 end
 p = plot([bs3, bs2, bs1, bs4],
@@ -135,7 +135,7 @@ yaxis_title="Healthy tRNA steady-state concentration (μM)",
 yaxis=attr(showline=true,linewidth=1,linecolor="black"),xaxis=attr(showline=true,linewidth=1,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white"))
 
-savefig(p, "/home/holliehindley/phd/may23_rtc/analysis/trna_analysis/trna_inhib.svg")
+savefig(p, "$PATHmay23_rtc/analysis/trna_analysis/trna_inhib.svg")
 
 
 params_trna_inhib_bf = (L = 50000., c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250.,
@@ -191,18 +191,18 @@ rtcrt_bs = plot_all_curves_bistable(br_rtcrt, colors2, colorsr, "RtcRT inhibited
 
 all_bs = [bs rtca_bs rtcb_bs rtcr_bs rt_bs]
 combos = [bs rtcab_bs rtcbr_bs rtcar_bs; rtcbt_bs rtcat_bs rtcrt_bs]
-open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/p_species_inhib_mid.html", "w") do io
+open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/p_species_inhib_mid.html", "w") do io
     PlotlyBase.to_html(io, p_species_inhib.plot)
 end
-open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/p_all_bs_with_rt.html", "w") do io
+open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/p_all_bs_with_rt.html", "w") do io
     PlotlyBase.to_html(io, all_bs.plot)
 end
 
-open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/no_carf_higherdam.html", "w") do io
+open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/no_carf_higherdam.html", "w") do io
     PlotlyBase.to_html(io, nocarf.plot)
 end
 
-savefig(ribos, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/ribos.png")
+savefig(ribos, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/ribos.png")
 
 # bfp_rma, bfp_rtca, bfp_rmb, bfp_rtcb, bfp_rmr, bfp_rtcr, bfp_rh, bfp_rd, bfp_rt, first_r, middle_r, last_r, first, middle, last = get_all_curves_for_bistab_plotting(br, colors2, colors_r)
 
@@ -246,10 +246,10 @@ rtcb = plot([sf[4],sm[4],sl[4],sf1[4],sm1[4],sl1[4],sf2[4],sm2[4],sl2[4],sf3[4],
 rtcr = plot([sf[6],sm[6],sl[6],sf1[6],sm1[6],sl1[6],sf2[6],sm2[6],sl2[6],sf3[6],sm3[6],sl3[6],sf4[6],sm4[6],sl4[6],sf5[6],sm5[6],sl5[6],sf6[6],sm6[6],sl6[6],sf7[6],sm7[6],sl7[6],sf8[6],sm8[6],sl8[6],sf9[6],sm9[6],sl9[6],sf10[6],sm10[6],sl10[6],sf11[6],sm11[6],sl11[6]], Layout(title="RtcR", yaxis_title="Steady-state concentration (μM)", xaxis_title="Damage rate (min<sup>-1</sup>)"))
 
 
-savefig(rt, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/rt_inhib.png")
-savefig(rh, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/rh_inhib_all.svg")
+savefig(rt, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/rt_inhib.png")
+savefig(rh, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/rh_inhib_all.svg")
 
-open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/inhib_rtcr.html", "w") do io
+open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/inhib_rtcr.html", "w") do io
     PlotlyBase.to_html(io, rtcr.plot)
 end
 
@@ -343,10 +343,10 @@ p_rtcb_all = plot([p_alpha2, p_fa2, p_ra2, p_vinit2, p_tscr_a2, p_tscr_b2, p_tlr
 
 p_all_inhib = [p_orig_all p_rtca_all p_rtcb_all]
 
-open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/p_species_inhib.html", "w") do io
+open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/p_species_inhib.html", "w") do io
     PlotlyBase.to_html(io, p_species_inhib.plot)
 end
-open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/p_all_inhib.html", "w") do io
+open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/p_all_inhib.html", "w") do io
     PlotlyBase.to_html(io, p_all_inhib.plot)
 end
 

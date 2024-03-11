@@ -1,15 +1,15 @@
 using CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, PlotlyJS, Statistics
-include("/home/holliehindley/phd/rtc_models_end2022/Oct2022_model/rtc_model.jl")
-include("/home/holliehindley/phd/rtc_models_end2022/sol_species_funcs.jl")
-include("/home/holliehindley/phd/rtc_models_end2022/params_init_tspan.jl")
-include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
-# include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl")
+include("$PATHrtc_models_end2022/Oct2022_model/rtc_model.jl")
+include("$PATHrtc_models_end2022/sol_species_funcs.jl")
+include("$PATHrtc_models_end2022/params_init_tspan.jl")
+include("$PATHParam_inf/inf_setup.jl")
+# include("$PATHmay23_rtc/functions/plotting.jl")
 
 # load csv for growth rate and atp curves 
-# csv_gr = DataFrame(CSV.File("/home/holliehindley/phd/data/results_colD_grfit.csv")) # read csv to a datafram
+# csv_gr = DataFrame(CSV.File("$PATHdata/results_colD_grfit.csv")) # read csv to a datafram
 # csv_gr = select!(csv_gr, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
-csv_atp = DataFrame(CSV.File("/home/holliehindley/phd/data/atp_for_rtcmodel.csv"))
-# csv_atp = DataFrame(CSV.File("/home/holliehindley/phd/data/atp_for_rtcmodel_OLD.csv"))
+csv_atp = DataFrame(CSV.File("$PATHdata/atp_for_rtcmodel.csv"))
+# csv_atp = DataFrame(CSV.File("$PATHdata/atp_for_rtcmodel_OLD.csv"))
 
 csv_atp.atp = csv_atp.atp/5
 

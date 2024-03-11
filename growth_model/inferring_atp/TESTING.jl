@@ -103,7 +103,7 @@ p2 = scatter(x=last_lam, y=test_last)
 plot([p1,p2])
 
 # load data growth rate 
-csv_lam = DataFrame(CSV.File("/home/holliehindley/phd/data/results_colD_grfit.csv"))
+csv_lam = DataFrame(CSV.File("$PATHdata/results_colD_grfit.csv"))
 csv_lam = select!(csv_lam, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
 # csv_lam."gr"[csv_lam."gr".< 0] .= 0 #zero(eltype(lam_colD))
 plot(scatter(x=csv_lam."t", y=csv_lam."gr"))
@@ -178,4 +178,4 @@ new_atp
 atp_lam_data = DataFrame(t = new_df.t, atp = new_atp, gr = new_df.gr)
 # atp_lam_data = DataFrame(t = new_df.t, atp = new_atp[1:end-1], gr = [first_dlam; last_dlam][1:end-1])
 
-CSV.write("/home/holliehindley/phd/data/atp_for_rtcmodel.csv", atp_lam_data)
+CSV.write("$PATHdata/atp_for_rtcmodel.csv", atp_lam_data)

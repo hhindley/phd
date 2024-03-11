@@ -1,4 +1,4 @@
-include("/home/holliehindley/phd/growth_model/parameters/growth_model_params.jl")
+include("$PATH/growth_model/parameters/growth_model_params.jl")
 
 # parameters
 sf = 1e6/(6.022e23*1e-15)

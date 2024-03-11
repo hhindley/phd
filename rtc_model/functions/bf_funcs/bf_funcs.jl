@@ -51,48 +51,48 @@ end
 
 
 
-# function numerical_bistability_analysis(model, params, init, specie, all_species, kdam_range, kdam) # used to be 'checking_bistability' - used when bifurcationkit not working 
-#     param_init = deepcopy(params)
-#     new_params = deepcopy(params)
-#     first_params = deepcopy(params)
-#     first_params[kdam]=kdam_range[1]
-#     solu = sol(model, init, tspan, first_params)
-#     df_sol = create_solu_df(solu, all_species)
-#     ss = get_ssval(df_sol, specie)
-#     init_first = ss_init_vals(df_sol, all_species)
-#     res =[]
-#     for i in ProgressBar(range(2, length(kdam_range)))
-#         param_init[kdam]=kdam_range[i-1]
-#         solu_init = sol(model, init_first, tspan, param_init)
-#         df_sol_init = create_solu_df(solu_init, all_species)
-#         init_ss = ss_init_vals(df_sol_init, all_species)
-#         new_params[kdam] = kdam_range[i]
-#         solu_new = sol(model, init_ss, tspan, new_params)
-#         df_sol_new = create_solu_df(solu_new, all_species)
-#         push!(res, get_ssval(df_sol_new, specie))
-#     end
-#     pushfirst!(res, ss)
-#     return res
-# end
-
-function numerical_bistability_analysis(model, params, init1, specie, all_species, kdam_range, kdam) # used to be 'checking_bistability' - used when bifurcationkit not working 
+function numerical_bistability_analysis(model, params, init, specie, all_species, kdam_range, kdam) # used to be 'checking_bistability' - used when bifurcationkit not working 
     param_init = deepcopy(params)
     new_params = deepcopy(params)
     first_params = deepcopy(params)
     first_params[kdam]=kdam_range[1]
-    init = steady_states(model, init1, first_params)
-    ss_vals = Dict(zip(all_species, init))
+    solu = sol(model, init, tspan, first_params)
+    df_sol = create_solu_df(solu, all_species)
+    ss = get_ssval(df_sol, specie)
+    init_first = ss_init_vals(df_sol, all_species)
     res =[]
     for i in ProgressBar(range(2, length(kdam_range)))
         param_init[kdam]=kdam_range[i-1]
-        init_ss = steady_states(model, init, param_init)
+        solu_init = sol(model, init_first, tspan, param_init)
+        df_sol_init = create_solu_df(solu_init, all_species)
+        init_ss = ss_init_vals(df_sol_init, all_species)
         new_params[kdam] = kdam_range[i]
-        final_ss = Dict(zip(all_species, steady_states(model, init_ss, new_params)))
-        push!(res, final_ss[specie])
+        solu_new = sol(model, init_ss, tspan, new_params)
+        df_sol_new = create_solu_df(solu_new, all_species)
+        push!(res, get_ssval(df_sol_new, specie))
     end
-    pushfirst!(res, ss_vals[specie])
+    pushfirst!(res, ss)
     return res
 end
+
+# function numerical_bistability_analysis(model, params, init1, specie, all_species, kdam_range, kdam) # used to be 'checking_bistability' - used when bifurcationkit not working 
+#     param_init = deepcopy(params)
+#     new_params = deepcopy(params)
+#     first_params = deepcopy(params)
+#     first_params[kdam]=kdam_range[1]
+#     init = steady_states(model, init1, first_params)
+#     ss_vals = Dict(zip(all_species, init))
+#     res =[]
+#     for i in ProgressBar(range(2, length(kdam_range)))
+#         param_init[kdam]=kdam_range[i-1]
+#         init_ss = steady_states(model, init, param_init)
+#         new_params[kdam] = kdam_range[i]
+#         final_ss = Dict(zip(all_species, steady_states(model, init_ss, new_params)))
+#         push!(res, final_ss[specie])
+#     end
+#     pushfirst!(res, ss_vals[specie])
+#     return res
+# end
 
 function full_numerical_bistab(model, params, init1, specie, all_species, kdam_range, kdam_range_rev, kdam)
     res = numerical_bistability_analysis(model, params, init1, specie, all_species, kdam_range, kdam)

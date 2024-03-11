@@ -3,8 +3,8 @@ using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
 # using Plots
 using PlotlyJS, ProgressBars
 
-include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/set_ups.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl");
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl"), include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl")
+include("$PATHmay23_rtc/functions/solving.jl"); include("$PATHmay23_rtc/functions/set_ups.jl"); include("$PATHmay23_rtc/functions/plotting.jl");
+include("$PATHmay23_rtc/functions/bf_funcs/bf_funcs.jl"), include("$PATHmay23_rtc/functions/sweep_params.jl"); include("$PATHmay23_rtc/models/rtc_orig.jl")
 
 tspan=(0,1e9)
 @consts begin

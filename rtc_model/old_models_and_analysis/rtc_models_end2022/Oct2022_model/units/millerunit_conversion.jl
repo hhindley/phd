@@ -1,6 +1,6 @@
 using CSV, DataFrames, PlotlyJS
 
-include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
+include("$PATHParam_inf/inf_setup.jl")
 
 
 v = 80/1000000
@@ -76,7 +76,7 @@ new_stds
 
 conc_df = DataFrame(mRNA_conc_uM=mRNA_conc_uM, conc_std=new_stds)
 
-# CSV.write("/home/holliehindley/phd/data/mRNA_conc_uM.csv", string.(conc_df))
+# CSV.write("$PATHdata/mRNA_conc_uM.csv", string.(conc_df))
 
 
 
@@ -101,4 +101,4 @@ p7 = plot(scatter(x=dfc[:,1], y=paper_conc, showlegend=false), Layout(xaxis_titl
 [p3;p6;p7]
 
 paper_df = DataFrame(mRNA_conc_uM=paper_conc, conc_std=paper_stds)
-CSV.write("/home/holliehindley/phd/data/paper_conv.csv", string.(paper_df))
+CSV.write("$PATHdata/paper_conv.csv", string.(paper_df))

@@ -1,8 +1,8 @@
 using CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, PlotlyJS, Statistics
-include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
-include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
-include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
-include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
+include("$PATHrtc_models/Oct2022_model/rtc_model.jl")
+include("$PATHrtc_models/sol_species_funcs.jl")
+include("$PATHrtc_models/params_init_tspan.jl")
+include("$PATHParam_inf/inf_setup.jl")
 
 
 ω_ab_range = collect(range(0, 0.1, length=10))
@@ -10,7 +10,7 @@ include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
 
 
 
-csv_gr = DataFrame(CSV.File("/home/holliehindley/phd/data/results_colD_grfit.csv")) # read csv to a datafram
+csv_gr = DataFrame(CSV.File("$PATHdata/results_colD_grfit.csv")) # read csv to a datafram
 csv_gr = select!(csv_gr, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
 lam_t, new_df = extend_gr_curve(csv_gr)
 lam_t[lam_t.< 0] .= 0
@@ -169,7 +169,7 @@ p7h_std = sweep_paramx2(rtc_model1!, lam_wt, :rd, check_get_ssval, :ω_r, :ω_ab
 p8h_std = sweep_paramx2(rtc_model1!, lam_wt, :rt, check_get_ssval, :ω_r, :ω_ab, ω_r_range, ω_ab_range)
 
 # 3d plots
-include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
+include("$PATHrtc_models/sol_species_funcs.jl")
 
 p3d1 = sweep_paramx3(rtc_model1!, lam_wt, :rtca, get_ssval, :ω_r, :ω_ab, :kdam, ω_r_range)
 p3d2 = sweep_paramx3(rtc_model1!, lam_wt, :rtcb, get_ssval, :ω_r, :ω_ab, :kdam, ω_r_range)

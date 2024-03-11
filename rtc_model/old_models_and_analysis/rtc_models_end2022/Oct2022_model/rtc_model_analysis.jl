@@ -1,8 +1,8 @@
 using DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, DataFrames, OrderedCollections, PlotlyJS, Statistics
 
-include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
-include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
-include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
+include("$PATHrtc_models/Oct2022_model/rtc_model.jl")
+include("$PATHrtc_models/sol_species_funcs.jl")
+include("$PATHrtc_models/params_init_tspan.jl")
 
 solu = @time(sol(rtc_model, initial, tspan, params))
 plotly_plot_sol(solu, "log")

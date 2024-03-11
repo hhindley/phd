@@ -1,6 +1,6 @@
 using CSV, DataFrames, DataInterpolations, Plots# PlotlyJS
 
-csv = DataFrame(CSV.File("/home/holliehindley/phd/data/results_colD_grfit.csv")) # read csv to a dataframe
+csv = DataFrame(CSV.File("$PATHdata/results_colD_grfit.csv")) # read csv to a dataframe
 gr = csv."gr"
 t1 = csv."t"
 
@@ -45,7 +45,7 @@ lam_t-gr
 
 
 
-csv_wt = DataFrame(CSV.File("/home/holliehindley/phd/data/results_rtcOFF_grfit.csv"))
+csv_wt = DataFrame(CSV.File("$PATHdata/results_rtcOFF_grfit.csv"))
 gr_wt = csv_wt."gr"
 t1_wt = csv_wt."t"
 

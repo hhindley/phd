@@ -73,7 +73,7 @@ tspan=(0,1e9)
 
 # p = plot_binary(sss, set_shared_range_0ton(n,l), branches1.ss_val_off[7], "rtcr", "rt", "lower to upper - kdam = 1")
 
-# # # open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_lowertoupper1.html", "w") do io
+# # # open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/init_switch_lowertoupper1.html", "w") do io
 # # #     PlotlyBase.to_html(io, p.plot)
 # # # end
 # binary = get_binary(branches1.ss_val_off[7], sss)
@@ -189,7 +189,7 @@ end
 # ))
 
 
-# open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_lowerupper_064.html", "w") do io
+# open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/init_switch_lowerupper_064.html", "w") do io
 #     PlotlyBase.to_html(io, p.plot)
 # end
 
@@ -202,7 +202,7 @@ end
 
 # p = plot_binary(sss, set_shared_range(n,l), branches2.ss_val_lower, "rt", "rtcr", "lower to upper - kdam = 0.64")
 
-# open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_lowertoupper.html", "w") do io
+# open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/init_switch_lowertoupper.html", "w") do io
 #     PlotlyBase.to_html(io, p.plot)
 # end
 
@@ -247,7 +247,7 @@ end
 # ))
 
 
-# open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_lowerupper2.html", "w") do io
+# open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/init_switch_lowerupper2.html", "w") do io
 #     PlotlyBase.to_html(io, p.plot)
 # end
 
@@ -261,7 +261,7 @@ end
 
 # p = plot_binary(sss, set_shared_range(n,l), branches2.ss_val_lower, "rt", "rtcr", "lower to upper - kdam = 0.64")
 
-# open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_lowertoupper.html", "w") do io
+# open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/init_switch_lowertoupper.html", "w") do io
 #     PlotlyBase.to_html(io, p.plot)
 # end
 

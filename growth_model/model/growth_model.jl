@@ -1,4 +1,4 @@
-include("/home/holliehindley/phd/general_funcs/all_model_funcs.jl")
+include("$PATH/general_funcs/all_model_funcs.jl")
 
 indexof(sym, syms) = findfirst(isequal(sym),syms)
 
@@ -161,6 +161,7 @@ params_gm = Dict(d=>d_val, kb=>kb_val, ku=>ku_val, thetar=>thetar_val, s0=>s0_va
 params_gm_uM = Dict(d=>d_val, kb=>kb_uM_val, ku=>ku_val, thetar=>thetar_uM_val, s0=>s0_uM_val, gmax=>gmax_val, thetax=>thetax_uM_val, Kt=>Kt_uM_val, M=>M_uM_val, we=>we_uM_val, Km=>Km_uM_val, vm=>vm_val, nx=>nx_val, Kq=>Kq_uM_val, vt=>vt_val, wr=>wr_uM_val, wq=>wq_uM_val, nq=>nq_val, nr=>nr_val, ns=>ns_val, Kgamma=>Kgamma_uM_val, abx=>abx_val, kon=>kon_val)
 
 ssvals_gm = steady_states(growth_model, init_gm, params_gm)
+ssvals_gm_uM = steady_states(growth_model, init_gm_uM, params_gm_uM)
 
 
 # prob2 = ODEProblem(growth_model, init_gm, tspan, params_gm; jac=true);

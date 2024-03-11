@@ -1,9 +1,9 @@
 using Parameters, LabelledArrays, StaticArrays, CSV, DataFrames, DifferentialEquations, BenchmarkTools, OrderedCollections, DataInterpolations, PlotlyJS, Statistics
-include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); include("/home/holliehindley/phd/may23_rtc/analysis/t_param_setup.jl");
+include("$PATHmay23_rtc/functions/solving.jl"); include("$PATHmay23_rtc/functions/plotting.jl"); include("$PATHmay23_rtc/functions/sweep_params.jl"); include("$PATHmay23_rtc/models/rtc_orig.jl"); include("$PATHmay23_rtc/models/atp_lam_kin_t.jl"); include("$PATHmay23_rtc/analysis/t_param_setup.jl");
 
 
 
-# include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl")
+# include("$PATHmay23_rtc/functions/solving.jl"); include("$PATHmay23_rtc/functions/plotting.jl")
 # using DifferentialEquations, PlotlyJS, DataFrames, Parameters
 # params = (L = 10, c = 0.001, kr = 0.125, Vmax_init = 39.51, Km_init = 250, θtscr = 160.01, θtlr = 255.73, na = 338, nb = 408, nr = 532*6, d = 0.2, krep = 137, ktag = 9780, atp = 4000, km_a = 20, km_b = 16, g_max = 2.0923, gr_c = 0.0008856, kdeg = 0.001, kin = 0.054, ω_ab = 4, ω_r = 2e-7, ω_a = 4, ω_b = 4, kdam =  0.01, k = 2, lam = 0.033)
 # initial = [0, 0, 0, 0, 0, 0, 11.29, 0, 0]

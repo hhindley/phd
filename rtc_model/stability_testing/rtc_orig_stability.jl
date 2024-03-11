@@ -1,16 +1,16 @@
 using ModelingToolkit, DifferentialEquations, PlotlyJS, Latexify, LinearAlgebra, DataFrames, LabelledArrays, Printf
 
-include("/home/holliehindley/phd/general_funcs/solving.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/params.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/init.jl")
-include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
-include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
+include("$PATHgeneral_funcs/solving.jl")
+include("$PATHrtc_model/parameters/params.jl")
+include("$PATHrtc_model/parameters/init.jl")
+include("$PATHrtc_model/models/rtc_orig.jl")
+include("$PATHrtc_model/functions/bf_funcs/bf_funcs.jl")
 
 
-include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl");
-include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl");
-include("/home/holliehindley/phd/rtc_model/parameters/params.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/init.jl")
+include("$PATHrtc_model/functions/bf_funcs/bf_funcs.jl");
+include("$PATHrtc_model/models/rtc_orig.jl");
+include("$PATHrtc_model/parameters/params.jl")
+include("$PATHrtc_model/parameters/init.jl")
 
 
 @variables t 

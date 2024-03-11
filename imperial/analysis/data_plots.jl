@@ -1,20 +1,20 @@
 using CSV, TotalLeastSquares, Statistics, BayesOpt, BlackBoxOptim, PyCall, StaticArrays
-include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
-include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
-include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
-include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
+include("$PATHrtc_models/Oct2022_model/rtc_model.jl")
+include("$PATHrtc_models/sol_species_funcs.jl")
+include("$PATHrtc_models/params_init_tspan.jl")
+include("$PATHParam_inf/inf_setup.jl")
 
 
-csv_a_conc = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_conc_a.csv"))
-csv_b_conc = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_conc_b.csv"))
+csv_a_conc = DataFrame(CSV.File("$PATHdata/df_final_conc_a.csv"))
+csv_b_conc = DataFrame(CSV.File("$PATHdata/df_final_conc_b.csv"))
 t = [4,6,8,10,12,24]
-csv_a_std_conc = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_conc_a_sd.csv"))  
-csv_b_std_conc = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_conc_b_sd.csv"))  
+csv_a_std_conc = DataFrame(CSV.File("$PATHdata/df_final_conc_a_sd.csv"))  
+csv_b_std_conc = DataFrame(CSV.File("$PATHdata/df_final_conc_b_sd.csv"))  
 
-csv_a_copy = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_copy_a.csv"))
-csv_b_copy = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_copy_b.csv"))
-csv_a_std_copy = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_copy_a_sd.csv"))  
-csv_b_std_copy = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_copy_b_sd.csv"))  
+csv_a_copy = DataFrame(CSV.File("$PATHdata/df_final_copy_a.csv"))
+csv_b_copy = DataFrame(CSV.File("$PATHdata/df_final_copy_b.csv"))
+csv_a_std_copy = DataFrame(CSV.File("$PATHdata/df_final_copy_a_sd.csv"))  
+csv_b_std_copy = DataFrame(CSV.File("$PATHdata/df_final_copy_b_sd.csv"))  
 
 function plot_individual_data(csv, csv_std, title, type)
     p = make_subplots(rows=4, cols=1, shared_xaxes=true, vertical_spacing=0.06, y_title="$type", x_title="Time (hours)", subplot_titles=["RtcA" "RtcB" "RtcR" "OmpA"])
@@ -74,7 +74,7 @@ rtcr_b = csv_b.RtcR
 rtcr_a_sd = csv_a_std.RtcR
 rtcr_b_sd = csv_b_std.RtcR
 
-csv_gr = DataFrame(CSV.File("/home/holliehindley/phd/data/results_colD_grfit.csv")) # read csv to a datafram
+csv_gr = DataFrame(CSV.File("$PATHdata/results_colD_grfit.csv")) # read csv to a datafram
 csv_gr = select!(csv_gr, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
 
 # set atp and lam curves from files 
@@ -197,7 +197,7 @@ function tls_objective(x::Vector, X::Matrix, sigma::Vector)
     return error
 end
 
-csv_gr = DataFrame(CSV.File("/home/holliehindley/phd/data/results_colD_grfit.csv")) # read csv to a datafram
+csv_gr = DataFrame(CSV.File("$PATHdata/results_colD_grfit.csv")) # read csv to a datafram
 csv_gr = select!(csv_gr, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
 
 # set atp and lam curves from files 

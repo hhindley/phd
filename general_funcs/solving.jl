@@ -5,7 +5,7 @@ end
 
 function sol(model, init, tspan, params)
     prob = ODEProblem(model, init, tspan, params; jac=true)
-    if nameof(model) == :combined_model 
+    if nameof(model) == :combined_model || nameof(model) == :reduced_combined_model
         # solu = solve(prob, Rosenbrock23())#, abstol=1e-10, reltol=1e-10)
         solu = solve(prob, QNDF(), abstol=1e-9, reltol=1e-6);
     # elseif nameof(model) == :rtc_trna_inhib_model
@@ -23,14 +23,14 @@ function sol(model, init, tspan, params)
 end
 
 function calc_lam(params, ssvals_dict)
-    gamma = params[gmax] * ssvals_dict[:a]/(params[Kgamma] + ssvals_dict[:a])
-    ttrate = (ssvals_dict[:c_q] + ssvals_dict[:c_rh] + ssvals_dict[:c_t] + ssvals_dict[:c_m] + ssvals_dict[:c_R] + ssvals_dict[:c_A] + ssvals_dict[:c_B])*gamma
-    return ttrate/params[M]
+    gamma = @. params[gmax] * ssvals_dict[:a]/(params[Kgamma] + ssvals_dict[:a])
+    ttrate = @. (ssvals_dict[:c_q] + ssvals_dict[:c_rh] + ssvals_dict[:c_t] + ssvals_dict[:c_m] + ssvals_dict[:c_R] + ssvals_dict[:c_A] + ssvals_dict[:c_B])*gamma
+    return @. ttrate/params[M]
 end
 
 function calc_rmf(params, ssvals_dict)
-    # rmf = params[nrh]*(ssvals_dict[:rh] + ssvals_dict[:rt] + ssvals_dict[:rd] + ssvals_dict[:c_rh] + ssvals_dict[:c_t] + ssvals_dict[:c_m] + ssvals_dict[:c_q] + ssvals_dict[:c_A] + ssvals_dict[:c_B] + ssvals_dict[:c_R] + ssvals_dict[:z_rh] + ssvals_dict[:z_t] + ssvals_dict[:z_m] + ssvals_dict[:z_q] + ssvals_dict[:z_A] + ssvals_dict[:z_R] + ssvals_dict[:z_B])/params[M]
-    return params[nrh]*(ssvals_dict[:rh] + ssvals_dict[:c_rh] + ssvals_dict[:c_t] + ssvals_dict[:c_m] + ssvals_dict[:c_q] + ssvals_dict[:c_A] + ssvals_dict[:c_B] + ssvals_dict[:c_R])/params[M]
+    # return params[nrh]*(ssvals_dict[:rh] + ssvals_dict[:rt] + ssvals_dict[:rd] + ssvals_dict[:c_rh] + ssvals_dict[:c_t] + ssvals_dict[:c_m] + ssvals_dict[:c_q] + ssvals_dict[:c_A] + ssvals_dict[:c_B] + ssvals_dict[:c_R] + ssvals_dict[:z_rh] + ssvals_dict[:z_t] + ssvals_dict[:z_m] + ssvals_dict[:z_q] + ssvals_dict[:z_A] + ssvals_dict[:z_R] + ssvals_dict[:z_B])/params[M]
+    return params[nrh]*(ssvals_dict[:rh] + ssvals_dict[:rt] + ssvals_dict[:rd] + ssvals_dict[:c_rh] + ssvals_dict[:c_t] + ssvals_dict[:c_m] + ssvals_dict[:c_q] + ssvals_dict[:c_A] + ssvals_dict[:c_B] + ssvals_dict[:c_R])/params[M]
 end
 
 function plot_solu(df)

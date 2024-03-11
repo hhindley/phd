@@ -1,7 +1,7 @@
 using Plots, Printf, Measures, CSV, DataInterpolations
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, DataFrames
 
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/bf_funcs.jl"); include("/home/holliehindley/phd/may23_rtc/functions/set_ups.jl");
+include("$PATHmay23_rtc/analysis/bifurcation_analysis/bf_funcs.jl"); include("$PATHmay23_rtc/functions/set_ups.jl");
 
 atp_range = range(500, stop=5500,length=50)
 kin_range = range(0,stop=0.2,length=50)
@@ -10,7 +10,7 @@ wr_range = (range(0.00001,stop=0.001,length=50))
 wab_range = range(0.01, stop=4, length=50)
 
 # load time varying parameters and create object so they can be plotted 
-t, atp_t, lam_t, kin_t = set_time_vars("/home/holliehindley/phd/data/atp_for_rtcmodel.csv")
+t, atp_t, lam_t, kin_t = set_time_vars("$PATHdata/atp_for_rtcmodel.csv")
 plotlamt = view(lam_t, 1:200066)
 plotatpt = view(atp_t, 1:200066)
 plotkint = view(kin_t, 1:200066)
@@ -288,13 +288,13 @@ end
 
 # creates dataframe with all the data 
 perc_df = DataFrame(wab=wabs, wr=wrs, percs=percs)
-CSV.write("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/PERCENTAGES_kinlam.csv", perc_df)
+CSV.write("$PATHmay23_rtc/analysis/bifurcation_analysis/PERCENTAGES_kinlam.csv", perc_df)
 
 
 
 
 # loads the dataframe 
-perc_df = DataFrame(CSV.File("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/PERCENTAGES_kinlam.csv"))
+perc_df = DataFrame(CSV.File("$PATHmay23_rtc/analysis/bifurcation_analysis/PERCENTAGES_kinlam.csv"))
 # reshapes the dataframe so the percentage column represents a 20x20 matrix 
 plot_percs = reshape(perc_df.percs, (20,20))
 
@@ -305,8 +305,8 @@ contour_logPlot_atpkin = contour(wab_range1, wr_range1, plot_percs, scale=:log10
 
 contourPlot_atpkin = contour(wab_range1, wr_range1, plot_percs, color=:plasma, fill=true, levels=20, xlabel="ω_ab range", ylabel="ω_r range", colorbar_title="%", title="% area of ATP/λ curve that lies in bistability region", titlefontsize=11)
 
-savefig(contourPlot_atpkin, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/contourPlot_lamkin.svg")
-savefig(contour_logPlot_atpkin, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/contour_logPlot_lamkin.svg")
+savefig(contourPlot_atpkin, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/contourPlot_lamkin.svg")
+savefig(contour_logPlot_atpkin, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/contour_logPlot_lamkin.svg")
 
 
 

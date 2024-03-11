@@ -1,20 +1,20 @@
 using CSV, DifferentialEquations, Statistics, BayesOpt, BlackBoxOptim, PyCall, StaticArrays, LabelledArrays, DataInterpolations, PlotlyJS
-include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
-include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
-include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
-include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
+include("$PATHrtc_models/Oct2022_model/rtc_model.jl")
+include("$PATHrtc_models/sol_species_funcs.jl")
+include("$PATHrtc_models/params_init_tspan.jl")
+include("$PATHParam_inf/inf_setup.jl")
 
 
-csv_a_conc = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_conc_a.csv"))
-csv_b_conc = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_conc_b.csv"))
+csv_a_conc = DataFrame(CSV.File("$PATHdata/df_final_conc_a.csv"))
+csv_b_conc = DataFrame(CSV.File("$PATHdata/df_final_conc_b.csv"))
 t = [4,6,8,10,12,24]
-csv_a_std_conc = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_conc_a_sd.csv"))  
-csv_b_std_conc = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_conc_b_sd.csv"))  
+csv_a_std_conc = DataFrame(CSV.File("$PATHdata/df_final_conc_a_sd.csv"))  
+csv_b_std_conc = DataFrame(CSV.File("$PATHdata/df_final_conc_b_sd.csv"))  
 
-csv_a_copy = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_copy_a.csv"))
-csv_b_copy = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_copy_b.csv"))
-csv_a_std_copy = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_copy_a_sd.csv"))  
-csv_b_std_copy = DataFrame(CSV.File("/home/holliehindley/phd/data/df_final_copy_b_sd.csv"))  
+csv_a_copy = DataFrame(CSV.File("$PATHdata/df_final_copy_a.csv"))
+csv_b_copy = DataFrame(CSV.File("$PATHdata/df_final_copy_b.csv"))
+csv_a_std_copy = DataFrame(CSV.File("$PATHdata/df_final_copy_a_sd.csv"))  
+csv_b_std_copy = DataFrame(CSV.File("$PATHdata/df_final_copy_b_sd.csv"))  
 
 
 rtca_a = csv_a_conc.RtcA
@@ -31,7 +31,7 @@ rtcr_a_sd = csv_a_std_conc.RtcR
 rtcr_b_sd = csv_b_std_conc.RtcR
 
 # set atp and lam curves from files 
-csv_atp = DataFrame(CSV.File("/home/holliehindley/phd/data/atp_for_rtcmodel.csv"))
+csv_atp = DataFrame(CSV.File("$PATHdata/atp_for_rtcmodel.csv"))
 
 csv_atp.atp = csv_atp.atp/5
 rh = 11.29
@@ -289,7 +289,7 @@ print("error = ", best_fitness(res))
 ω_ab = 0.00032; ω_r = 0.00012;
 lam = 0.033; kin = 0.054; atp = 4000;
 
-include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
+include("$PATHrtc_models/params_init_tspan.jl")
 
 param = @LArray [L, c, kr, Vmax_init, Km_init, ω_ab, ω_r, θtscr, g_max, θtlr, km_a, km_b, d, krep, kdam, ktag, kdeg, kin_t, atp, na, nb, nr, lam_t] (:L, :c, :kr, :Vmax_init, :Km_init, :ω_ab, :ω_r, :θtscr, :g_max, :θtlr, :km_a, :km_b, :d, :krep, :kdam, :ktag, :kdeg, :kin, :atp, :na, :nb, :nr, :lam)
 solu = sol_with_t(rtc_all_t!, initial, param, tspan2, t_2)

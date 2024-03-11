@@ -2,10 +2,12 @@ using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, Labelled
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf, PlotlyJS, ProgressBars, ModelingToolkit, Interpolations, QuadGK
 # using Plots
 
-include("/home/holliehindley/phd/general_funcs/solving.jl")
-include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
-include("/home/holliehindley/phd/rtc_model/models/rtc_trna_model.jl")
-include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
+PATH = "/home/holliehindley/phd"
+
+include("$PATH/general_funcs/solving.jl")
+include("$PATH/rtc_model/models/rtc_orig.jl")
+include("$PATH/rtc_model/models/rtc_trna_model.jl")
+include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
 
 
 kdam_range = range(0,400,length=1000)
@@ -38,7 +40,7 @@ yaxis_title="RtcB (μM)",
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"), showlegend=false,
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-savefig(lam_p, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/lam_rtcb.svg")
+savefig(lam_p, "$PATHrtc_model/paper_plots/tRNA/lam_rtcb.svg")
 
 
 atp_range = range(1000,stop=5000,length=3)
@@ -64,7 +66,7 @@ yaxis_title="RtcB (μM)",
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),showlegend=false,
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-savefig(atp_p, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/atp_rtcb.svg")
+savefig(atp_p, "$PATHrtc_model/paper_plots/tRNA/atp_rtcb.svg")
 
 
 wab_range = 10 .^range(log10(2e-6),log10(2e-5),length=3)
@@ -92,7 +94,7 @@ yaxis_title="RtcB (μM)",
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),showlegend=false,
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-savefig(wab, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/wab_rtcb.svg")
+savefig(wab, "$PATHrtc_model/paper_plots/tRNA/wab_rtcb.svg")
 
 
 wr_range = 10 .^ range(log10(2e-7),log10(2e-6),length=3)
@@ -121,7 +123,7 @@ yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
 
-savefig(wr, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/wr_rtcb.svg")
+savefig(wr, "$PATHrtc_model/paper_plots/tRNA/wr_rtcb.svg")
 
 
 rh_range = range(10,stop=50,length=3)
@@ -149,7 +151,7 @@ yaxis_title="RtcB (μM)",
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),#showlegend=false,
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-savefig(rh_p, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/rh_rtcb.svg")
+savefig(rh_p, "$PATHrtc_model/paper_plots/tRNA/rh_rtcb.svg")
 
 
 
@@ -178,7 +180,7 @@ yaxis_title="RtcB (μM)",
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),showlegend=false,
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-savefig(thr_p, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/thr_rtcb.svg")
+savefig(thr_p, "$PATHrtc_model/paper_plots/tRNA/thr_rtcb.svg")
 
 
 
@@ -211,7 +213,7 @@ yaxis=attr(showline=true,linewidth=3,linecolor="black",range=(0.001,0.04)),xaxis
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
 
-savefig(wab_banana, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/wab_banana_final.svg")
+savefig(wab_banana, "$PATHrtc_model/paper_plots/tRNA/wab_banana_final.svg")
 
 
 wr_range1 = 10 .^ range(log10(1e-8),log10(1e-4),length=5)
@@ -234,7 +236,7 @@ Layout(xaxis_title="ATP (μM)", yaxis_title="λ (min<sup>-1</sup>)", showlegend=
 yaxis=attr(showline=true,linewidth=3,linecolor="black",range=(0.001,0.04)),xaxis=attr(showline=true,linewidth=3,linecolor="black", range=(500,5500)),# showlegend=false,
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
-savefig(wr_banana, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/wr_banana_final.svg")
+savefig(wr_banana, "$PATHrtc_model/paper_plots/tRNA/wr_banana_final.svg")
 
 
 

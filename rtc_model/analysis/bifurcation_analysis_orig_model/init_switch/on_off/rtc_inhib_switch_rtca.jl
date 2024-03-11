@@ -2,14 +2,14 @@ using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, Labelled
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
 
 using PlotlyJS, ProgressBars
-include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/set_ups.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); 
-include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/holliehindley/phd/may23_rtc/models/combinations_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/bf_funcs.jl");
+include("$PATHmay23_rtc/functions/solving.jl"); include("$PATHmay23_rtc/functions/set_ups.jl"); include("$PATHmay23_rtc/functions/plotting.jl"); 
+include("$PATHmay23_rtc/functions/sweep_params.jl"); include("$PATHmay23_rtc/models/rtc_orig.jl"); include("$PATHmay23_rtc/models/atp_lam_kin_t.jl"); 
+include("$PATHmay23_rtc/models/single_t.jl"); include("$PATHmay23_rtc/models/combinations_t.jl"); 
+include("$PATHmay23_rtc/analysis/bifurcation_analysis/bf_funcs.jl");
 
-include("/home/holliehindley/phd/may23_rtc/models/rtc_inhibition_model.jl");
+include("$PATHmay23_rtc/models/rtc_inhibition_model.jl");
 
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/funcs.jl");
+include("$PATHmay23_rtc/analysis/bifurcation_analysis/init_switch/funcs.jl");
 
 
 tspan = (0,1e9)
@@ -123,7 +123,7 @@ bfa1, dfa1, kdam1a1, kdam2a1 = different_levels_inhibition(rtc_inhib_mod_rtca, k
 rtca1a1, rtca2a1, rtca3a1, bf_rtcaa1 = plot_rtca_bf(bfb, dfb, kdam1b, kdam2b)
 
 # rtca_inhib = plot([rtca1, rtca2, rtca3, rtca10, rtca20, rtca30])
-# savefig(rtca_inhib, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/rtca_inhib.png")
+# savefig(rtca_inhib, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/rtca_inhib.png")
 
 p = plot([rtca10, rtca20, rtca30, bf_rtca0, rtca1, rtca2, rtca3, bf_rtca, rtca1a, rtca2a, rtca3a, bf_rtcaa, rtca1a1, rtca2a1, rtca3a1, bf_rtcaa1],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
@@ -131,7 +131,7 @@ yaxis_title="RtcB (μM)",
 yaxis=attr(showline=true,linewidth=1,linecolor="black"),xaxis=attr(showline=true,linewidth=1,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white"))
 
-savefig(p, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/on_off/rtca_inhib.svg")
+savefig(p, "$PATHmay23_rtc/analysis/bifurcation_analysis/init_switch/on_off/rtca_inhib.svg")
 
 
 plot(scatter(x=df.kdam,y=df.rtcb))

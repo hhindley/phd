@@ -1,9 +1,9 @@
 using ModelingToolkit, DifferentialEquations, PlotlyJS, Latexify, LinearAlgebra, DataFrames, LabelledArrays, Printf
 
-include("/home/holliehindley/phd/general_funcs/solving.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/trna_params.jl")
-include("/home/holliehindley/phd/rtc_model/models/rtc_trna_model.jl")
-include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
+include("$PATHgeneral_funcs/solving.jl")
+include("$PATHrtc_model/parameters/trna_params.jl")
+include("$PATHrtc_model/models/rtc_trna_model.jl")
+include("$PATHrtc_model/functions/bf_funcs/bf_funcs.jl")
 
 indexof(sym,syms) = findfirst(isequal(sym),syms)
 @variables t 

@@ -3,15 +3,16 @@ using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf, Modeling
 # using Plots
 using PlotlyJS, ProgressBars
 
-include("/home/holliehindley/phd/general_funcs/solving.jl")
-include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
-include("/home/holliehindley/phd/rtc_model/models/rtc_trna_model.jl")
-include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
+PATH = "/home/holliehindley/phd"
 
-include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/init_switch_funcs.jl");
+include("$PATH/general_funcs/solving.jl")
+include("$PATH/rtc_model/models/rtc_orig.jl")
+include("$PATH/rtc_model/models/rtc_trna_model.jl")
+include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
+include("$PATH/rtc_model/functions/bf_funcs/init_switch_funcs.jl");
 
-# svals_onoff = DataFrame(CSV.File("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis_orig_model/init_switch/on_off/data/PAPERswitch_vals_NEW_2024.csv"))
-svals_onoff = DataFrame(CSV.File("/home/holliehindley/phd/rtc_model/paper_plots/tRNA/switch_vals_trna.csv"))
+# svals_onoff = DataFrame(CSV.File("$PATHmay23_rtc/analysis/bifurcation_analysis_orig_model/init_switch/on_off/data/PAPERswitch_vals_NEW_2024.csv"))
+svals_onoff = DataFrame(CSV.File("$PATH/rtc_model/paper_plots/tRNA/switch_vals_trna.csv"))
 
 br = get_br(rtc_trna_model, ssvals_trna, params_trna, 20.)
 df = create_br_df(br)
@@ -68,9 +69,9 @@ yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
 
-savefig(p_rtcb, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/rtcb.svg")
-savefig(p_rtcr, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/rtcr.svg")
-savefig(p_rtca, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/rtca.svg")
+savefig(p_rtcb, "$PATHrtc_model/paper_plots/tRNA/rtcb.svg")
+savefig(p_rtcr, "$PATHrtc_model/paper_plots/tRNA/rtcr.svg")
+savefig(p_rtca, "$PATHrtc_model/paper_plots/tRNA/rtca.svg")
 
 
 

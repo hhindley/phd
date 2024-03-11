@@ -32,4 +32,4 @@ end
 
 insertcols!(df_res, 1, :Copies=>copies)
 df_res
-CSV.write("/home/holliehindley/phd/data/plasmid_concs.csv", df_res)
+CSV.write("$PATHdata/plasmid_concs.csv", df_res)

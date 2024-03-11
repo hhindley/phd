@@ -1,11 +1,11 @@
 using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, Statistics, DataInterpolations, Printf 
 using Distributions
 using StatsPlots
-include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/set_ups.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); 
-include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/holliehindley/phd/may23_rtc/models/combinations_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
-include("/home/holliehindley/phd/colors_plotly.jl");
+include("$PATHmay23_rtc/functions/solving.jl"); include("$PATHmay23_rtc/functions/set_ups.jl"); include("$PATHmay23_rtc/functions/plotting.jl"); 
+include("$PATHmay23_rtc/functions/sweep_params.jl"); include("$PATHmay23_rtc/models/rtc_orig.jl"); include("$PATHmay23_rtc/models/atp_lam_kin_t.jl"); 
+include("$PATHmay23_rtc/models/single_t.jl"); include("$PATHmay23_rtc/models/combinations_t.jl"); 
+include("$PATHmay23_rtc/functions/bf_funcs/bf_funcs.jl");
+include("$PATHcolors_plotly.jl");
 
 @consts begin
     L = 10; #10 
@@ -125,7 +125,7 @@ p_kmb = histogram(kmb_new, bins=100, label="km_b", ylabel="f(x)", xlabel="x")#, 
 
 p=plot(p_kr, p_Vmax, p_Km, p_d, p_krep, p_ktag, p_kdeg, p_kma, p_kmb, size=(1000,1000), yaxis=(formatter=y->y/1e4))
 
-savefig(p, "/home/holliehindley/phd/may23_rtc/analysis/sensitivity_analysis/dists.svg")
+savefig(p, "$PATHmay23_rtc/analysis/sensitivity_analysis/dists.svg")
 
 plot(x->pdf(kr_new, x))
 

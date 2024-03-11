@@ -1,4 +1,12 @@
-function sweep_param(model, ss_init, params, param_range, param, species, title)
+function new_params(abx_val, w_BA_val, w_R_val)
+    new_params = deepcopy(params_comb)
+    new_params[abx] = abx_val
+    new_params[w_BA] = w_BA_val
+    new_params[w_R] = w_R_val
+    return new_params
+end
+
+function sweep_param(model, ss_init, params, param_range, param, species)
     new_params = deepcopy(params)
     new_species = deepcopy(species)
     ssvals=[]
@@ -18,9 +26,33 @@ function sweep_param(model, ss_init, params, param_range, param, species, title)
     push!(new_species, :lam)
     push!(new_species, :rmf)
     rename!(df_ssvals, new_species)
+    return df_ssvals
+end
+
+function sweep_param_with_plot(model, ss_init, params, param_range, param, species, title)
+    new_params = deepcopy(params)
+    new_species = deepcopy(species)
+    ssvals=[]
+    for i in ProgressBar(param_range)
+        new_params[param] = i
+        # ss = steady_states(model, ss_init, new_params)
+        solu = sol(model, ss_init, tspan, new_params)
+        ss = get_all_ssvals(solu, species)
+        ssvals_dict = Dict([i => j for (i,j) in zip(species, ss)])
+        lam = calc_lam(new_params, ssvals_dict)
+        ss_lam = collect(ss)
+        rmf = calc_rmf(new_params, ssvals_dict)
+        push!(ss_lam, lam)
+        push!(ss_lam, rmf)
+        push!(ssvals, ss_lam)
+    end
+    # return ssvals
+    df_ssvals = DataFrame(vcat(transpose(ssvals)...), :auto)
+    push!(new_species, :lam)
+    push!(new_species, :rmf)
+    rename!(df_ssvals, new_species)
     return plot([scatter(x=param_range, y=col, name="$(names(df_ssvals)[i])") for (col,i) in zip(eachcol(df_ssvals), range(1,length(names(df_ssvals))))],
     Layout(xaxis_title="$param", title=title))#, xaxis_type="log"))
-
 end
 
 
@@ -55,9 +87,9 @@ function sweep_paramx2(model, ss_init, parameters, species, param1, param2, para
     return df
 end
 
-function plot_contour(res, specie, param_range1, param_range2, param1, param2)
+function plot_contour(res, specie, param_range1, param_range2, param1, param2, title, x, y)
     rh_res = reshape(res[!,specie], length(param_range1),length(param_range2))
-    return plot(contour(x=param_range1, y=param_range2, z=rh_res, colorbar=attr(title="$specie", titleside="right")), Layout(xaxis_title=param1, yaxis_title=param2, title="$specie"))
+    return plot(contour(x=param_range1, y=param_range2, z=rh_res, colorbar=attr(title="$specie", titleside="right", x=x, y=y)), Layout(xaxis_title=param1, yaxis_title=param2, title=title))
 end
 
 
@@ -224,7 +256,7 @@ function save_1x_plots(range, param, title, log, initial, func)
     results = change_param(range, param, rtc_model, initial, func, all_species, params)
     p = display(plot_change_param_sols(range, results, "$param", title, log))
     # return p 
-    # open("/home/holliehindley/phd/may23_rtc/analysis/results/1x_param_sweep/without_damage/$param.html", "w") do io
+    # open("$PATHmay23_rtc/analysis/results/1x_param_sweep/without_damage/$param.html", "w") do io
     #     PlotlyBase.to_html(io, p.plot)
     # end
 end
@@ -232,7 +264,7 @@ end
 function save_2x_plots(param1, param2, param1_range, param2_range, folder, ss_init, xlog, ylog)
     for i in all_species
         p = display(sweep_paramx2_new(rtc_model, i, get_ssval, param1, param2, param1_range, param2_range, ss_init, xlog, ylog))
-        # open("/home/holliehindley/phd/may23_rtc/analysis/results/2x_param_sweep/with_damage/$folder/$i.html", "w") do io
+        # open("$PATHmay23_rtc/analysis/results/2x_param_sweep/with_damage/$folder/$i.html", "w") do io
         #     PlotlyBase.to_html(io, p.plot)
         # end
     end
@@ -284,7 +316,7 @@ function param2x_plot_same_species(param_range, param, param2_range, param2, spe
     return plot([i for i in curves], Layout(title="changing $param and $param2", xaxis_title="$param2", yaxis_title="$specie (μM)"))
 end
 function save_plot(p, title, folder)
-    open("/home/holliehindley/phd/may23_rtc/analysis/results/rabbit_holes/$folder/$title.html", "w") do io
+    open("$PATHmay23_rtc/analysis/results/rabbit_holes/$folder/$title.html", "w") do io
         PlotlyBase.to_html(io, p.plot)
     end
 end

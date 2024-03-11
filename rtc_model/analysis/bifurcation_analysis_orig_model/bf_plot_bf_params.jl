@@ -1,7 +1,7 @@
 using Plots
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, DataFrames, ProgressBars
 
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/bf_funcs.jl")
+include("$PATHmay23_rtc/analysis/bifurcation_analysis/bf_funcs.jl")
 
 kin_range = range(0,stop=0.1,length=10)
 atp_range = range(500,stop=5000,length=3)
@@ -34,7 +34,7 @@ p5_rma = plot_different_bp_lines(wr_range, params_for_ssval_setup, :ω_r, :rm_a,
 
 # l = @layout [a b; c d; e];
 # all_rma = plot(p1_rma, p2_rma, p3_rma, p4_rma, p5_rma, layout=l, size=(1200,800), left_margin=4Plots.mm, right_margin=2Plots.mm, plot_title="Vary param bistability plot")
-# savefig(all_rma, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_rma.svg")
+# savefig(all_rma, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/all_rma.svg")
 
 p1_rmr = plot_different_bp_lines(atp_range, params1, :atp, :rm_r, 3.);
 p2_rmr = plot_different_bp_lines(kin_range, params1, :kin, :rm_r, 3.);
@@ -43,7 +43,7 @@ p4_rmr = plot_different_bp_lines(wab_range, params1, :ω_ab, :rm_r, 3.);
 p5_rmr = plot_different_bp_lines(wr_range, params1, :ω_r, :rm_r, 3.);
 
 # all_rmr = plot(p1_rmr, p2_rmr, p3_rmr, p4_rmr, p5_rmr, layout=l, size=(1200,800), left_margin=4Plots.mm, right_margin=2Plots.mm, plot_title="Vary param bistability plot")
-# savefig(all_rmr, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_rmr.svg")
+# savefig(all_rmr, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/all_rmr.svg")
 
 p1_rtca = plot_different_bp_lines(atp_range, params_for_ssval_setup, :atp, :rtca, 3.);
 p2_rtca = plot_different_bp_lines(kin_range, params_for_ssval_setup, :kin, :rtca, 3.);
@@ -52,7 +52,7 @@ p4_rtca = plot_different_bp_lines(wab_range, params_for_ssval_setup, :ω_ab, :rt
 p5_rtca = plot_different_bp_lines(wr_range, params_for_ssval_setup, :ω_r, :rtca, 3.);
 
 # all_rtca = plot(p1_rtca, p2_rtca, p3_rtca, p4_rtca, p5_rtca, layout=l, size=(1200,800), left_margin=4Plots.mm, right_margin=2Plots.mm, plot_title="Vary param bistability plot")
-# savefig(all_rtca, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_rtca.svg")
+# savefig(all_rtca, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/all_rtca.svg")
 
 p1_rtcr = plot_different_bp_lines(atp_range, params_for_ssval_setup, :atp, :rtcr, 3.);
 p2_rtcr = plot_different_bp_lines(kin_range, params_for_ssval_setup, :kin, :rtcr, 3.);
@@ -61,7 +61,7 @@ p4_rtcr = plot_different_bp_lines(wab_range, params_for_ssval_setup, :ω_ab, :rt
 p5_rtcr = plot_different_bp_lines(wr_range, params_for_ssval_setup, :ω_r, :rtcr, 3.);
 
 # all_rtcr = plot(p1_rtcr, p2_rtcr, p3_rtcr, p4_rtcr, p5_rtcr, layout=l, size=(1200,800), left_margin=4Plots.mm, right_margin=2Plots.mm, plot_title="Vary param bistability plot")
-# savefig(all_rtcr, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_rtcr.svg")
+# savefig(all_rtcr, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/all_rtcr.svg")
 
 p1_rh = plot_different_bp_lines(atp_range, params_for_ssval_setup, :atp, :rh, 3.);
 p2_rh = plot_different_bp_lines(kin_range, params_for_ssval_setup, :kin, :rh, 3.);
@@ -70,7 +70,7 @@ p4_rh = plot_different_bp_lines(wab_range, params_for_ssval_setup, :ω_ab, :rh, 
 p5_rh = plot_different_bp_lines(wr_range, params_for_ssval_setup, :ω_r, :rh, 3.);
 
 # all_rh = plot(p1_rh, p2_rh, p3_rh, p4_rh, p5_rh, layout=l, size=(1200,800), left_margin=4Plots.mm, right_margin=2Plots.mm, plot_title="Vary param bistability plot")
-# savefig(all_rh, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_rh.svg")
+# savefig(all_rh, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/all_rh.svg")
 
 p1_rt = plot_different_bp_lines(atp_range, params_for_ssval_setup, :atp, :rt, 3.);
 p2_rt = plot_different_bp_lines(kin_range, params_for_ssval_setup, :kin, :rt, 3.);
@@ -79,7 +79,7 @@ p4_rt = plot_different_bp_lines(wab_range, params_for_ssval_setup, :ω_ab, :rt, 
 p5_rt = plot_different_bp_lines(wr_range, params_for_ssval_setup, :ω_r, :rt, 3.);
 
 # all_rt = plot(p1_rt, p2_rt, p3_rt, p4_rt, p5_rt, layout=l, size=(1200,800), left_margin=4Plots.mm, right_margin=2Plots.mm, plot_title="Vary param bistability plot")
-# savefig(all_rt, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_rt.svg")
+# savefig(all_rt, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/all_rt.svg")
 
 p1_rd = plot_different_bp_lines(atp_range, params_for_ssval_setup, :atp, :rd, 3.);
 p2_rd = plot_different_bp_lines(kin_range, params_for_ssval_setup, :kin, :rd, 3.);
@@ -88,7 +88,7 @@ p4_rd = plot_different_bp_lines(wab_range, params_for_ssval_setup, :ω_ab, :rd, 
 p5_rd = plot_different_bp_lines(wr_range, params_for_ssval_setup, :ω_r, :rd, 3.);
 
 # all_rd = plot(p1_rd, p2_rd, p3_rd, p4_rd, p5_rd, layout=l, size=(1200,800), left_margin=4Plots.mm, right_margin=2Plots.mm, plot_title="Vary param bistability plot")
-# savefig(all_rd, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_rd.svg")
+# savefig(all_rd, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/all_rd.svg")
 
 p1_rtcb = plot_different_bp_lines(atp_range, params_for_ssval_setup, :atp, :rtcb, 3.)
 p2_rtcb = plot_different_bp_lines(kin_range, params_for_ssval_setup, :kin, :rtcb, 3.);
@@ -106,11 +106,11 @@ lam_plots = plot(p3_rma, p3_rtca, p1_rtcb, p3_rmr, p3_rtcr, p3_rh, p3_rt, p3_rd,
 wab_plots = plot(p4_rma, p4_rtca, p1_rtcb, p4_rmr, p4_rtcr, p4_rh, p4_rt, p4_rd, layout=l, size=(1200,800), plot_title="ω_ab = $([round.(i; digits=4) for i in wab_range])", titlefontsize=6, left_margin=4Plots.mm)
 wr_plots = plot(p5_rma, p5_rtca, p1_rtcb, p5_rmr, p5_rtcr, p5_rh, p5_rt, p5_rd, layout=l, size=(1200,800), plot_title="ω_r = $([round.(i; digits=4) for i in wr_range])", titlefontsize=6, left_margin=4Plots.mm)
 
-# savefig(atp_plots, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/atp_plots.svg")
-# savefig(kin_plots, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/kin_plots.svg")
-# savefig(lam_plots, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/lam_plots.svg")
-# savefig(wab_plots, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/wab_plots.svg")
-# savefig(wr_plots, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/wr_plots.svg")
+# savefig(atp_plots, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/atp_plots.svg")
+# savefig(kin_plots, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/kin_plots.svg")
+# savefig(lam_plots, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/lam_plots.svg")
+# savefig(wab_plots, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/wab_plots.svg")
+# savefig(wr_plots, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/wr_plots.svg")
 
 
 
@@ -155,8 +155,8 @@ end
 p1 = bp_points_plot(params1, 1.)
 p5 = bp_points_plot(params1, 3.5)
 
-savefig(p1, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/p1_bs_area.svg")
-savefig(p5, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/p5_bs_area.svg")
+savefig(p1, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/p1_bs_area.svg")
+savefig(p5, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/p5_bs_area.svg")
 
 
 
@@ -204,7 +204,7 @@ p=[plot!(range(1, stop=100, length=length(bsps3[i].param)), diffs3[i], c=palette
 
 p = plot!(p[1])
 
-savefig(p, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/pboth_bs_area.svg")
+savefig(p, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/pboth_bs_area.svg")
 
 
 

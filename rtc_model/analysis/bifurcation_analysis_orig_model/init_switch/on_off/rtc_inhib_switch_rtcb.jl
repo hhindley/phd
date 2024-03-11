@@ -2,14 +2,14 @@ using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, Labelled
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
 
 using PlotlyJS, ProgressBars
-include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/set_ups.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); 
-include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/holliehindley/phd/may23_rtc/models/combinations_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
+include("$PATHmay23_rtc/functions/solving.jl"); include("$PATHmay23_rtc/functions/set_ups.jl"); include("$PATHmay23_rtc/functions/plotting.jl"); 
+include("$PATHmay23_rtc/functions/sweep_params.jl"); include("$PATHmay23_rtc/models/rtc_orig.jl"); include("$PATHmay23_rtc/models/atp_lam_kin_t.jl"); 
+include("$PATHmay23_rtc/models/single_t.jl"); include("$PATHmay23_rtc/models/combinations_t.jl"); 
+include("$PATHmay23_rtc/functions/bf_funcs/bf_funcs.jl");
 
-include("/home/holliehindley/phd/may23_rtc/models/inhibition_models/rtc_inhibition_model.jl");
+include("$PATHmay23_rtc/models/inhibition_models/rtc_inhibition_model.jl");
 
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/init_switch_funcs.jl");
+include("$PATHmay23_rtc/functions/bf_funcs/init_switch_funcs.jl");
 
 
 tspan = (0,1e9)
@@ -106,7 +106,7 @@ yaxis_title="RtcB (μM)",
 yaxis=attr(showline=true,linewidth=1,linecolor="black"),xaxis=attr(showline=true,linewidth=1,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white"))
 
-savefig(p, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/on_off/rtcb_inhib.svg")
+savefig(p, "$PATHmay23_rtc/analysis/bifurcation_analysis/init_switch/on_off/rtcb_inhib.svg")
 
 
 plot(scatter(x=df.kdam,y=df.rtcb))

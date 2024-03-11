@@ -1,7 +1,7 @@
 using Plots
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, DataFrames
 
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/bf_funcs.jl")
+include("$PATHmay23_rtc/analysis/bifurcation_analysis/bf_funcs.jl")
 
 wab_range = 10 .^range(-5,stop=0,length=10)
 wr_range = 10 .^(range(-7,stop=0,length=10))
@@ -61,4 +61,4 @@ bistab1_df = @time run_param_search(atp_range, kin_range, lam_range, wr_range, w
 
 bistab1_df = bistab1_df[1:2:end,:]
 
-CSV.write("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/param_sweep_bs.csv", bistab1_df)
+CSV.write("$PATHmay23_rtc/analysis/bifurcation_analysis/param_sweep_bs.csv", bistab1_df)

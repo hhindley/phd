@@ -1,11 +1,12 @@
 using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, Statistics
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf, ProgressBars, LabelledArrays, DataFrames, PlotlyJS, ModelingToolkit
 
+PATH = "/home/holliehindley/phd"
 
-include("/home/holliehindley/phd/general_funcs/solving.jl")
-include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
-include("/home/holliehindley/phd/rtc_model/models/rtc_trna_model.jl")
-include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
+include("$PATH/general_funcs/solving.jl")
+include("$PATH/rtc_model/models/rtc_orig.jl")
+include("$PATH/rtc_model/models/rtc_trna_model.jl")
+include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
 
 br = get_br(rtc_trna_model, ssvals_trna, params_trna, 20.)
 bf = bf_point_df(br)
@@ -35,8 +36,8 @@ xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="wh
 
 [p1_sig p1]
 
-savefig(p, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/rtc_proteins.svg")
-savefig(p1, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/ribosomes.svg")
+savefig(p, "$PATHrtc_model/paper_plots/tRNA/rtc_proteins.svg")
+savefig(p1, "$PATHrtc_model/paper_plots/tRNA/ribosomes.svg")
 
 
 
@@ -244,8 +245,8 @@ xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="wh
 # plot([ptrna1, ptrna2])
 
 
-savefig(p1, "/home/holliehindley/phd/may23_rtc/paper_plots/tRNA/trna_trnas.svg")
-savefig(p2, "/home/holliehindley/phd/may23_rtc/paper_plots/tRNA/trna_proteins.svg")
+savefig(p1, "$PATHmay23_rtc/paper_plots/tRNA/trna_trnas.svg")
+savefig(p2, "$PATHmay23_rtc/paper_plots/tRNA/trna_proteins.svg")
 
 
 

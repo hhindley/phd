@@ -54,5 +54,5 @@ p
 vals[1:28]
 
 df = DataFrame(ds=[val[1] for val in vals[1:28]], dsmin=[val[2] for val in vals[1:28]], dsmax=[val[3] for val in vals[1:28]], θ=[val[4] for val in vals[1:28]])
-df1 = DataFrame(CSV.File("/home/holliehindley/phd/rtc_model/paper_plots/tRNA/bf_params.csv"))
+df1 = DataFrame(CSV.File("$PATHrtc_model/paper_plots/tRNA/bf_params.csv"))
 

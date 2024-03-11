@@ -1,8 +1,8 @@
 using PlotlyJS, DataFrames, DifferentialEquations, Parameters, LabelledArrays, StaticArrays, Colors
 
-include("/home/holliehindley/phd/rtc_model/models/rtc_trna_model.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/trna_params.jl")
-include("/home/holliehindley/phd/general_funcs/solving.jl")
+include("$PATHrtc_model/models/rtc_trna_model.jl")
+include("$PATHrtc_model/parameters/trna_params.jl")
+include("$PATHgeneral_funcs/solving.jl")
 
 
 colours =["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", :blue]

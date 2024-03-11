@@ -1,10 +1,10 @@
 using PlotlyJS, Printf, Measures, LabelledArrays
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, DataFrames
 
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl")
-include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl")
-include("/home/holliehindley/phd/may23_rtc/rtc_parameters/params.jl")
-include("/home/holliehindley/phd/may23_rtc/rtc_parameters/init.jl")
+include("$PATHmay23_rtc/functions/bf_funcs/bf_funcs.jl")
+include("$PATHmay23_rtc/models/rtc_orig.jl")
+include("$PATHmay23_rtc/rtc_parameters/params.jl")
+include("$PATHmay23_rtc/rtc_parameters/init.jl")
 
 br = get_br(rtc_mod, params_bf, rtc_init, 30.)
 
@@ -26,7 +26,7 @@ p1 = Plots.plot(br2, vars=(:param, :rh), label="Rh")
 p1 = Plots.plot!(br2, vars=(:param, :rt), label="Rt")
 p1 = Plots.plot!(br2, vars=(:param, :rd), label="Rd")
 
-savefig(p1, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/ribo_bf_plot.svg")
+savefig(p1, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/ribo_bf_plot.svg")
 
 Plots.plot(br, vars=(:param, :rh))
 Plots.plot!(br, vars=(:param, :rt))
@@ -43,10 +43,10 @@ p2 = Plots.plot!(br2, vars=(:param, :rtca), label="RtcA")
 p2 = Plots.plot!(br2, vars=(:param, :rtcb), label="RtcB")
 p2 = Plots.plot!(br2, vars=(:param, :rtcr), label="RtcR")
 
-savefig(p2, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/mrnaprotein_bf_plot.svg")
+savefig(p2, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/mrnaprotein_bf_plot.svg")
 
 p = Plots.plot(p2,p1,p3,p4,  size=(900,700), layout=@layout [a b; c d])
-Plots.savefig(p, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/solve_vs_bfplot.svg")
+Plots.savefig(p, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/solve_vs_bfplot.svg")
 
 br2.specialpoint # includes endpoints
 br2.specialpoint[2].type # find out if its bifurcation or not 
@@ -190,11 +190,11 @@ yaxis_title="Proteins and mRNAs (μM)", yaxis2_title="Ribosomal species (μM)",
 yaxis=attr(showline=true,linewidth=1,linecolor="black",mirror=true),xaxis=attr(showline=true,linewidth=1,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white"))
 
-open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/full_bf_plot.html", "w") do io
+open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/full_bf_plot.html", "w") do io
     PlotlyBase.to_html(io, fullplot.plot)
 end
 
-savefig(fullplot, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/full_bf_plot.svg")
+savefig(fullplot, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/full_bf_plot.svg")
 
 
 

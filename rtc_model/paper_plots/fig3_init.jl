@@ -3,15 +3,16 @@ using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
 # using Plots
 using PlotlyJS, ProgressBars
 
+PATH = "/home/holliehindley/phd"
 
-include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
-include("/home/holliehindley/phd/general_funcs/solving.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/params.jl")
-include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
+include("$PATH/rtc_model/models/rtc_orig.jl")
+include("$PATH/general_funcs/solving.jl")
+include("$PATH/rtc_model/parameters/rtc_params.jl")
+include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
 
 
-# svals_onoff = DataFrame(CSV.File("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis_orig_model/init_switch/on_off/data/PAPERswitch_vals_NEW_2024.csv"))
-svals_onoff = DataFrame(CSV.File("/home/holliehindley/phd/rtc_model/paper_plots/switch_vals_paper_2202.csv"))
+# svals_onoff = DataFrame(CSV.File("$PATHmay23_rtc/analysis/bifurcation_analysis_orig_model/init_switch/on_off/data/PAPERswitch_vals_NEW_2024.csv"))
+svals_onoff = DataFrame(CSV.File("$PATHrtc_model/paper_plots/switch_vals_paper_2202.csv"))
 
 br = get_br(rtc_model, ssvals_rtc, params_rtc, 1.5)
 df = create_br_df(br)
@@ -68,9 +69,9 @@ yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
 
-savefig(p_rtcb, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcb.svg")
-savefig(p_rtcr, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcr.svg")
-savefig(p_rtca, "/home/holliehindley/phd/may23_rtc/paper_plots/rtca.svg")
+savefig(p_rtcb, "$PATHmay23_rtc/paper_plots/rtcb.svg")
+savefig(p_rtcr, "$PATHmay23_rtc/paper_plots/rtcr.svg")
+savefig(p_rtca, "$PATHmay23_rtc/paper_plots/rtca.svg")
 
 
 

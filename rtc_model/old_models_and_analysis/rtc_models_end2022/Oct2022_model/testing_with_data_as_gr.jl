@@ -1,14 +1,14 @@
 using CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, PlotlyJS, Statistics
-include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
-include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
-include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
-include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
+include("$PATHrtc_models/Oct2022_model/rtc_model.jl")
+include("$PATHrtc_models/sol_species_funcs.jl")
+include("$PATHrtc_models/params_init_tspan.jl")
+include("$PATHParam_inf/inf_setup.jl")
 
-csv = DataFrame(CSV.File("/home/holliehindley/phd/data/results_colD_grfit.csv")) # read csv to a datafram
+csv = DataFrame(CSV.File("$PATHdata/results_colD_grfit.csv")) # read csv to a datafram
 csv = select!(csv, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
 plot(scatter(x=collect(0: length(csv."t")), y=csv."gr"), Layout(xaxis_title="t", yaxis_title="growth rate", title="WT colD data"))
 
-csv_wt = DataFrame(CSV.File("/home/holliehindley/phd/data/results_rtcOFF_grfit.csv"))
+csv_wt = DataFrame(CSV.File("$PATHdata/results_rtcOFF_grfit.csv"))
 csv_wt = select!(csv_wt, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
 plot(scatter(x=collect(0: length(csv_wt."t")), y=csv_wt."gr"), Layout(xaxis_title="t", yaxis_title="growth rate", title="WT hpx data"))
   

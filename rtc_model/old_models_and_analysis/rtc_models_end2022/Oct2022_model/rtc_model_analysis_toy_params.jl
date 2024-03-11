@@ -1,7 +1,7 @@
 using DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames, Plots, OrderedCollections #, PlotlyJS
 
-include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
-include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
+include("$PATHrtc_models/Oct2022_model/rtc_model.jl")
+include("$PATHrtc_models/sol_species_funcs.jl")
 
 L = 100; c = 0.01; kr = 10; Vmax_init = 5; Km_init = 55.829; ω_r = 4.14; ω_ab = 4.14;
 θtscr = 20; g_max = 4; θtlr = 20; gr_c = 0.000599; k_a = 10; k_b = 10; km = 5;

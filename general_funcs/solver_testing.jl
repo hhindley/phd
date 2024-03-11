@@ -1,19 +1,19 @@
 using DifferentialEquations, PlotlyJS, DataFrames, Measures, LabelledArrays, BenchmarkTools, ModelingToolkit, TickTock
 
-include("/home/holliehindley/phd/general_funcs/solving.jl")
+PATH = "/home/holliehindley/phd"
 
-include("/home/holliehindley/phd/growth_model/parameters/growth_model_params.jl")
-include("/home/holliehindley/phd/growth_model/parameters/gm_uM_parameters.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/rtc_params.jl")
-include("/home/holliehindley/phd/combined_model/combined_params.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/trna_params.jl")
-
-include("/home/holliehindley/phd/growth_model/model/growth_model.jl")
-include("/home/holliehindley/phd/combined_model/combined_model.jl")
-include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
-include("/home/holliehindley/phd/rtc_model/models/rtc_trna_model.jl")
-include("/home/holliehindley/phd/rtc_model/models/inhibition_models/rtc_inhibition_model.jl")
-include("/home/holliehindley/phd/rtc_model/models/inhibition_models/trna_inhib_models.jl")
+include("$PATH/general_funcs/solving.jl")
+include("$PATH/growth_model/parameters/growth_model_params.jl")
+include("$PATH/growth_model/parameters/gm_uM_parameters.jl")
+include("$PATH/rtc_model/parameters/rtc_params.jl")
+include("$PATH/combined_model/combined_params.jl")
+include("$PATH/rtc_model/parameters/trna_params.jl")
+include("$PATH/growth_model/model/growth_model.jl")
+include("$PATH/combined_model/combined_model.jl")
+include("$PATH/rtc_model/models/rtc_orig.jl")
+include("$PATH/rtc_model/models/rtc_trna_model.jl")
+include("$PATH/rtc_model/models/inhibition_models/rtc_inhibition_model.jl")
+include("$PATH/rtc_model/models/inhibition_models/trna_inhib_models.jl")
 
 params_dam = deepcopy(params_gm)
 params_dam[abx] = 4
@@ -153,6 +153,6 @@ solu_trna_inhib = sol(rtcb_trna_inhib_model, init_trna_inhib_rtcb, tspan, params
 df_trna_inhib = create_solu_df(solu_trna_inhib, species_trna_inhib)
 p_trna = plot_solu(df_trna_inhib)
 
-open("/home/holliehindley/phd/general_funcs/model_solutions/with_damage/growth_model_uM.html", "w") do io
+open("$PATHgeneral_funcs/model_solutions/with_damage/growth_model_uM.html", "w") do io
     PlotlyBase.to_html(io, p_gm_uM_dam.plot)
 end

@@ -1,4 +1,4 @@
-csv_atp = DataFrame(CSV.File("/home/holliehindley/phd/data/atp_for_rtcmodel.csv"))
+csv_atp = DataFrame(CSV.File("$PATHdata/atp_for_rtcmodel.csv"))
 
 csv_atp.atp = csv_atp.atp/5
 

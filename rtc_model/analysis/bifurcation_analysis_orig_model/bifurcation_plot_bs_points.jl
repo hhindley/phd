@@ -1,6 +1,6 @@
 using Plots
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, DataFrames
-include("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/bf_funcs.jl")
+include("$PATHmay23_rtc/analysis/bifurcation_analysis/bf_funcs.jl")
 
 
 br = get_br(rtc_mod, params1, initial, 1.)
@@ -10,9 +10,9 @@ plot(br, vars=(:param, :rh), putspecialptlegend=false)
 p_rh = plot(br, vars = (:param, :rh), label="Healthy ribosomes", c=:palevioletred, putspecialptlegend = false)
 p_rh1 = plot!(twinx(), br, vars = (:param, :rtca), c=:grey60, label="RtcBA")
 
-# savefig(p_rm_a, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/p_rma.svg")
-# savefig(p_rh, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/p_rh.svg")
-# savefig(p_rh1, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/p_both.svg")
+# savefig(p_rm_a, "$PATHmay23_rtc/analysis/bifurcation_analysis/p_rma.svg")
+# savefig(p_rh, "$PATHmay23_rtc/analysis/bifurcation_analysis/p_rh.svg")
+# savefig(p_rh1, "$PATHmay23_rtc/analysis/bifurcation_analysis/p_both.svg")
 
 
 
@@ -53,7 +53,7 @@ p_wr = plot_bf_against_kdam(wr_range, :ω_r, 5.);
 
 l = @layout [a b; c d; e];
 all_bf = plot(p_atp, p_kin, p_lam, p_wab, p_wr, layout=l, size=(1200,800), left_margin=4Plots.mm, right_margin=2Plots.mm, plot_title="Bifurcation points for kdam vs. parameter")
-savefig(all_bf, "/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/all_bf_kdam5.svg")
+savefig(all_bf, "$PATHmay23_rtc/analysis/bifurcation_analysis/plots/all_bf_kdam5.svg")
 
 
 

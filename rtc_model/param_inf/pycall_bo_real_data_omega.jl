@@ -1,14 +1,14 @@
 using PlotlyJS, PyCall, DifferentialEquations, StaticArrays, DataInterpolations, LabelledArrays, BenchmarkTools, DataFrames, CSV, OrderedCollections, ScatteredInterpolation
-include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
-include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
-include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
-include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
-# include("/home/holliehindley/phd/rtc_models/Oct2022_model/units/millerunit_conversion.jl")
-csv_mRNA_conc = DataFrame(CSV.File("/home/holliehindley/phd/data/paper_conv.csv"))
+include("$PATHrtc_models/Oct2022_model/rtc_model.jl")
+include("$PATHrtc_models/sol_species_funcs.jl")
+include("$PATHParam_inf/inf_setup.jl")
+include("$PATHrtc_models/params_init_tspan.jl")
+# include("$PATHrtc_models/Oct2022_model/units/millerunit_conversion.jl")
+csv_mRNA_conc = DataFrame(CSV.File("$PATHdata/paper_conv.csv"))
 mRNA_conc = csv_mRNA_conc[:,1]
 mRNA_std = csv_mRNA_conc[:,2]
 
-csv_wt = DataFrame(CSV.File("/home/holliehindley/phd/data/results_rtcOFF_grfit.csv"))
+csv_wt = DataFrame(CSV.File("$PATHdata/results_rtcOFF_grfit.csv"))
 csv_wt = select!(csv_wt, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
 lam_wt, new_df_wt = extend_gr_curve(csv_wt)
 

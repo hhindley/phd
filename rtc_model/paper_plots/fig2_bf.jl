@@ -3,10 +3,12 @@ using Revise, LinearAlgebra, Printf, ModelingToolkit
 # using Plots
 using PlotlyJS, ProgressBars
 
-include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
-include("/home/holliehindley/phd/general_funcs/solving.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/params.jl")
-include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
+PATH = "/home/holliehindley/phd"
+
+include("$PATH/rtc_model/models/rtc_orig.jl")
+include("$PATH/general_funcs/solving.jl")
+include("$PATH/rtc_model/parameters/rtc_params.jl")
+include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
 
 
 br = get_br(rtc_model, ssvals_rtc, params_rtc, 1.5)
@@ -37,8 +39,8 @@ xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="wh
 
 [p1_sig p1]
 
-savefig(p, "/home/holliehindley/phd/may23_rtc/paper_plots/rtc_proteins.svg")
-savefig(p1, "/home/holliehindley/phd/may23_rtc/paper_plots/ribosomes.svg")
+savefig(p, "$PATHmay23_rtc/paper_plots/rtc_proteins.svg")
+savefig(p1, "$PATHmay23_rtc/paper_plots/ribosomes.svg")
 
 # kdam_range1 = range(0,1.5,length=100)
 # kdam_range2 = range(1.5,0,length=100)
@@ -69,10 +71,10 @@ savefig(p1, "/home/holliehindley/phd/may23_rtc/paper_plots/ribosomes.svg")
 # xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=22, color="black", family="sans-serif")))
 
 
-# savefig(p1, "/home/holliehindley/phd/may23_rtc/paper_plots/rh_bf.svg")
-# savefig(p2, "/home/holliehindley/phd/may23_rtc/paper_plots/rt_bf.svg")
-# savefig(p3, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcb_bf.svg")
-# savefig(p4, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcr_bf.svg")
+# savefig(p1, "$PATHmay23_rtc/paper_plots/rh_bf.svg")
+# savefig(p2, "$PATHmay23_rtc/paper_plots/rt_bf.svg")
+# savefig(p3, "$PATHmay23_rtc/paper_plots/rtcb_bf.svg")
+# savefig(p4, "$PATHmay23_rtc/paper_plots/rtcr_bf.svg")
 
 
 

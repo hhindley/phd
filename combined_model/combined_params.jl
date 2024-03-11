@@ -1,12 +1,28 @@
-include("/home/holliehindley/phd/growth_model/parameters/gm_uM_parameters.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/rtc_params.jl")
+include("$PATH/growth_model/parameters/gm_uM_parameters.jl")
+include("$PATH/rtc_model/parameters/rtc_params.jl")
 
 
 koff_val = 0.06 # 1/min # inferred by elena # chloramphenicol unbinding rate 
-kdam_p_val = 0.3 # represents percent damaged here 
+kdam_p_val = 1#0.7 # represents percent damaged here 
 
 ω_ab_val_comb = ω_ab_val*2
 ω_r_val_comb = ω_r_val*10
+
+
+we_val_comb_new = 0.003*we_uM_val
+wr_val_comb_new = 0.008*wr_uM_val
+wq_val_comb_new = 0.02*wq_uM_val
+s0_val_comb_new = 166.1
+gmax_val_comb_new = gmax_val*10
+ω_ab_val_comb_new = 0.003*ω_ab_val*2
+ω_r_val_comb_new = 0.003*ω_r_val*10
+vt_val_comb_new = 660
+kon_val_comb_new = 0.0666
+
+
+k_inhib1_val_comb = 1
+k_inhib2_val_comb = 0.0025
+inhib_val_comb = 10
 
 
 # params_comb = @LArray [d, kr, L, c, wr_uM, we_uM, we_uM, wq_uM, ω_ab, ω_r, thetar_uM, thetax_uM, Kq_uM, nq, Vmax_init, Km_init, nr, nx, nR, nA, nB, gmax, Kgamma_uM, M_uM, kb_uM, ku, abx, kon, koff, vt, vm, s0_uM, Kt_uM, Km_uM, km_a, km_b, krep, kdam_p, ktag, kdeg, k_diss, ns] (:d, :kr, :L, :c, :w_rh, :w_t, :w_m, :w_q, :w_BA, :w_R, :θ_rh, :θ_nr, :Kq, :hq, :Vmax_init, :Km_init, :nrh, :nx, :nR, :nA, :nB, :gmax, :Kgamma, :M, :kb, :ku, :abx, :kon, :koff, :vt, :vm, :s0, :Kt, :Km, :km_a, :km_b, :krep, :kdam, :ktag, :kdeg, :k_diss, :ns)

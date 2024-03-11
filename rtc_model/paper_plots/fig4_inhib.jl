@@ -3,11 +3,13 @@ using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
 # using Plots
 using PlotlyJS, ProgressBars, QuadGK, Interpolations
 
-include("/home/holliehindley/phd/rtc_model/models/inhibition_models/rtc_inhibition_model.jl")
-include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
-include("/home/holliehindley/phd/general_funcs/solving.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/params.jl")
-include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
+PATH = "/home/holliehindley/phd"
+
+include("$PATH/rtc_model/models/inhibition_models/rtc_inhibition_model.jl")
+include("$PATH/rtc_model/models/rtc_orig.jl")
+include("$PATH/general_funcs/solving.jl")
+include("$PATH/rtc_model/parameters/rtc_params.jl")
+include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
 
 colours_rtcb = ["7e5c94ff", "c48fe7ff", "e4bbffff"]
 colours_rtcr = ["28726dff", "46c6beff", "8ef8f1ff"]
@@ -71,12 +73,12 @@ xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="wh
 [p_rtcb p_rtcb_rh; p_rtca p_rtca_rh; p_rtcr p_rtcr_rh]
 
 
-savefig(p_rtcb, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcb1.svg")
-savefig(p_rtca, "/home/holliehindley/phd/may23_rtc/paper_plots/rtca1.svg")
-savefig(p_rtcr, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcr2.svg")
-savefig(p_rtcb_rh, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcb_rh.svg")
-savefig(p_rtca_rh, "/home/holliehindley/phd/may23_rtc/paper_plots/rtca_rh.svg")
-savefig(p_rtcr_rh, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcr_rh.svg")
+savefig(p_rtcb, "$PATHmay23_rtc/paper_plots/rtcb1.svg")
+savefig(p_rtca, "$PATHmay23_rtc/paper_plots/rtca1.svg")
+savefig(p_rtcr, "$PATHmay23_rtc/paper_plots/rtcr2.svg")
+savefig(p_rtcb_rh, "$PATHmay23_rtc/paper_plots/rtcb_rh.svg")
+savefig(p_rtca_rh, "$PATHmay23_rtc/paper_plots/rtca_rh.svg")
+savefig(p_rtcr_rh, "$PATHmay23_rtc/paper_plots/rtcr_rh.svg")
 
 
 
@@ -131,9 +133,9 @@ yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
 
-savefig(p_rtcb_rh, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcb_rh_plusfill.svg")
-savefig(p_rtca_rh, "/home/holliehindley/phd/may23_rtc/paper_plots/rtca_rh_plusfill.svg")
-savefig(p_rtcr_rh, "/home/holliehindley/phd/may23_rtc/paper_plots/rtcr_rh_plusfill.svg")
+savefig(p_rtcb_rh, "$PATHmay23_rtc/paper_plots/rtcb_rh_plusfill.svg")
+savefig(p_rtca_rh, "$PATHmay23_rtc/paper_plots/rtca_rh_plusfill.svg")
+savefig(p_rtcr_rh, "$PATHmay23_rtc/paper_plots/rtcr_rh_plusfill.svg")
 
 percentage_size_rtcb = bf_size(rtcb_inhib_model, ssvals_rtcb, 10., k_inhib_vals)
 percentage_size_rtca = bf_size(rtca_inhib_model, ssvals_rtca, 10., k_inhib_vals)
@@ -183,6 +185,6 @@ Layout(xaxis_tickangle=0,yaxis_title="% of original",yaxis=attr(showline=true,li
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",showlegend=false,font=attr(size=24, color="black", family="sans-serif")))
 
 
-savefig(p,"/home/holliehindley/phd/may23_rtc/paper_plots/bar.svg")
+savefig(p,"$PATHmay23_rtc/paper_plots/bar.svg")
 
 

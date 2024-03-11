@@ -1,11 +1,13 @@
 using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, Statistics
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf, ProgressBars, LabelledArrays, DataFrames, PlotlyJS, ModelingToolkit, Interpolations, QuadGK
 
-include("/home/holliehindley/phd/general_funcs/solving.jl")
-include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
-include("/home/holliehindley/phd/rtc_model/models/rtc_trna_model.jl")
-include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
-include("/home/holliehindley/phd/rtc_model/models/inhibition_models/trna_inhib_models.jl")
+PATH = "/home/holliehindley/phd"
+
+include("$PATH/general_funcs/solving.jl")
+include("$PATH/rtc_model/models/rtc_orig.jl")
+include("$PATH/rtc_model/models/rtc_trna_model.jl")
+include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
+include("$PATH/rtc_model/models/inhibition_models/trna_inhib_models.jl")
 
 colours_rtcb = ["7e5c94ff", "c48fe7ff", "e4bbffff"]
 colours_rtcr = ["28726dff", "46c6beff", "8ef8f1ff"]
@@ -59,12 +61,12 @@ xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="wh
 [p_rtcb p_rtcb_rh; p_rtca p_rtca_rh; p_rtcr p_rtcr_rh]
 
 
-savefig(p_rtcb, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/rtcb1.svg")
-savefig(p_rtca, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/rtca1.svg")
-savefig(p_rtcr, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/rtcr2.svg")
-savefig(p_rtcb_rh, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/rtcb_rh.svg")
-savefig(p_rtca_rh, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/rtca_rh.svg")
-savefig(p_rtcr_rh, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/rtcr_rh.svg")
+savefig(p_rtcb, "$PATHrtc_model/paper_plots/tRNA/rtcb1.svg")
+savefig(p_rtca, "$PATHrtc_model/paper_plots/tRNA/rtca1.svg")
+savefig(p_rtcr, "$PATHrtc_model/paper_plots/tRNA/rtcr2.svg")
+savefig(p_rtcb_rh, "$PATHrtc_model/paper_plots/tRNA/rtcb_rh.svg")
+savefig(p_rtca_rh, "$PATHrtc_model/paper_plots/tRNA/rtca_rh.svg")
+savefig(p_rtcr_rh, "$PATHrtc_model/paper_plots/tRNA/rtcr_rh.svg")
 
 
 
@@ -137,9 +139,9 @@ yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
 
-savefig(p_rtcb_rh, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/rtcb_rh_plusfill.svg")
-savefig(p_rtca_rh, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/rtca_rh_plusfill.svg")
-savefig(p_rtcr_rh, "/home/holliehindley/phd/rtc_model/paper_plots/tRNA/rtcr_rh_plusfill.svg")
+savefig(p_rtcb_rh, "$PATHrtc_model/paper_plots/tRNA/rtcb_rh_plusfill.svg")
+savefig(p_rtca_rh, "$PATHrtc_model/paper_plots/tRNA/rtca_rh_plusfill.svg")
+savefig(p_rtcr_rh, "$PATHrtc_model/paper_plots/tRNA/rtcr_rh_plusfill.svg")
 
 percentage_size_rtcb = bf_size(rtcb_trna_inhib_model, ssvals_trna_rtcb_inhib, params_trna_inhib, 20., k_trna_inhib_vals, rtc_trna_model, ssvals_trna, params_trna)
 percentage_size_rtca = bf_size(rtca_trna_inhib_model, ssvals_trna_rtca_inhib, params_trna_inhib, 20., k_trna_inhib_vals, rtc_trna_model, ssvals_trna, params_trna)
@@ -189,6 +191,6 @@ Layout(xaxis_tickangle=0,yaxis_title="% of original",yaxis=attr(showline=true,li
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",showlegend=false,font=attr(size=24, color="black", family="sans-serif")))
 
 
-savefig(p,"/home/holliehindley/phd/rtc_model/paper_plots/tRNA/bar.svg")
+savefig(p,"$PATHrtc_model/paper_plots/tRNA/bar.svg")
 
 

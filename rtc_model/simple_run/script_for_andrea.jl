@@ -133,7 +133,7 @@ rt_0 = 0;
 initial = @SVector [rm_a_0, rtca_0, rm_b_0, rtcb_0, rm_r_0, rtcr_0, rh_0, rd_0, rt_0];
 
 
-csv = DataFrame(CSV.File("/home/holliehindley/phd/data/results_colD_grfit.csv")) 
+csv = DataFrame(CSV.File("$PATHdata/results_colD_grfit.csv")) 
 csv = select!(csv, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
 
 lam_colD, new_df = extend_gr_curve(csv)

@@ -1,27 +1,28 @@
 using DifferentialEquations, PlotlyJS, DataFrames, Measures, LabelledArrays, BenchmarkTools, ModelingToolkit, TickTock
 
-include("/home/holliehindley/phd/general_funcs/solving.jl")
+PATH = "/home/holliehindley/phd"
+include("$PATH/general_funcs/solving.jl")
 
-include("/home/holliehindley/phd/growth_model/parameters/growth_model_params.jl")
-include("/home/holliehindley/phd/growth_model/parameters/gm_uM_parameters.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/rtc_params.jl")
-include("/home/holliehindley/phd/combined_model/combined_params.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/trna_params.jl")
+include("$PATH/growth_model/parameters/growth_model_params.jl")
+include("$PATH/growth_model/parameters/gm_uM_parameters.jl")
+include("$PATH/rtc_model/parameters/rtc_params.jl")
+include("$PATH/combined_model/combined_params.jl")
+include("$PATH/rtc_model/parameters/trna_params.jl")
 
-include("/home/holliehindley/phd/growth_model/model/growth_model.jl")
-include("/home/holliehindley/phd/combined_model/combined_model.jl")
-include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
-include("/home/holliehindley/phd/rtc_model/models/rtc_trna_model.jl")
-include("/home/holliehindley/phd/rtc_model/models/inhibition_models/rtc_inhibition_model.jl")
-include("/home/holliehindley/phd/rtc_model/models/inhibition_models/trna_inhib_models.jl")
+include("$PATH/growth_model/model/growth_model.jl")
+include("$PATH/combined_model/combined_model.jl")
+include("$PATH/rtc_model/models/rtc_orig.jl")
+include("$PATH/rtc_model/models/rtc_trna_model.jl")
+include("$PATH/rtc_model/models/inhibition_models/rtc_inhibition_model.jl")
+include("$PATH/rtc_model/models/inhibition_models/trna_inhib_models.jl")
 
 solu_gm = sol(growth_model, init_gm, tspan, params_gm)
 df_gm = create_solu_df(solu_gm, species_gm);
 p_gm = plot_solu(df_gm)
 
 params_dam = deepcopy(params_gm)
-params_dam[abx] = 4
-solu_gm_dam = sol(growth_model, init_gm, tspan, params_dam)
+params_dam[abx] = 10
+solu_gm_dam = sol(growth_model, ssvals_gm, tspan, params_dam)
 df_gm_dam = create_solu_df(solu_gm_dam, species_gm);
 p_gm_dam = plot_solu(df_gm_dam)
 
@@ -30,8 +31,8 @@ df_gm_uM = create_solu_df(solu_gm_uM, species_gm);
 p_gm_uM = plot_solu(df_gm_uM)
 
 params_dam_gm = deepcopy(params_gm_uM)
-params_dam_gm[abx] = 4
-solu_gm_uM_dam = sol(growth_model, init_gm_uM, tspan, params_dam_gm)
+params_dam_gm[abx] = 10
+solu_gm_uM_dam = sol(growth_model, ssvals_gm_uM, tspan, params_dam_gm)
 df_gm_uM_dam = create_solu_df(solu_gm_uM_dam, species_gm);
 p_gm_uM_dam = plot_solu(df_gm_uM_dam)
 
@@ -41,7 +42,7 @@ p_comb = plot_solu(df_comb)
 
 params_dam = deepcopy(params_comb)
 params_dam[abx] = 4
-solu_comb_dam = sol(combined_model, init_comb, tspan, params_dam)
+solu_comb_dam = sol(combined_model, ssvals_comb, tspan, params_dam)
 df_comb_dam = create_solu_df(solu_comb_dam, species_comb);
 p_comb_dam = plot_solu(df_comb_dam)
 
@@ -53,13 +54,13 @@ p_rtc = plot_solu(df_rtc)
 
 params_dam = deepcopy(params_rtc)
 params_dam[kdam] = 0.1
-solu_rtc_dam = sol(rtc_model, init_rtc, tspan, params_dam)
+solu_rtc_dam = sol(rtc_model, ssvals_rtc, tspan, params_dam)
 df_rtc_dam = create_solu_df(solu_rtc_dam, species_rtc)
 p_rtc_dam = plot_solu(df_rtc_dam)
 
-solu_rtc_inhib = sol(rtcb_inhib_model, init_inhib_rtca, tspan, params_inhib)
-df_rtc_inhib = create_solu_df(solu_rtc_inhib, species_inhib)
-p_rtc_inhib = plot_solu(df_rtc_inhib)
+# solu_rtc_inhib = sol(rtcb_inhib_model, init_inhib_rtca, tspan, params_inhib)
+# df_rtc_inhib = create_solu_df(solu_rtc_inhib, species_inhib)
+# p_rtc_inhib = plot_solu(df_rtc_inhib)
 
 
 solu_trna = sol(rtc_trna_model, init_trna, tspan, params_trna)
@@ -68,14 +69,28 @@ p_trna = plot_solu(df_trna)
 
 params_dam_trna = deepcopy(params_trna)
 params_dam_trna[kdam] = 0.1
-solu_trna_dam = sol(rtc_trna_model, init_trna, tspan, params_dam_trna)
+solu_trna_dam = sol(rtc_trna_model, ssvals_trna, tspan, params_dam_trna)
 df_trna_dam = create_solu_df(solu_trna_dam, species_trna)
 p_trna_dam = plot_solu(df_trna_dam)
 
-solu_trna_inhib = sol(rtcb_trna_inhib_model, init_trna_inhib_rtcb, tspan, params_trna_inhib)
-df_trna_inhib = create_solu_df(solu_trna_inhib, species_trna_inhib)
-p_trna = plot_solu(df_trna_inhib)
+# solu_trna_inhib = sol(rtcb_trna_inhib_model, init_trna_inhib_rtcb, tspan, params_trna_inhib)
+# df_trna_inhib = create_solu_df(solu_trna_inhib, species_trna_inhib)
+# p_trna = plot_solu(df_trna_inhib)
 
-open("/home/holliehindley/phd/general_funcs/model_solutions/without_damage/rtc_model.html", "w") do io
-    PlotlyBase.to_html(io, p_rtc.plot)
+
+with_damage = [p_gm_dam, p_gm_uM_dam, p_comb_dam, p_rtc_dam, p_trna_dam]
+without_damage = [p_gm, p_gm_uM, p_comb, p_rtc, p_trna]
+
+model_names = ["growth_model", "growth_model_uM", "combined_model", "rtc_model", "trna_model"]
+
+for (i,name) in zip(with_damage,model_names)
+    open("$PATHgeneral_funcs/model_solutions/with_damage/$name.html", "w") do io
+        PlotlyBase.to_html(io, i.plot)
+    end
+end
+
+for (i,name) in zip(without_damage,model_names)
+    open("$PATHgeneral_funcs/model_solutions/without_damage/$name.html", "w") do io
+        PlotlyBase.to_html(io, i.plot)
+    end
 end

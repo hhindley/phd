@@ -1,4 +1,4 @@
-include("/home/holliehindley/phd/rtc_model/parameters/rtc_params.jl")
+include("$PATH/rtc_model/parameters/rtc_params.jl")
 
 rh_val = 30#75 # conc of ribosomes in exponential phase 
 thr_t_val = 4#25/90#100 #30 # was at 5 before to get saved plots # needs to be less than 30 

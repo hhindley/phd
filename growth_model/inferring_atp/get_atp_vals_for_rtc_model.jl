@@ -133,7 +133,7 @@ atp_test = plot(scatter(x=solu_ss.t, y=atp_check), Layout(xaxis_type="log"))
 
 
 #load other growth rate 
-csv_lam = DataFrame(CSV.File("/home/holliehindley/phd/data/results_colD_grfit.csv"))
+csv_lam = DataFrame(CSV.File("$PATHdata/results_colD_grfit.csv"))
 csv_lam = select!(csv_lam, Not(["log(OD)", "log(OD) error", "gr error", "od"]))
 csv_lam."gr"[csv_lam."gr".< 0] .= 0 #zero(eltype(lam_colD))
 plot(scatter(x=csv_lam."t", y=csv_lam."gr"))
@@ -162,7 +162,7 @@ plot(scatter(x=csv_lam."t", y=atp_from_gr))
 
 #make a dataframe with the atp values against time (for data) - now in rtc model script need to interpolate this so it can be used over time 
 df_atp = DataFrame(t=csv_lam."t", atp=atp_gr)
-CSV.write("/home/holliehindley/phd/data/atp_curve_from_growth_model.csv", df_atp)
+CSV.write("$PATHdata/atp_curve_from_growth_model.csv", df_atp)
 
 
 

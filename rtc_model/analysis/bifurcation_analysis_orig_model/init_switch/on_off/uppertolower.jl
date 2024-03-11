@@ -2,11 +2,11 @@ using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, Labelled
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra
 
 using PlotlyJS, Printf
-include("/home/holliehindley/phd/may23_rtc/functions/solving.jl"); include("/home/holliehindley/phd/may23_rtc/functions/set_ups.jl"); include("/home/holliehindley/phd/may23_rtc/functions/plotting.jl"); 
-include("/home/holliehindley/phd/may23_rtc/functions/sweep_params.jl"); include("/home/holliehindley/phd/may23_rtc/models/rtc_orig.jl"); include("/home/holliehindley/phd/may23_rtc/models/atp_lam_kin_t.jl"); 
-include("/home/holliehindley/phd/may23_rtc/models/single_t.jl"); include("/home/holliehindley/phd/may23_rtc/models/combinations_t.jl"); include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/bf_funcs.jl");
+include("$PATHmay23_rtc/functions/solving.jl"); include("$PATHmay23_rtc/functions/set_ups.jl"); include("$PATHmay23_rtc/functions/plotting.jl"); 
+include("$PATHmay23_rtc/functions/sweep_params.jl"); include("$PATHmay23_rtc/models/rtc_orig.jl"); include("$PATHmay23_rtc/models/atp_lam_kin_t.jl"); 
+include("$PATHmay23_rtc/models/single_t.jl"); include("$PATHmay23_rtc/models/combinations_t.jl"); include("$PATHmay23_rtc/functions/bf_funcs/bf_funcs.jl");
 
-include("/home/holliehindley/phd/may23_rtc/functions/bf_funcs/init_switch_funcs.jl");
+include("$PATHmay23_rtc/functions/bf_funcs/init_switch_funcs.jl");
 
 
 @consts begin
@@ -89,9 +89,9 @@ df_res = create_resdf(all_diffs,kdam_range)
 df_percs = create_resdf(all_percs,kdam_range)
 df_multiples = create_resdf(all_multiples,kdam_range)
 
-CSV.write("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/on_off/diffs.csv", df_res)
-CSV.write("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/on_off/percs.csv", df_percs)
-CSV.write("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/init_switch/on_off/fold.csv", df_multiples)
+CSV.write("$PATHmay23_rtc/analysis/bifurcation_analysis/init_switch/on_off/diffs.csv", df_res)
+CSV.write("$PATHmay23_rtc/analysis/bifurcation_analysis/init_switch/on_off/percs.csv", df_percs)
+CSV.write("$PATHmay23_rtc/analysis/bifurcation_analysis/init_switch/on_off/fold.csv", df_multiples)
 
 
 p_diff = plot([scatter(x=df_res.kdam,y=df_res.rm_a,name="rm_a"),scatter(x=df_res.kdam,y=df_res.rtca,name="rtca"),scatter(x=df_res.kdam,y=df_res.rm_b,name="rm_b"),
@@ -113,13 +113,13 @@ scatter(x=[df_multiples.kdam[end]],y=[df_multiples.rh[end]],name="rh"),scatter(x
 Layout(xaxis_title="kdam",yaxis_title="fold-change from ssval", title="switching from on to off",))
 # yaxis_type="log"))
 
-open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_fold_onoff.html", "w") do io
+open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/init_switch_fold_onoff.html", "w") do io
     PlotlyBase.to_html(io, p_fold.plot)
 end
-open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_perc_onoff.html", "w") do io
+open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/init_switch_perc_onoff.html", "w") do io
     PlotlyBase.to_html(io, p_perc.plot)
 end
-open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_diff_onoff.html", "w") do io
+open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/init_switch_diff_onoff.html", "w") do io
     PlotlyBase.to_html(io, p_diff.plot)
 end
 
@@ -150,7 +150,7 @@ sss, rtcbs, rtcrs = double_init(branches1.ss_val_upper, upper_ranges, branches1.
 p = plot_binary(sss, range(-100,0,length=l1), branches1.ss_val_lower, "rtcb", "rtcr", "upper to lower - rh, kdam = 1")
 
 
-open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_uppertolower.html", "w") do io
+open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/init_switch_uppertolower.html", "w") do io
     PlotlyBase.to_html(io, p.plot)
 end
 
@@ -187,7 +187,7 @@ round(sss[1];digits=6)
 branches2
 branches2.ss_val_upper[7]
 
-open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_uppertolower.html", "w") do io
+open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/init_switch_uppertolower.html", "w") do io
     PlotlyBase.to_html(io, p.plot)
 end
 
@@ -217,7 +217,7 @@ Layout(xaxis_title="% increase from initial ss val", yaxis_title="Branch",
 yaxis_tickvals=[0,1], yaxis_ticktext=["lower","upper"], title="switch from upper to lower (rh) - kdam = 2"
 ))
 
-open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_upperlower2.html", "w") do io
+open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/init_switch_upperlower2.html", "w") do io
     PlotlyBase.to_html(io, p.plot)
 end
 
@@ -235,6 +235,6 @@ round(sss[1];digits=6)
 branches2
 branches2.ss_val_upper[7]
 
-open("/home/holliehindley/phd/may23_rtc/analysis/bifurcation_analysis/plots/init_switch_uppertolower.html", "w") do io
+open("$PATHmay23_rtc/analysis/bifurcation_analysis/plots/init_switch_uppertolower.html", "w") do io
     PlotlyBase.to_html(io, p.plot)
 end

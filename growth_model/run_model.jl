@@ -1,9 +1,11 @@
 using DifferentialEquations, PlotlyJS, DataFrames, Measures, LabelledArrays, BenchmarkTools, ModelingToolkit, TickTock
 
-include("/home/holliehindley/phd/growth_model/model/model.jl")
-include("/home/holliehindley/phd/general_funcs/solving.jl")
-include("/home/holliehindley/phd/growth_model/parameters/parameters.jl")
-include("/home/holliehindley/phd/growth_model/parameters/uM_parameters.jl")
+PATH = "/home/holliehindley/phd"
+
+include("$PATH/growth_model/model/model.jl")
+include("$PATH/general_funcs/solving.jl")
+include("$PATH/growth_model/parameters/parameters.jl")
+include("$PATH/growth_model/parameters/uM_parameters.jl")
 
 tspan = (0,1e9)
 
@@ -59,7 +61,7 @@ for i in nut
     lam_gm = ttrate/M
     push!(gr, lam_gm)
 end
-# open("/home/holliehindley/phd/growth_model_2021/growth_model/result_plot.html", "w") do io
+# open("$PATHgrowth_model_2021/growth_model/result_plot.html", "w") do io
 #     PlotlyBase.to_html(io, p.plot)
 # end
 

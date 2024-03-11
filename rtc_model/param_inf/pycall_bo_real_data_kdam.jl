@@ -1,8 +1,8 @@
 using Plots, PyCall, DifferentialEquations, StaticArrays, BenchmarkTools, DataFrames, CSV, OrderedCollections
-include("/home/holliehindley/phd/rtc_models/Oct2022_model/rtc_model.jl")
-include("/home/holliehindley/phd/rtc_models/sol_species_funcs.jl")
-include("/home/holliehindley/phd/Param_inf/inf_setup.jl")
-include("/home/holliehindley/phd/rtc_models/params_init_tspan.jl")
+include("$PATHrtc_models/Oct2022_model/rtc_model.jl")
+include("$PATHrtc_models/sol_species_funcs.jl")
+include("$PATHParam_inf/inf_setup.jl")
+include("$PATHrtc_models/params_init_tspan.jl")
 
 # infer kdam for hpx conditions 
 function rtc_bo_hpx(;kdam)

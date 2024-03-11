@@ -1,16 +1,16 @@
 using DataFrames, CSV, PyCall
 
 # data
-dfc = DataFrame(CSV.File("/home/holliehindley/phd/data/fig4c_bo.csv"))
+dfc = DataFrame(CSV.File("$PATHdata/fig4c_bo.csv"))
 WT1 = dfc[!,2]; hpx = dfc[!,3]; WT1_std = dfc[!,4]; hpx_std = dfc[!,5]; # promoter expression
 
-dfe = DataFrame(CSV.File("/home/holliehindley/phd/data/fig4e_rtcoff_bo.csv"))
+dfe = DataFrame(CSV.File("$PATHdata/fig4e_rtcoff_bo.csv"))
 WT2 = dfe[!,2]; hpx_rtcoff = dfe[!,3]; WT2_std = dfe[!,4]; hpx_rtcoff_std = dfe[!,5]; # growth
 
-dff = DataFrame(CSV.File("/home/holliehindley/phd/data/fig4f_rtcon_bo.csv"))
+dff = DataFrame(CSV.File("$PATHdata/fig4f_rtcon_bo.csv"))
 WT3 = dff[!,2]; hpx_rtcon = dff[!,3]; WT3_std = dff[!,4]; hpx_rtcon_std = dff[!,5]; # growth
 
-df2 = DataFrame(CSV.File("/home/holliehindley/phd/data/colD_supf2_bo.csv"))
+df2 = DataFrame(CSV.File("$PATHdata/colD_supf2_bo.csv"))
 WT4 = df2[!,2]; WT_colD = df2[!,3]; WT4_std = df2[!,18]; WT_colD_std = df2[!,19]; # growth
 nA = df2[!,4]; nA_colD = df2[!,5];  nA_std = df2[!,20]; nA_colD_std = df2[!,21];
 nB = df2[!,8]; nB_colD = df2[!,9]; nB_B = df2[!,10]; nB_B_colD = df2[!,11]; nB_Bmut = df2[!,12]; nB_Bmut_colD = df2[!,13];  

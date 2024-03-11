@@ -1,12 +1,14 @@
 using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, Statistics
 using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf, ProgressBars, LabelledArrays, DataFrames, PlotlyJS, ModelingToolkit
 
-include("/home/holliehindley/phd/rtc_model/models/rtc_orig.jl")
-include("/home/holliehindley/phd/rtc_model/models/rtc_trna_model.jl")
-include("/home/holliehindley/phd/general_funcs/solving.jl")
-include("/home/holliehindley/phd/rtc_model/parameters/trna_params.jl")
-include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/bf_funcs.jl")
-include("/home/holliehindley/phd/rtc_model/functions/bf_funcs/init_switch_funcs.jl");
+PATH = "/home/holliehindley/phd"
+
+include("$PATH/rtc_model/models/rtc_orig.jl")
+include("$PATH/rtc_model/models/rtc_trna_model.jl")
+include("$PATH/general_funcs/solving.jl")
+include("$PATH/rtc_model/parameters/trna_params.jl")
+include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
+include("$PATH/rtc_model/functions/bf_funcs/init_switch_funcs.jl");
 
 
 br = get_br(rtc_trna_model, ssvals_trna, params_trna, 20.)
@@ -43,7 +45,7 @@ for kdam_val in ProgressBar(kdam_range_onoff)
     push!(svals_onoff.rt, vals[9])
 end
 
-CSV.write("/home/holliehindley/phd/rtc_model/paper_plots/tRNA/switch_vals_trna.csv", svals_onoff)
+CSV.write("$PATHrtc_model/paper_plots/tRNA/switch_vals_trna.csv", svals_onoff)
 
 # rtcb1 = scatter(x=df.kdam[1:kdam1], y=df.rtcb[1:kdam1], name="RtcB", line=attr(width=3, color="#005356ff"), showlegend=false, legendgroup="1")#, fill="tozeroy")
 # rtcb2 = scatter(x=df.kdam[kdam1:kdam2], y=df.rtcb[kdam1:kdam2], name="", line=attr(width=3,dash="dash", color=:black),showlegend=false, legendgroup="1")
