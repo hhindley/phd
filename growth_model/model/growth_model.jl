@@ -160,6 +160,8 @@ growth_model.si=>0.0, growth_model.a=>1.66]
 params_gm = Dict(d=>d_val, kb=>kb_val, ku=>ku_val, thetar=>thetar_val, s0=>s0_val, gmax=>gmax_val, thetax=>thetax_val, Kt=>Kt_val, M=>M_val, we=>we_val, Km=>Km_val, vm=>vm_val, nx=>nx_val, Kq=>Kq_val, vt=>vt_val, wr=>wr_val, wq=>wq_val, nq=>nq_val, nr=>nr_val, ns=>ns_val, Kgamma=>Kgamma_val, abx=>abx_val, kon=>kon_val)
 params_gm_uM = Dict(d=>d_val, kb=>kb_uM_val, ku=>ku_val, thetar=>thetar_uM_val, s0=>s0_uM_val, gmax=>gmax_val, thetax=>thetax_uM_val, Kt=>Kt_uM_val, M=>M_uM_val, we=>we_uM_val, Km=>Km_uM_val, vm=>vm_val, nx=>nx_val, Kq=>Kq_uM_val, vt=>vt_val, wr=>wr_uM_val, wq=>wq_uM_val, nq=>nq_val, nr=>nr_val, ns=>ns_val, Kgamma=>Kgamma_uM_val, abx=>abx_val, kon=>kon_val)
 
+
+
 ssvals_gm = steady_states(growth_model, init_gm, params_gm)
 ssvals_gm_uM = steady_states(growth_model, init_gm_uM, params_gm_uM)
 

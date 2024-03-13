@@ -239,8 +239,9 @@ params_red_comb_new = Dict(
     θ_rh=>thetar_uM_val, θ_nr=>thetax_uM_val, Kq=>Kq_uM_val, Kt=>Kt_uM_val, Km=>Km_uM_val, Kgamma=>Kgamma_uM_val, 
     nq=>nq_val, nrh=>nr_val, nx=>nx_val, 
     kb=>kb_uM_val, ku=>ku_val, 
-    s0=>s0_uM_val, M=>M_uM_val, ns=>ns_val, vt=>vt_val_comb_new, vm=>vm_val)
+    s0=>s0_val_comb_new, M=>M_uM_val, ns=>ns_val, vt=>vt_val_comb_new, vm=>vm_val)
 
 ssvals_red_comb = steady_states(reduced_combined_model, init_red_comb, params_red_comb)
 ssvals_red_comb_new = steady_states(reduced_combined_model, init_red_comb, params_red_comb_new)
 
+calc_lam(params_red_comb_new, ssvals_red_comb_new)

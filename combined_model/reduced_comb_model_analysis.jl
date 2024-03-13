@@ -14,7 +14,7 @@ include("$PATH/combined_model/reduced_comb_model.jl")
 # include("$PATH/rtc_model/models/rtc_orig.jl")
 
 # comparing lam under rtc and no rtc after introducing damage 
-solu = sol(reduced_combined_model, init_red_comb, tspan, params_red_comb); df = create_solu_df(solu, species_comb); plot_solu(df)
+solu = sol(reduced_combined_model, init_red_comb, tspan, params_red_comb_new); df = create_solu_df(solu, species_red_comb); plot_solu(df)
 
 
 # dict = Dict(pairs(eachcol(df))); lam = calc_lam(params_comb, dict)
@@ -96,8 +96,23 @@ abx_rev = reverse(abx_range)
 n_params = deepcopy(params_red_comb_new)
 # n_params[ns] = 0.5
 
-res, res2 = full_numerical_bistab(reduced_combined_model, n_params, ssvals_red_comb_new, :rh, species_red_comb, abx_range, abx_rev, kdam)
+res, res2 = full_numerical_bistab(reduced_combined_model, n_params, ssvals_red_comb_new, :lam, species_red_comb, abx_range, abx_rev, kdam)
 plot([scatter(x=abx_range, y=res), scatter(x=abx_rev, y=res2)])
+
+
+n_params = deepcopy(params_red_comb)
+# n_params[ns] = 0.5
+
+res, res2 = full_numerical_bistab(reduced_combined_model, n_params, ssvals_red_comb, :lam, species_red_comb, abx_range, abx_rev, kdam)
+plot([scatter(x=abx_range, y=res), scatter(x=abx_rev, y=res2)])
+
+
+
+function calc_lam(params, ssvals_dict)
+    gamma = @. params[gmax] * ssvals_dict[:a]/(params[Kgamma] + ssvals_dict[:a])
+    ttrate = @. (ssvals_dict[:c_q] + ssvals_dict[:c_rh] + ssvals_dict[:c_t] + ssvals_dict[:c_m] + ssvals_dict[:c_R] + ssvals_dict[:c_A] + ssvals_dict[:c_B])*gamma
+    return @. ttrate/params[M]
+end
 
 
 wab_range = 10 .^ range(log10(1e-5),log10(1e-1),length=5)

@@ -9,14 +9,15 @@ kdam_p_val = 1#0.7 # represents percent damaged here
 ω_r_val_comb = ω_r_val*10
 
 
-we_val_comb_new = 0.003*we_uM_val
-wr_val_comb_new = 0.008*wr_uM_val
-wq_val_comb_new = 0.02*wq_uM_val
-s0_val_comb_new = 166.1
+we_val_comb_new = we_uM_val #0.003*we_uM_val
+wr_val_comb_new = wr_uM_val #0.008*wr_uM_val
+wq_val_comb_new = wq_uM_val #0.02*wq_uM_val
+s0_val_comb_new = 1661
 gmax_val_comb_new = gmax_val*10
-ω_ab_val_comb_new = 0.003*ω_ab_val*2
-ω_r_val_comb_new = 0.003*ω_r_val*10
+ω_ab_val_comb_new = ω_ab_val*2 #0.03*ω_ab_val*2
+ω_r_val_comb_new = ω_r_val*10 #0.03*ω_r_val*10
 vt_val_comb_new = 660
+
 kon_val_comb_new = 0.0666
 
 

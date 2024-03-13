@@ -1,0 +1,207 @@
+using DifferentialEquations, PlotlyJS, DataFrames, Measures, LabelledArrays, BenchmarkTools, ModelingToolkit, TickTock, BifurcationKit, ProgressBars
+
+PATH = "/home/holliehindley/phd"
+
+include("$PATH/general_funcs/solving.jl")
+include("$PATH/growth_model/parameters/growth_model_params.jl")
+include("$PATH/growth_model/parameters/gm_uM_parameters.jl")
+include("$PATH/growth_model/model/growth_model.jl")
+
+
+prob = ODEProblem(growth_model, init_gm, tspan, params_gm; jac=true)
+solu_gm = solve(prob, Rosenbrock23()); solu_df = create_solu_df(solu_gm, species_gm); plot_solu(solu_df)
+solu_gm = solve(prob, Rodas5()); solu_df = create_solu_df(solu_gm, species_gm); plot_solu(solu_df)
+solu_gm = solve(prob, TRBDF2()); solu_df = create_solu_df(solu_gm, species_gm); plot_solu(solu_df)
+solu_gm = solve(prob, QNDF()); solu_df = create_solu_df(solu_gm, species_gm); plot_solu(solu_df)
+solu_gm = solve(prob, FBDF()); solu_df = create_solu_df(solu_gm, species_gm); plot_solu(solu_df)
+
+get_all_ssvals(solu_gm, species_gm)
+
+b1 = @benchmark solve(prob, Rosenbrock23())#, abstol=1e-12, reltol=1e-9);
+b2 = @benchmark solve(prob, Rodas4())#, abstol=1e-12, reltol=1e-9);
+b3 = @benchmark solve(prob, Rodas5())#, abstol=1e-9, reltol=1e-6);
+b4 = @benchmark solve(prob, TRBDF2())#, abstol=1e-9, reltol=1e-6);
+b5 = @benchmark solve(prob, QNDF())#, abstol=1e-12, reltol=1e-9);
+b6 = @benchmark solve(prob, FBDF())#, abstol=1e-9, reltol=1e-6);
+
+b_res = [b1,b2,b3,b4,b5,b6]
+df = DataFrame(:solver=>["Rosenbrock23","Rodas4","Rodas5","TRBDF2","QNDF","FBDF"],:time=>[(minimum(i).time)./1000 for i in b_res], :memory=>[(minimum(i).memory)./1000 for i in b_res])
+
+plot(df, x=:solver, y=:time, kind="bar", Layout(yaxis_title="time (μs)"))
+plot(df, x=:solver, y=:memory, kind="bar", Layout(yaxis_title="memory (kibibyte)"))
+
+
+
+params_dam = deepcopy(params_gm)
+params_dam[abx] = 4
+
+prob_gm = ODEProblem(growth_model, ssvals_gm, tspan, params_dam; jac=true)
+solu_gm = solve(prob_gm, Rosenbrock23()); solu_df = create_solu_df(solu_gm, species_gm); plot_solu(solu_df)
+solu_gm = solve(prob_gm, Rodas5()); solu_df = create_solu_df(solu_gm, species_gm); plot_solu(solu_df)
+solu_gm = solve(prob_gm, TRBDF2()); solu_df = create_solu_df(solu_gm, species_gm); plot_solu(solu_df)
+solu_gm = solve(prob_gm, QNDF()); solu_df = create_solu_df(solu_gm, species_gm); plot_solu(solu_df)
+solu_gm = solve(prob_gm, FBDF()); solu_df = create_solu_df(solu_gm, species_gm); plot_solu(solu_df)
+
+b1_abx = @benchmark solve(prob_gm, Rosenbrock23())#, abstol=1e-12, reltol=1e-9);
+b2_abx = @benchmark solve(prob_gm, Rodas4())#, abstol=1e-12, reltol=1e-9);
+b3_abx = @benchmark solve(prob_gm, Rodas5())#, abstol=1e-9, reltol=1e-6);
+b4_abx = @benchmark solve(prob_gm, TRBDF2())#, abstol=1e-9, reltol=1e-6);
+b5_abx = @benchmark solve(prob_gm, QNDF())#, abstol=1e-12, reltol=1e-9);
+b6_abx = @benchmark solve(prob_gm, FBDF())#, abstol=1e-9, reltol=1e-6);
+
+b_res_abx = [b1_abx,b2_abx,b3_abx,b4_abx,b5_abx,b6_abx]
+df_abx = DataFrame(:solver=>["Rosenbrock23","Rodas4","Rodas5","TRBDF2","QNDF","FBDF"],:time=>[(minimum(i).time)./1000 for i in b_res_abx], :memory=>[(minimum(i).memory)./1000 for i in b_res_abx])
+
+plot(df_abx, x=:solver, y=:time, kind="bar", Layout(yaxis_title="time (μs)"))
+plot(df_abx, x=:solver, y=:memory, kind="bar", Layout(yaxis_title="memory (kibibyte)"))
+
+df_full = DataFrame(:solver=>["Rosenbrock23","Rodas4","Rodas5","TRBDF2","QNDF","FBDF"],:time_noabx=>[(minimum(i).time)./1000 for i in b_res], :memory_noabx=>[(minimum(i).memory)./1000 for i in b_res],:time_abx=>[(minimum(i).time)./1000 for i in b_res_abx], :memory_abx=>[(minimum(i).memory)./1000 for i in b_res_abx])
+
+plot([bar(df_full, x=:solver, y=:time_noabx, name="no abx"), bar(df_full, x=:solver, y=:time_abx, name="abx=4")], Layout(yaxis_title="time (μs)"))
+plot([bar(df_full, x=:solver, y=:memory_noabx, name="no abx"), bar(df_full, x=:solver, y=:memory_abx, name="abx=4")], Layout(yaxis_title="memory (kibibyte)"))
+
+params_dam = deepcopy(params_gm)
+params_dam[abx] = 10
+
+prob_gm1 = ODEProblem(growth_model, ssvals_gm, tspan, params_dam; jac=true)
+solu_gm1 = solve(prob_gm1, Rosenbrock23()); solu_df = create_solu_df(solu_gm, species_gm); plot_solu(solu_df)
+solu_gm1 = solve(prob_gm1, Rodas4()); solu_df = create_solu_df(solu_gm, species_gm); plot_solu(solu_df)
+solu_gm1 = solve(prob_gm1, Rodas5()); solu_df = create_solu_df(solu_gm, species_gm); plot_solu(solu_df)
+solu_gm1 = solve(prob_gm1, TRBDF2()); solu_df = create_solu_df(solu_gm, species_gm); plot_solu(solu_df)
+solu_gm1 = solve(prob_gm1, QNDF(), maxiters=1e7); solu_df = create_solu_df(solu_gm, species_gm); plot_solu(solu_df)
+solu_gm1 = solve(prob_gm1, FBDF()); solu_df = create_solu_df(solu_gm, species_gm); plot_solu(solu_df)
+
+b1_abx1 = @benchmark solve(prob_gm1, Rosenbrock23())#, abstol=1e-12, reltol=1e-9);
+b2_abx1 = @benchmark solve(prob_gm1, Rodas4())#, abstol=1e-12, reltol=1e-9);
+b3_abx1 = @benchmark solve(prob_gm1, Rodas5())#, abstol=1e-9, reltol=1e-6);
+b4_abx1 = @benchmark solve(prob_gm1, TRBDF2())#, abstol=1e-9, reltol=1e-6);
+b5_abx1 = [0]# @benchmark solve(prob_gm1, QNDF(), maxiters=1e6)#, abstol=1e-12, reltol=1e-9);
+b6_abx1 = @benchmark solve(prob_gm1, FBDF())#, abstol=1e-9, reltol=1e-6);
+
+b_res_abx1 = [b1_abx1,b2_abx1,b3_abx1,b4_abx1,b6_abx1,b6_abx1]
+
+df_full = DataFrame(:solver=>["Rosenbrock23","Rodas4","Rodas5","TRBDF2","QNDF","FBDF"],:time_noabx=>[(minimum(i).time)./1000 for i in b_res], :memory_noabx=>[(minimum(i).memory)./1000 for i in b_res],:time_abx=>[(minimum(i).time)./1000 for i in b_res_abx], :memory_abx=>[(minimum(i).memory)./1000 for i in b_res_abx],:time_abx1=>[(minimum(i).time)./1000 for i in b_res_abx1], :memory_abx1=>[(minimum(i).memory)./1000 for i in b_res_abx1])
+df_full[df_full.solver .== "QNDF", :time_abx1]
+df_full[5,:time_abx1] = 0
+df_full[5,:memory_abx1] = 0
+df_full
+
+plot([bar(df_full, x=:solver, y=:time_noabx, name="no abx"), bar(df_full, x=:solver, y=:time_abx, name="abx=4"),bar(df_full, x=:solver, y=:time_abx1, name="abx=10")], Layout(yaxis_title="time (μs)"))
+plot([bar(df_full, x=:solver, y=:memory_noabx, name="no abx"), bar(df_full, x=:solver, y=:memory_abx, name="abx=4"), bar(df_full, x=:solver, y=:memory_abx1, name="abx=10")], Layout(yaxis_title="memory (kibibyte)"))
+
+
+function check_differences_lam(solver, init_gm, params_gm)
+    prob = ODEProblem(growth_model, init_gm, tspan, params_gm; jac=true)
+
+    solu_gm1 = solve(prob, solver, abstol=1e-6, reltol=1e-3)
+    ss_vals = get_all_ssvals(solu_gm1, species_gm)
+    ssvals_dict = Dict([i => j for (i,j) in zip(species_gm, ss_vals)])
+    lam1 = calc_lam(params_gm, ssvals_dict, :gm)
+
+
+    solu_gm2 = solve(prob, solver, abstol=1e-15, reltol=1e-12)
+    ss_vals2 = get_all_ssvals(solu_gm2, species_gm)
+    ssvals_dict2 = Dict([i => j for (i,j) in zip(species_gm, ss_vals2)])
+    lam2 = calc_lam(params_gm, ssvals_dict2, :gm)
+    return lam1, lam2
+end
+
+check_differences_lam(Rodas4(), init_gm, params_gm)
+
+params_dam = deepcopy(params_gm)
+params_dam[abx] = 4
+check_differences_lam(Rodas4(), ssvals_gm, params_dam)
+
+params_dam1 = deepcopy(params_gm)
+params_dam1[abx] = 12
+check_differences_lam(Rodas4(), ssvals_gm, params_dam1)
+
+
+
+tspan = (1, 1e6)
+abx_range = range(0,20,length=20)
+abx_rev = reverse(abx_range)
+res, res1 = full_numerical_bistab(growth_model, params_gm, ssvals_gm, :cr, species_gm, abx_range, abx_rev, abx)
+plot([scatter(x=abx_range, y=res), scatter(x=abx_rev, y=res1)])
+
+
+
+prob = ODEProblem(growth_model, init_gm, (1,1e9), params_gm; jac=true)
+solu = solve(prob, Rodas4()); solu_df = create_solu_df(solu, species_gm); 
+p1 = plot(scatter(x=solu_df.time, y=solu_df.a), Layout(xaxis_type="log", yaxis_title="ATP (molecules)", xaxis_title="time (min)"))
+savefig(p1, "/home/holliehindley/phd/general_funcs/model_solutions/testing/p1.png")
+
+prob1 = ODEProblem(growth_model, ssvals_gm, (1,1e9), params_gm; jac=true)
+solu1 = solve(prob1, Rodas4()); solu_df1 = create_solu_df(solu1, species_gm); 
+p2 = plot(scatter(x=solu_df1.time, y=solu_df1.a), Layout(xaxis_type="log", yaxis_title="ATP (molecules)", xaxis_title="time (min)"))
+savefig(p2, "/home/holliehindley/phd/general_funcs/model_solutions/testing/p2.png")
+
+params_dam = deepcopy(params_gm)
+params_dam[abx] = 10
+prob2 = ODEProblem(growth_model, init_gm, (1,1e9), params_dam; jac=true)
+solu2= solve(prob2, Rodas4()); solu_df2 = create_solu_df(solu2, species_gm); 
+p3 = plot(scatter(x=solu_df2.time, y=solu_df2.a), Layout(xaxis_type="log", yaxis_title="ATP (molecules)", xaxis_title="time (min)"))
+savefig(p3, "/home/holliehindley/phd/general_funcs/model_solutions/testing/p3.png")
+
+params_dam[abx] = 10
+prob3 = ODEProblem(growth_model, init_gm, (1,1e9), params_dam; jac=true)
+solu3 = solve(prob3, Rodas4(), abstol=1e-10, reltol=1e-10); solu_df3 = create_solu_df(solu3, species_gm); 
+p4 = plot(scatter(x=solu_df3.time, y=solu_df3.a), Layout(xaxis_type="log", yaxis_title="ATP (molecules)", xaxis_title="time (min)"))
+savefig(p4, "/home/holliehindley/phd/general_funcs/model_solutions/testing/p4.png")
+
+params_dam[abx] = 10
+prob4 = ODEProblem(growth_model, ssvals_gm, (1,1e9), params_dam; jac=true)
+solu4 = solve(prob4, Rodas4()); solu_df4 = create_solu_df(solu4, species_gm); 
+p5 = plot(scatter(x=solu_df4.time, y=solu_df4.a), Layout(xaxis_type="log", yaxis_title="ATP (molecules)", xaxis_title="time (min)"))
+savefig(p5, "/home/holliehindley/phd/general_funcs/model_solutions/testing/p5.png")
+
+params_dam[abx] = 11
+prob5 = ODEProblem(growth_model, ssvals_gm, (1,1e9), params_dam; jac=true)
+solu5 = solve(prob5, Rodas4()); solu_df5 = create_solu_df(solu5, species_gm); 
+p6 = plot(scatter(x=solu_df5.time, y=solu_df5.a), Layout(xaxis_type="log", yaxis_title="ATP (molecules)", xaxis_title="time (min)"))
+savefig(p6, "/home/holliehindley/phd/general_funcs/model_solutions/testing/p6.png")
+
+params_dam[abx] = 12
+prob6 = ODEProblem(growth_model, ssvals_gm, (1,1e6), params_dam; jac=true)
+solu6 = solve(prob6, Rodas4()); solu_df6 = create_solu_df(solu6, species_gm); 
+p7 = plot(scatter(x=solu_df6.time, y=solu_df6.a), Layout(xaxis_type="log", yaxis_title="ATP (molecules)", xaxis_title="time (min)"))
+savefig(p7, "/home/holliehindley/phd/general_funcs/model_solutions/testing/p7.png")
+
+params_dam[abx] = 20
+prob7 = ODEProblem(growth_model, ssvals_gm, (1,1e6), params_dam; jac=true)
+solu7 = solve(prob7, Rodas4()); solu_df7 = create_solu_df(solu7, species_gm); 
+p8 = plot(scatter(x=solu_df7.time, y=solu_df7.a), Layout(xaxis_type="log", yaxis_title="ATP (molecules)", xaxis_title="time (min)"))
+savefig(p8, "/home/holliehindley/phd/general_funcs/model_solutions/testing/p8.png")
+
+
+
+ns_arr2 = [0.08,0.11541599,0.16651064,0.24022489,0.3466,0.5]
+Cm_arr = [0, 2, 4, 8, 12]
+params_new = deepcopy(params_gm)
+gr=[]
+rmf=[]
+
+tick(); for i in ns_arr2
+    params_new[ns] = i
+    for j in Cm_arr
+        params_new[abx] = j
+        solu = sol(growth_model, ssvals_gm, (1,1e6), params_new)
+        ss_vals = get_all_ssvals(solu, species_gm)
+        ssvals_dict = Dict([i => j for (i,j) in zip(species_gm, ss_vals)])
+        push!(gr, calc_lam(params_new, ssvals_dict, :gm))
+        push!(rmf, calc_rmf(params_new, ssvals_dict, :gm))
+    end
+end; tock()
+
+grs=[]
+for i in 1:5:length(gr)
+    push!(grs, gr[i:i+4])
+end
+
+rmfs=[]
+for i in 1:5:length(rmf)
+    push!(rmfs, rmf[i:i+4])
+end
+
+
+plot([scatter(x=grs[i], y=rmfs[i]) for i in range(1, length(grs))])

@@ -58,7 +58,14 @@ function numerical_bistability_analysis(model, params, init, specie, all_species
     first_params[kdam]=kdam_range[1]
     solu = sol(model, init, tspan, first_params)
     df_sol = create_solu_df(solu, all_species)
-    ss = get_ssval(df_sol, specie)
+    if specie == :lam
+        ss_vals = get_all_ssvals(solu, all_species)
+        ssvals_dict = Dict([i => j for (i,j) in zip(all_species, ss_vals)])
+        ss = calc_lam(first_params, ssvals_dict)
+    else
+        ss = get_ssval(df_sol, specie)
+    end
+
     init_first = ss_init_vals(df_sol, all_species)
     res =[]
     for i in ProgressBar(range(2, length(kdam_range)))
@@ -69,7 +76,13 @@ function numerical_bistability_analysis(model, params, init, specie, all_species
         new_params[kdam] = kdam_range[i]
         solu_new = sol(model, init_ss, tspan, new_params)
         df_sol_new = create_solu_df(solu_new, all_species)
-        push!(res, get_ssval(df_sol_new, specie))
+        if specie == :lam
+            ss_vals_new = get_all_ssvals(solu_new, all_species)
+            ssvals_dict_new = Dict([i => j for (i,j) in zip(all_species, ss_vals_new)])
+            push!(res, calc_lam(new_params,ssvals_dict_new))
+        else
+            push!(res, get_ssval(df_sol_new, specie))
+        end
     end
     pushfirst!(res, ss)
     return res

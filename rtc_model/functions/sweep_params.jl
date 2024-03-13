@@ -14,17 +14,23 @@ function sweep_param(model, ss_init, params, param_range, param, species)
         new_params[param] = i
         ss = steady_states(model, ss_init, new_params)
         ssvals_dict = Dict([i => j for (i,j) in zip(species, ss)])
-        lam = calc_lam(new_params, ssvals_dict)
-        ss_lam = collect(ss)
-        rmf = calc_rmf(new_params, ssvals_dict)
-        push!(ss_lam, lam)
-        push!(ss_lam, rmf)
-        push!(ssvals, ss_lam)
+        if nameof(model) == :combined_model || nameof(model) == :reduced_combined_model || nameof(model) == :growth_model
+            lam = calc_lam(new_params, ssvals_dict)
+            ss_lam = collect(ss)
+            rmf = calc_rmf(new_params, ssvals_dict)
+            push!(ss_lam, lam)
+            push!(ss_lam, rmf)
+            push!(ssvals, ss_lam)
+        else
+            push!(ssvals, ss)
+        end
     end
     # return ssvals
     df_ssvals = DataFrame(vcat(transpose(ssvals)...), :auto)
-    push!(new_species, :lam)
-    push!(new_species, :rmf)
+    if nameof(model) == :combined_model || nameof(model) == :reduced_combined_model || nameof(model) == :growth_model
+        push!(new_species, :lam)
+        push!(new_species, :rmf)
+    end
     rename!(df_ssvals, new_species)
     return df_ssvals
 end
