@@ -211,10 +211,10 @@ function different_levels_inhibition(rtc_inhib_mod, init_inhib, params_br_inhib,
     return bf, df, kdam1, kdam2
 end
 
-function plot_rtc_bf(df, kdam1, kdam2, specie, legendgroup, colour, name)
-    rtcb1 = scatter(x=df.kdam[1:kdam1], y=df[!,specie][1:kdam1], name=name, line=attr(width=6.5, color=colour), showlegend=true, legendgroup=legendgroup)#, fill="tozeroy")
-    rtcb2 = scatter(x=df.kdam[kdam1:kdam2], y=df[!,specie][kdam1:kdam2], name="", mode="lines", line=attr(width=6.5,dash="dash", color=colour),showlegend=false, legendgroup=legendgroup)
-    rtcb3 = scatter(x=df.kdam[kdam2:end], y=df[!,specie][kdam2:end], name="", line=attr(width=6.5, color=colour),showlegend=false, legendgroup=legendgroup)
+function plot_rtc_bf(df, kdam1, kdam2, specie, legendgroup, colour, name, yaxis)
+    rtcb1 = scatter(x=df.kdam[1:kdam1], y=df[!,specie][1:kdam1], name=name, line=attr(width=6.5, color=colour), showlegend=true, legendgroup=legendgroup, yaxis=yaxis)#, fill="tozeroy")
+    rtcb2 = scatter(x=df.kdam[kdam1:kdam2], y=df[!,specie][kdam1:kdam2], name="", mode="lines", line=attr(width=6.5,dash="dash", color=colour),showlegend=false, legendgroup=legendgroup, yaxis=yaxis)
+    rtcb3 = scatter(x=df.kdam[kdam2:end], y=df[!,specie][kdam2:end], name="", line=attr(width=6.5, color=colour),showlegend=false, legendgroup=legendgroup, yaxis=yaxis)
     return rtcb1, rtcb2, rtcb3
 end
 

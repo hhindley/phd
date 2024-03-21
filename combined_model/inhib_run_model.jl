@@ -38,8 +38,8 @@ new_species = [:m_R, :m_A, :m_B, :m_rh, :R, :A, :B, :q, :rh, :rt, :rd, :a, :lam,
 
 
 #double parameter sweep of abx and kdam_p with rtc and without rtc
-abx_range = range(0,12,length=50)
-kdamp_range = range(0,1,length=50)
+abx_range = range(0,12,length=25)
+kdamp_range = range(0,1,length=25)
 
 res = sweep_paramx2(combined_model, ssvals_comb, params_comb, species_comb, abx, kdam_p, abx_range, kdamp_range)
 res_nortca = sweep_paramx2(combined_inhib_rtca, ssvals_inhib_comb_rtca, params_inhib_comb, species_inhib_comb, abx, kdam_p, abx_range, kdamp_range)
@@ -90,6 +90,8 @@ heatmaps=[]
 for i in new_species
     push!(heatmaps, plot_heatmap(i))
 end
+
+heatmaps[1]
 
 for (i,name) in zip(heatmaps,new_species)
     open("$PATHcombined_model/plots/$name.html", "w") do io

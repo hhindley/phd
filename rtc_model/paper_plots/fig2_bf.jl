@@ -1,5 +1,5 @@
 using Parameters, CSV, DataFrames, DifferentialEquations, LabelledArrays, BenchmarkTools
-using Revise, LinearAlgebra, Printf, ModelingToolkit
+using Revise, LinearAlgebra, Printf, ModelingToolkit, OrderedCollections
 # using Plots
 using PlotlyJS, ProgressBars
 
@@ -8,28 +8,29 @@ PATH = "/home/holliehindley/phd"
 include("$PATH/rtc_model/models/rtc_orig.jl")
 include("$PATH/general_funcs/solving.jl")
 include("$PATH/rtc_model/parameters/rtc_params.jl")
+include("$PATH/rtc_model/parameters/rtc_params_molecs.jl")
 include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
 
 
-br = get_br(rtc_model, ssvals_rtc, params_rtc, 1.5)
+br = get_br(rtc_model, ssvals_rtc_molec, params_rtc_molec, 1.5)
 bf = bf_point_df(br)
 df = create_br_df(br)
 kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
 kdam2 = findall(x->x==bf.kdam[2],df.kdam)[1]
 
-rtcb1, rtcb2, rtcb3 = plot_rtc_bf(df, kdam1, kdam2, :rtcb, "1", "b693ccff", "RtcB")
-rtcr1, rtcr2, rtcr3 = plot_rtc_bf(df, kdam1, kdam2, :rtcr, "2", "4ca7a2ff", "RtcR")
-rtca1, rtca2, rtca3 = plot_rtc_bf(df, kdam1, kdam2, :rtca, "3", "e48080ff", "RtcA")
+rtcb1, rtcb2, rtcb3 = plot_rtc_bf(df, kdam1, kdam2, :rtcb, "1", "b693ccff", "RtcB", "y1")
+rtcr1, rtcr2, rtcr3 = plot_rtc_bf(df, kdam1, kdam2, :rtcr, "2", "4ca7a2ff", "RtcR", "y2")
+rtca1, rtca2, rtca3 = plot_rtc_bf(df, kdam1, kdam2, :rtca, "3", "e48080ff", "RtcA", "y1")
 
 p = plot([rtcb1, rtcb2, rtcb3, rtcr1, rtcr2, rtcr3, rtca1, rtca2, rtca3],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="Rtc protein (μM)",
-yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
-xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
+yaxis=attr(showline=true,linewidth=3,linecolor="black"),yaxis2=attr(overlaying="y",showline=true,linewidth=3,linecolor="black",side="right"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))#, showlegend=false))
 
-rh1, rh2, rh3 = plot_rtc_bf(df, kdam1, kdam2, :rh, "1", "ffd30cff", "RtcB")
-rt1, rt2, rt3 = plot_rtc_bf(df, kdam1, kdam2, :rt, "2", "e96100ff", "rt")
-rd1, rd2, rd3 = plot_rtc_bf(df, kdam1, kdam2, :rd, "3", "ac0606ff", "rd")
+rh1, rh2, rh3 = plot_rtc_bf(df, kdam1, kdam2, :rh, "1", "ffd30cff", "RtcB", "y1")
+rt1, rt2, rt3 = plot_rtc_bf(df, kdam1, kdam2, :rt, "2", "e96100ff", "rt", "y1")
+rd1, rd2, rd3 = plot_rtc_bf(df, kdam1, kdam2, :rd, "3", "ac0606ff", "rd", "y1")
 
 p1 = plot([rh1, rh2, rh3, rt1, rt2, rt3, rd1, rd2, rd3],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
@@ -39,8 +40,8 @@ xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="wh
 
 [p1_sig p1]
 
-savefig(p, "$PATHmay23_rtc/paper_plots/rtc_proteins.svg")
-savefig(p1, "$PATHmay23_rtc/paper_plots/ribosomes.svg")
+savefig(p, "$PATH/rtc_model/paper_plots/plots/rtc_proteins_doubley.svg")
+savefig(p1, "$PATH/may23_rtc/paper_plots/ribosomes.svg")
 
 # kdam_range1 = range(0,1.5,length=100)
 # kdam_range2 = range(1.5,0,length=100)

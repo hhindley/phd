@@ -77,6 +77,7 @@ res_nortc = sweep_paramx2(combined_model, ssvals_comb, new_params(0, 0, 0), spec
 
 new_species = deepcopy(species_comb); push!(new_species, :lam, :rmf);
 
+plot_contour(res, :rh, abx_range, kdamp_range, "abx", "kdam_p", "rtc active", 0.45, 1)
 # [display(plot_contour(res, i, abx_range, kdamp_range, "abx", "kdam_p", "")) for i in new_species]
 
 p2 = [(plot_contour(res, i, abx_range, kdamp_range, "abx", "kdam_p", "rtc active", 0.45)) for i in new_species];

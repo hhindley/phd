@@ -1,5 +1,6 @@
 include("$PATH/general_funcs/all_model_funcs.jl")
 include("$PATH/rtc_model/parameters/rtc_params.jl")
+include("$PATH/rtc_model/parameters/rtc_params_molecs.jl")
 
 indexof(sym, syms) = findfirst(isequal(sym),syms)
 
@@ -120,11 +121,16 @@ end
 @mtkbuild rtc_model = RTC()
 
 init_rtc = [rtc_model.rm_a=>0.0,rtc_model.rtca=>0.0,rtc_model.rm_b=>0.0,rtc_model.rtcb=>0.0,rtc_model.rm_r=>0.0,rtc_model.rtcr=>0.0,rtc_model.rh=>11.29,rtc_model.rd=>0.0,rtc_model.rt=>0.0]
+init_rtc_molec = [rtc_model.rm_a=>0.0,rtc_model.rtca=>0.0,rtc_model.rm_b=>0.0,rtc_model.rtcb=>0.0,rtc_model.rm_r=>0.0,rtc_model.rtcr=>0.0,rtc_model.rh=>11.29/sf,rtc_model.rd=>0.0,rtc_model.rt=>0.0]
 
-params_rtc = Dict(L=>L_val, c=>c_val, kr=>kr_val, Vmax_init=>Vmax_init_val, Km_init=>Km_init_val, θtscr=>θtscr_val, θtlr=>θtlr_val, na=>nA_val, nb=>nB_val, nr=>nR_val, d=>d_val, krep=>krep_val, ktag=>ktag_val,
+params_rtc = OrderedDict(L=>L_val, c=>c_val, kr=>kr_val, Vmax_init=>Vmax_init_val, Km_init=>Km_init_val, θtscr=>θtscr_val, θtlr=>θtlr_val, na=>nA_val, nb=>nB_val, nr=>nR_val, d=>d_val, krep=>krep_val, ktag=>ktag_val,
 atp=>atp_val, km_a=>km_a_val, km_b=>km_b_val, g_max=>g_max_val, kdeg=>kdeg_val, kin=>kin_val, ω_ab=>ω_ab_val, ω_r=>ω_r_val, kdam=>kdam_val, lam=>lam_val, kc=>kc_val, k_diss=>k_diss_val)
 
+params_rtc_molec = OrderedDict(L=>L_val, c=>c_val, kr=>kr_val_molec, Vmax_init=>Vmax_init_val, Km_init=>Km_init_val_molec, θtscr=>θtscr_val_molec, θtlr=>θtlr_val_molec, na=>nA_val, nb=>nB_val, nr=>nR_val, d=>d_val, krep=>krep_val, ktag=>ktag_val,
+atp=>atp_val_molec, km_a=>km_a_val_molec, km_b=>km_b_val_molec, g_max=>g_max_val, kdeg=>kdeg_val, kin=>kin_val_molec, ω_ab=>ω_ab_val, ω_r=>ω_r_val_molec, kdam=>kdam_val, lam=>lam_val, kc=>kc_val_molec, k_diss=>k_diss_val)
+
 ssvals_rtc = steady_states(rtc_model, init_rtc, params_rtc)
+ssvals_rtc_molec = steady_states(rtc_model, init_rtc_molec, params_rtc_molec)
 
 
 

@@ -74,8 +74,8 @@ function sweep_paramx2(model, ss_init, parameters, species, param1, param2, para
             ss_lam = ([ss...])
             # ss_lam = collect(ss1)
             ssvals_dict = Dict([i => j for (i,j) in zip(species, ss)])
-            push!(ss_lam, calc_lam(params, ssvals_dict))
-            push!(ss_lam, calc_rmf(params, ssvals_dict))
+            push!(ss_lam, calc_lam(params, ssvals_dict, :comb))
+            push!(ss_lam, calc_rmf(params, ssvals_dict, :comb))
             push!(res1, ss_lam)
         end
         push!(all_res, res1)
@@ -98,6 +98,24 @@ function plot_contour(res, specie, param_range1, param_range2, param1, param2, t
     return plot(contour(x=param_range1, y=param_range2, z=rh_res, colorbar=attr(title="$specie", titleside="right", x=x, y=y)), Layout(xaxis_title=param1, yaxis_title=param2, title=title))
 end
 
+function plot_heatmap(specie)
+    res1 = reshape(res[!,specie], length(abx_range),length(kdamp_range))
+    res2 = reshape(res_nortcb[!,specie], length(abx_range),length(kdamp_range))
+    res3 = reshape(res_nortca[!,specie], length(abx_range),length(kdamp_range))
+    res4 = reshape(res_nortcar[!,specie], length(abx_range),length(kdamp_range))
+
+    fig1 = make_subplots(rows=2,cols=2, shared_xaxes=true, shared_yaxes=true, vertical_spacing=0.05, horizontal_spacing=0.05,
+    subplot_titles=["Rtc active" "RtcA inhib"; "RtcB inhib" "RtcR inhib"], y_title="abx", x_title="kdam_p");
+    add_trace!(fig1, heatmap(x=abx_range, y=kdamp_range, z=res1, coloraxis="coloraxis"), row=1, col=1)
+    add_trace!(fig1, heatmap(x=abx_range, y=kdamp_range, z=res2, coloraxis="coloraxis"), row=1, col=2)
+    add_trace!(fig1, heatmap(x=abx_range, y=kdamp_range, z=res3, coloraxis="coloraxis"), row=2, col=1)
+    add_trace!(fig1, heatmap(x=abx_range, y=kdamp_range, z=res4, coloraxis="coloraxis"), row=2, col=2)
+    fig1.plot.layout.annotations[5].yshift=-20
+    fig1.plot.layout.annotations[6].xshift=-20
+    # relayout!(fig1, coloraxis_colorbar="inosenc")
+    fig1.plot.layout.title="$specie"
+    return (fig1)
+end
 
 # function sweep_paramx2(model, parameters, all_species, species, func, param1, param2, param_range1, param_range2)
 #     all_res = []

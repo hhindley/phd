@@ -279,7 +279,7 @@ params_comb_new = Dict(
 ssvals_comb = steady_states(combined_model, init_comb, params_comb)
 ssvals_comb_new = steady_states(combined_model, init_comb, params_comb_new)
 
-n
+
 # prob2 = ODEProblem(growth_model, init_gm, tspan, params_gm; jac=true);
 # solu2 = solve(prob2, Rodas4(), abstol=1e-12, reltol=1e-9);
 
