@@ -1,5 +1,5 @@
 using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, Statistics
-using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
+using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf, Interpolations, ModelingToolkit
 # using Plots
 using PlotlyJS, ProgressBars, QuadGK, Interpolations
 
@@ -23,6 +23,14 @@ ssvals_rtcb = get_all_ssvals(solu_inhib_rtcb, species_inhib)
 
 solu_inhib_rtcr = sol(rtcr_inhib_model, init_inhib_rtcr, tspan, params_inhib)
 ssvals_rtcr = get_all_ssvals(solu_inhib_rtcr, species_inhib)
+
+kdam_range=range(0,1.5,length=100)
+df = sweep_param(rtc_model, ssvals_rtc, params_rtc, kdam_range, kdam, species_rtc)
+
+df1 = sweep_param(rtca_inhib_model, ssvals_rtca, params_inhib, kdam_range, kdam, species_inhib)
+plot([scatter(x=kdam_range, y=df.rtca, name="RtcA"),scatter(x=kdam_range, y=df1.rtca, name="RtcA inhib")])
+
+
 
 
 rtcb_traces = creating_rtc_inhib_plot(rtc_model, ssvals_rtc, params_rtc, rtcb_inhib_model, ssvals_rtcb, params_inhib, :rtcb, 1.5, colours_rtcb, k_inhib_vals)
@@ -82,9 +90,9 @@ savefig(p_rtcr_rh, "$PATHmay23_rtc/paper_plots/rtcr_rh.svg")
 
 
 
-rtcb_auc = all_area_under_curve_rh(rtcb_inhib_model, params_inhib, ssvals_rtcb, 1.5, k_inhib_vals)
-rtcr_auc = all_area_under_curve_rh(rtcr_inhib_model, params_inhib, ssvals_rtcr, 1.5, k_inhib_vals)
-rtca_auc = all_area_under_curve_rh(rtca_inhib_model, params_inhib, ssvals_rtca, 1.5, k_inhib_vals)
+rtcb_auc = all_area_under_curve_rh(rtcb_inhib_model, params_inhib, ssvals_rtcb, 1.5, k_inhib_vals, rtc_model, ssvals_rtc, params_rtc)
+rtcr_auc = all_area_under_curve_rh(rtcr_inhib_model, params_inhib, ssvals_rtcr, 1.5, k_inhib_vals, rtc_model, ssvals_rtc, params_rtc)
+rtca_auc = all_area_under_curve_rh(rtca_inhib_model, params_inhib, ssvals_rtca, 1.5, k_inhib_vals, rtc_model, ssvals_rtc, params_rtc)
 
 a = 0.3
 colours_rtcb_rgba = ["rgba(126,92,148,$a)", "rgba(196,143,231,$a)", "rgba(228,187,255,$a)"]
@@ -137,15 +145,20 @@ savefig(p_rtcb_rh, "$PATHmay23_rtc/paper_plots/rtcb_rh_plusfill.svg")
 savefig(p_rtca_rh, "$PATHmay23_rtc/paper_plots/rtca_rh_plusfill.svg")
 savefig(p_rtcr_rh, "$PATHmay23_rtc/paper_plots/rtcr_rh_plusfill.svg")
 
-percentage_size_rtcb = bf_size(rtcb_inhib_model, ssvals_rtcb, 10., k_inhib_vals)
-percentage_size_rtca = bf_size(rtca_inhib_model, ssvals_rtca, 10., k_inhib_vals)
-percentage_size_rtcr = bf_size(rtcr_inhib_model, ssvals_rtcr, 10., k_inhib_vals)
+percentage_size_rtcb = bf_size(rtcb_inhib_model, ssvals_rtcb, params_inhib, 10., k_inhib_vals, rtc_model, ssvals_rtc, params_rtc)
+percentage_size_rtca = bf_size(rtca_inhib_model, ssvals_rtca, params_inhib, 10., k_inhib_vals, rtc_model, ssvals_rtc, params_rtc)
+percentage_size_rtcr = bf_size(rtcr_inhib_model, ssvals_rtcr, params_inhib, 10., k_inhib_vals, rtc_model, ssvals_rtc, params_rtc)
 
-rtcb_dec = protein_decrease(rtcb_inhib_model, ssvals_rtcb, :rtcb, 10., k_inhib_vals)
+
+ON_size_rtcb = ON_size(rtcb_inhib_model, ssvals_rtcb, params_inhib, 10., k_inhib_vals, rtc_model, ssvals_rtc, params_rtc)
+ON_size_rtca = ON_size(rtca_inhib_model, ssvals_rtca, params_inhib, 10., k_inhib_vals, rtc_model, ssvals_rtc, params_rtc)
+ON_size_rtcr = ON_size(rtcr_inhib_model, ssvals_rtcr, params_inhib, 10., k_inhib_vals, rtc_model, ssvals_rtc, params_rtc)
+
+rtcb_dec = protein_decrease(rtcb_inhib_model, ssvals_rtcb, params_inhib, :rtcb, 10., k_inhib_vals, rtc_model, ssvals_rtc, params_rtc)
 # rtcb_dec_rh = protein_decrease(rtc_inhib_mod_rtcb, :rh)
-rtca_dec = protein_decrease(rtca_inhib_model, ssvals_rtca, :rtca, 10., k_inhib_vals)
+rtca_dec = protein_decrease(rtca_inhib_model, ssvals_rtca, params_inhib, :rtca, 10., k_inhib_vals, rtc_model, ssvals_rtc, params_rtc)
 # rtca_dec_rh = protein_decrease(rtc_inhib_mod_rtca, :rh)
-rtcr_dec = protein_decrease(rtcr_inhib_model, ssvals_rtcr, :rtcr, 10., k_inhib_vals)
+rtcr_dec = protein_decrease(rtcr_inhib_model, ssvals_rtcr, params_inhib, :rtcr, 10., k_inhib_vals, rtc_model, ssvals_rtc, params_rtc)
 # rtcr_dec_rh = protein_decrease(rtc_inhib_mod_rtcr, :rh)
 
 
@@ -172,11 +185,12 @@ percs_rtcb = [100*(areas_rtcb[i]/areas_rtcb[1]) for i in range(2,4)]
 percs_rtcr = [100*(areas_rtcr[i]/areas_rtcr[1]) for i in range(2,4)]
 percs_rtca = [100*(areas_rtca[i]/areas_rtca[1]) for i in range(2,4)]
 
-rdf = DataFrame("data"=>["Rtc conc.","Bistability region","Growth Capacity"], 
-"rtcb"=>[round(av_dec_rtcb[3],digits=2),round(percentage_size_rtcb[3],digits=2),round(percs_rtcb[3],digits=2)],
-"rtcr"=>[round(av_dec_rtcr[3],digits=2),round(percentage_size_rtcr[3],digits=2),round(percs_rtcr[3],digits=2)],
-"rtca"=>[round(av_dec_rtca[3],digits=2),round(percentage_size_rtca[3],digits=2),round(percs_rtca[3],digits=2)])
+rdf = DataFrame("data"=>["Rtc conc.","Rtc-on region","Translational Capacity"], 
+"rtcb"=>[round(av_dec_rtcb[2],digits=2),round(ON_size_rtcb[3],digits=2),round(percs_rtcb[2],digits=2)],
+"rtcr"=>[round(av_dec_rtcr[2],digits=2),round(ON_size_rtcr[3],digits=2),round(percs_rtcr[2],digits=2)],
+"rtca"=>[round(av_dec_rtca[2],digits=2),round(ON_size_rtca[3],digits=2),round(percs_rtca[2],digits=2)])
 
+percs_rtcb
 
 p = plot([bar(rdf, x=:data, y=:rtcb, text=:rtcb, textposition="auto", name=String(:rtcb), marker_color=["#7e5c94ff","#7e5c94ff","#7e5c94ff"]),
 bar(rdf, x=:data, y=:rtcr, text=:rtcr, textposition="auto", name=String(:rtcr), marker_color=["#28726dff","#28726dff","#28726dff"]),
@@ -185,6 +199,6 @@ Layout(xaxis_tickangle=0,yaxis_title="% of original",yaxis=attr(showline=true,li
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",showlegend=false,font=attr(size=24, color="black", family="sans-serif")))
 
 
-savefig(p,"$PATHmay23_rtc/paper_plots/bar.svg")
+savefig(p,"/home/holliehindley/phd/rtc_model/paper_plots/plots/bar.svg")
 
 

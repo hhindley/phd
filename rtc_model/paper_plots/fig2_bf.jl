@@ -5,21 +5,37 @@ using PlotlyJS, ProgressBars
 
 PATH = "/home/holliehindley/phd"
 
-include("$PATH/rtc_model/models/rtc_orig.jl")
 include("$PATH/general_funcs/solving.jl")
+include("$PATH/rtc_model/models/rtc_orig.jl")
 include("$PATH/rtc_model/parameters/rtc_params.jl")
 include("$PATH/rtc_model/parameters/rtc_params_molecs.jl")
 include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
 
 
-br = get_br(rtc_model, ssvals_rtc_molec, params_rtc_molec, 1.5)
+br = get_br(rtc_model, ssvals_rtc, params_rtc, 1.5)
 bf = bf_point_df(br)
 df = create_br_df(br)
 kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
 kdam2 = findall(x->x==bf.kdam[2],df.kdam)[1]
+plot(scatter(x=df.kdam, y=df.rtcb, name="RtcB"))
+
+alpha = df.rt/kr_val # unitless
+fa = @. (1+alpha)^6/(L_val*((1+c_val*alpha)^6)+(1+alpha)^6)
+fa1 = scatter(x=df.kdam[1:kdam1], y=fa[1:kdam1], name="Fa", line=attr(width=6.5, color=:blue), showlegend=true, legendgroup=1, yaxis="y2")#, fill="tozeroy")
+fa2 = scatter(x=df.kdam[kdam1:kdam2], y=fa[kdam1:kdam2], name="", mode="lines", line=attr(width=6.5,dash="dash", color=:blue),showlegend=false, legendgroup=1, yaxis="y2")
+fa3 = scatter(x=df.kdam[kdam2:end], y=fa[kdam2:end], name="", line=attr(width=6.5, color=:blue),showlegend=false, legendgroup=1, yaxis="y2")
+
+p = plot(scatter(x=df.kdam, y=fa, name="Fa", line=attr(width=6.5, color=:blue)),
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="Fraction of active RtcR (μM)",
+yaxis=attr(showline=true,linewidth=3,linecolor="black"),yaxis2=attr(overlaying="y",showline=true,linewidth=3,linecolor="black",side="right"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))#, showlegend=false))
+
+savefig(p, "$PATH/rtc_model/paper_plots/plots/fa.svg")
+
 
 rtcb1, rtcb2, rtcb3 = plot_rtc_bf(df, kdam1, kdam2, :rtcb, "1", "b693ccff", "RtcB", "y1")
-rtcr1, rtcr2, rtcr3 = plot_rtc_bf(df, kdam1, kdam2, :rtcr, "2", "4ca7a2ff", "RtcR", "y2")
+rtcr1, rtcr2, rtcr3 = plot_rtc_bf(df, kdam1, kdam2, :rtcr, "2", "4ca7a2ff", "RtcR", "y1")
 rtca1, rtca2, rtca3 = plot_rtc_bf(df, kdam1, kdam2, :rtca, "3", "e48080ff", "RtcA", "y1")
 
 p = plot([rtcb1, rtcb2, rtcb3, rtcr1, rtcr2, rtcr3, rtca1, rtca2, rtca3],
@@ -42,6 +58,40 @@ xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="wh
 
 savefig(p, "$PATH/rtc_model/paper_plots/plots/rtc_proteins_doubley.svg")
 savefig(p1, "$PATH/may23_rtc/paper_plots/ribosomes.svg")
+
+
+
+p = plot([rtcb1, rtcb2, rtcb3, rtca1, rtca2, rtca3],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="Rtc protein (μM)",
+yaxis=attr(showline=true,linewidth=3,linecolor="black"),yaxis2=attr(overlaying="y",showline=true,linewidth=3,linecolor="black",side="right"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif"), showlegend=false))#, showlegend=false))
+
+p1 = plot([rtcr1, rtcr2, rtcr3, fa1, fa2, fa3],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="Rtc protein (μM)",
+yaxis=attr(showline=true,linewidth=3,linecolor="black"),yaxis2=attr(overlaying="y",showline=true,linewidth=3,linecolor="black",side="right"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif"), showlegend=false, yaxis_tickangle=77, yaxis2_tickangle=90))#, showlegend=false))
+
+p2 = plot([rh1, rh2, rh3],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="Ribosomes (μM)", 
+yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif"), showlegend=false))
+
+p3 = plot([rt1, rt2, rt3, rd1, rd2, rd3],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="Ribosomes (μM)", 
+yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif"), showlegend=false))
+
+
+savefig(p, "/home/holliehindley/phd/rtc_model/paper_plots/plots/rtc_proteinBA.svg")
+savefig(p1, "/home/holliehindley/phd/rtc_model/paper_plots/plots/rtcr_fa.svg")
+savefig(p2, "/home/holliehindley/phd/rtc_model/paper_plots/plots/rh.svg")
+savefig(p3, "/home/holliehindley/phd/rtc_model/paper_plots/plots/rt_rd.svg")
+
+
 
 # kdam_range1 = range(0,1.5,length=100)
 # kdam_range2 = range(1.5,0,length=100)

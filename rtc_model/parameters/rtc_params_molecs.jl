@@ -1,3 +1,6 @@
+colours =["#636EFA", "#EF553B", "#00CC96", "#AB63FA", "#FFA15A", "#19D3F3", "#FF6692", "#B6E880", "#FF97FF", "#FECB52", :blue]
+
+
 sf = 1e6/(6.022e23*1e-15) # multiply to go from molecs/cell to uM # uM molec-1
 
 kr_val_molec = kr_val/sf; # uM

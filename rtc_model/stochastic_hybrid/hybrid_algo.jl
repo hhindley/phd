@@ -17,34 +17,37 @@ function hybrid_algo(X0, options, prop, S; out=stdout)
     tint = options["tspan"]
     # sampleFreq = options["samplingFreq"]
 
-    sampleFreq = 1e-5
+    sampleFreq = 1e-2
+    freq(t) = t <= 2000 ? t/100 : log(1 + ((t-2000)^40))
 
-    freq(t) = (tf - t) * log(1 + t / tf)/10
+    # freq(t) = log(1 + (t^2))#/10)
 
     global t_save = sampleFreq
 
     s0 = t0 # system time
     Xs = X0
-    isStochReact = determine_partitioning(X0, prop, thresh, FixDetReact)
-
+    isStochReact = determine_partitioning(floor.(X0), prop, thresh, FixDetReact)
 
     global stochReact = false
     global savedat = false
 
     dump(0,t0,X0;output=out)
 
+    # Random.seed!(123)
+    nu = 1 
+
     while (tf > s0)
         exp1 = Exponential(1)
         global xi = rand(exp1, 1) # get random number from exp distribution
-
+        # @show xi
         X0[vidx(:totProp)] = 0 # set total propensities to zero 
-        
         tspan = [s0,tf]
 
         prob = ODEProblem(odefunction!, X0, tspan, isStochReact) # sets ode prob for deterministic reactions
 
         stochreact_cb = DiscreteCallback(conditionStoch, affect_term!, save_positions=(false,false)) # is called at every time step during integration, if total propensities are greater than the random number then terminate integration and set stochReact to true
         sampling_cb = DiscreteCallback(conditionSampling, affect_term!, save_positions=(false,false)) # is called at every time step during integration, if t is greater than sampling frequency then make savedat = true and terminate integration
+
 
         solu = solve(prob, Rodas4(), callback=CallbackSet(stochreact_cb, sampling_cb), save_everystep=false) # solve for deterministic reactions and stop when one of the callbacks is reached
 
@@ -58,15 +61,26 @@ function hybrid_algo(X0, options, prop, S; out=stdout)
         
         # @show s0, freq(s0)
         if savedat # if savedat is true 
-            dump(0,ss[end],X0;output=out)
-            global t_save = ss[end] + freq(ss[end]) # update t_save to be a distance from the current timestep 
+            # println(ss[end])
+            # dump(prop(X0),ss[end],X0;output=out)
+            dump(ss[end],ss[end],X0;output=out)
+
+            # dump(stochReact,ss[end],X0;output=out)
+            # dump([X0[vidx(:totProp)],xi,prop(X0)],ss[end],X0;output=out)
+
+            # @show X0[vidx(:totProp)]
+            global t_save = ss[end] +  freq(ss[end]) # update t_save to be a distance from the current timestep 
             savedat = false
         end
         
-        # @show X0[vidx(:totProp)]
+        
 
         if stochReact
-            a = prop(X0)
+            # X0_round = round.(X0)
+            # X0_round = ceil.(X0)
+            X0_floor = floor.(X0)
+            a = prop(X0_floor)
+            # a = prop(X0)
             a[.!isStochReact] .= 0 # zeros out propensities of deterministic reactions
 
             a0 = sum(a)
@@ -77,14 +91,18 @@ function hybrid_algo(X0, options, prop, S; out=stdout)
 
             X0 = X0 + Update' # updates the state variables by adding stoichiometric changes from the selected reaction
 
+            # dump(prop(X0),ss[end],X0;output=out)
+
+            nu += 1
+            # dump([nu,j],ss[end],X0;output=out)
+
             isStochReact = determine_partitioning(X0, prop, thresh, FixDetReact) # updates status of stochastic reactions based on new X0
             
-            dump(1,ss[end],X0;output=out)
 
             stochReact = false
         end
     end
-
+    
     
     return X0
 end
@@ -102,14 +120,15 @@ function determine_partitioning(u, prop, thresh, FixDetReact)
 end
 # dump(0,t0,X0;output=out)
 function dump(event, time, state; output=stdout)
-    rh = state[vidx(:rh)]
+    # rh = state[vidx(:rh)]
 
-    print(output, "$event\t$time\t")
-
-    states = state[1:indV.nrOfItems-1]
-    for s in states 
-        print(output, "$s\t")
-    end
+    print(output, "$time\t$(state[vidx(:rm_a)])\t$(state[vidx(:rh)])")
+#     print(output, "$event\t$time\t")
+#     states = state[1:indV.nrOfItems-1]
+# # 
+#     for s in states 
+#         print(output, "$s\t")
+#     end
     print(output, "\n")
     flush(output)
 end
@@ -122,12 +141,6 @@ function odefunction!(du, u, isStochReact, t) # dont need to pass parameters her
     a0_s = sum(a[isStochReact]) # total reaction propensities for stochastic reactions
 
     a_d = a .* .~isStochReact # .~ flips the boolean array so true becomes false and vice versa and then sets the stochastic reactions to zero so they are not counted as deterministic 
-
-    # dfposdt = []
-    # if length(u) > indV.nrOfItems # why would u be bigger than number of species? 
-    #     fpos = u[(indV.nrOfItems + 1):end]
-    #     dfposdt = ones(length(fpos))
-    # end
 
     dySpecies = S*a_d # calculates the derivatives of the deterministic reactions by doing the dot product (for each species (i), multiply each stoichiometric coeff in the ith row of S with the corresponding propensity in a_d and then sum the products)
     # dySpecies is a vector of the rate of change of all species for deterministic reactions (du in normal ode models)

@@ -32,11 +32,13 @@ ku_gm_val = 1. # min-1
 kc_val = 0.6 # kc (uM-1) is the binding constant (kb/ku) (uM-1) for ribosomes to mRNAs - kc/sf = uM-1 
 k_diss_val = 0.006 # min-1
 
-k_inhib1_val = 1
+k_inhib1_val = 1 #0.05
 k_inhib2_val = 0.0025
 inhib_val = 0.1
 k_inhib1a_val = 0.3
 k_inhib1b_val = 0.5
+
+# k_inhib_vals = [0.1, 0.15, 0.2]
 
 k_inhib_vals = [k_inhib1a_val, k_inhib1b_val, k_inhib1_val]
 

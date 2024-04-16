@@ -202,6 +202,7 @@ end
 
 function different_levels_inhibition(rtc_inhib_mod, init_inhib, params_br_inhib, k_inhib1_val, kdam_max)
     params = deepcopy(params_br_inhib)
+    # params[inhib] = k_inhib1_val
     params[k_inhib1] = k_inhib1_val
     br = get_br(rtc_inhib_mod, init_inhib, params, kdam_max)
     bf = bf_point_df_inhib(br)
@@ -310,6 +311,7 @@ function area_under_curve(xvals,yvals)
     result, error = quadgk(f, a, b)
     return @LArray [x,y,f,result] (:x,:y,:f1,:result)
 end
+
 function creating_rtc_inhib_plot(rtc_model, ssvals_rtc, params_rtc, rtc_inhib_mod, ssvals_inhib, params_inhib, specie, kdam_max, colours, k_inhib_vals)
     br = get_br(rtc_model, ssvals_rtc, params_rtc, kdam_max)
     bf0 = bf_point_df(br)
@@ -317,16 +319,16 @@ function creating_rtc_inhib_plot(rtc_model, ssvals_rtc, params_rtc, rtc_inhib_mo
     kdam01 = findall(x->x==bf0.kdam[1],df0.kdam)[1]
     kdam02 = findall(x->x==bf0.kdam[2],df0.kdam)[1]
 
-    rtcb_01, rtcb_02, rtcb_03 = plot_rtc_bf(df0, kdam01, kdam02, specie, "1", "969696ff", "orig")
+    rtcb_01, rtcb_02, rtcb_03 = plot_rtc_bf(df0, kdam01, kdam02, specie, "1", "969696ff", "orig", 1)
 
     bf, df, kdam1, kdam2 = different_levels_inhibition(rtc_inhib_mod, ssvals_inhib, params_inhib, k_inhib_vals[1], kdam_max)
-    rtcb1, rtcb2, rtcb3 = plot_rtc_bf(df, kdam1, kdam2, specie, "2", colours[1], "least inhib")
+    rtcb1, rtcb2, rtcb3 = plot_rtc_bf(df, kdam1, kdam2, specie, "2", colours[1], "least inhib", 1)
 
     bfa, dfa, kdam1a, kdam2a = different_levels_inhibition(rtc_inhib_mod, ssvals_inhib, params_inhib, k_inhib_vals[2], kdam_max)
-    rtcb1a, rtcb2a, rtcb3a = plot_rtc_bf(dfa, kdam1a, kdam2a, specie, "3", colours[2], "mid inhib")
+    rtcb1a, rtcb2a, rtcb3a = plot_rtc_bf(dfa, kdam1a, kdam2a, specie, "3", colours[2], "mid inhib", 1)
 
     bfb, dfb, kdam1b, kdam2b = different_levels_inhibition(rtc_inhib_mod, ssvals_inhib, params_inhib, k_inhib_vals[3], kdam_max)
-    rtcb1b, rtcb2b, rtcb3b = plot_rtc_bf(dfb, kdam1b, kdam2b, specie, "4", colours[3], "most inhib")
+    rtcb1b, rtcb2b, rtcb3b = plot_rtc_bf(dfb, kdam1b, kdam2b, specie, "4", colours[3], "most inhib", 1)
     return [rtcb_01, rtcb_02, rtcb_03, rtcb1, rtcb2, rtcb3, rtcb1a, rtcb2a, rtcb3a, rtcb1b, rtcb2b, rtcb3b]
 end
 
@@ -387,7 +389,33 @@ function bf_size(rtc_inhib_mod, ssvals_inhib, params_inhib, kdam_max, k_inhib_va
     s2 = bfa.kdam[1]-bfa.kdam[2]
     s3 = bfb.kdam[1]-bfb.kdam[2]
 
-    rtcb_sizes = [s0, s2, s3, s1]
+    rtcb_sizes = [s0, s1, s2, s3]
+    percentage_of_original_size = [100*(rtcb_sizes[i]/rtcb_sizes[1]) for i in range(2,4)]
+    # percentage_decrease_rtcb = [100*((rtcb_sizes[i]-rtcb_sizes[1])/rtcb_sizes[1]) for i in range(2,4)]
+    return percentage_of_original_size
+    # return percentage_decrease_rtcb
+end
+
+function ON_size(rtc_inhib_mod, ssvals_inhib, params_inhib, kdam_max, k_inhib_vals, rtc_model, ssvals_rtc, params_rtc)
+
+    br = get_br(rtc_model, ssvals_rtc, params_rtc, kdam_max)
+    bf0 = bf_point_df(br)
+    df0 = create_br_df(br)
+    kdam01 = findall(x->x==bf0.kdam[1],df0.kdam)[1]
+    kdam02 = findall(x->x==bf0.kdam[2],df0.kdam)[1]
+
+    bf, df, kdam1, kdam2 = different_levels_inhibition(rtc_inhib_mod, ssvals_inhib, params_inhib, k_inhib_vals[1], kdam_max)
+
+    bfa, dfa, kdam1a, kdam2a = different_levels_inhibition(rtc_inhib_mod, ssvals_inhib, params_inhib, k_inhib_vals[2], kdam_max)
+
+    bfb, dfb, kdam1b, kdam2b = different_levels_inhibition(rtc_inhib_mod, ssvals_inhib, params_inhib, k_inhib_vals[3], kdam_max)
+
+    s0 = bf0.kdam[1]
+    s1 = bf.kdam[1]
+    s2 = bfa.kdam[1]
+    s3 = bfb.kdam[1]
+
+    rtcb_sizes = [s0, s1, s2, s3]
     percentage_of_original_size = [100*(rtcb_sizes[i]/rtcb_sizes[1]) for i in range(2,4)]
     # percentage_decrease_rtcb = [100*((rtcb_sizes[i]-rtcb_sizes[1])/rtcb_sizes[1]) for i in range(2,4)]
     return percentage_of_original_size
