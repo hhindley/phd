@@ -1,8 +1,8 @@
 using CSV, TotalLeastSquares, Statistics, BayesOpt, BlackBoxOptim, PyCall, StaticArrays
-include("$PATHrtc_models/Oct2022_model/rtc_model.jl")
-include("$PATHrtc_models/sol_species_funcs.jl")
-include("$PATHrtc_models/params_init_tspan.jl")
-include("$PATHParam_inf/inf_setup.jl")
+include("$PATH/rtc_models/Oct2022_model/rtc_model.jl")
+include("$PATH/rtc_models/sol_species_funcs.jl")
+include("$PATH/rtc_models/params_init_tspan.jl")
+include("$PATH/Param_inf/inf_setup.jl")
 
 
 csv_a_conc = DataFrame(CSV.File("$PATHdata/df_final_conc_a.csv"))

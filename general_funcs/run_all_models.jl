@@ -94,3 +94,21 @@ for (i,name) in zip(without_damage,model_names)
         PlotlyBase.to_html(io, i.plot)
     end
 end
+
+using ProgressBars
+
+include("$PATH/rtc_model/models/rtc_orig.jl")
+
+params1 = deepcopy(params_rtc)
+params1[kin] = .0001
+
+
+kdam_range = range(0,50,length=100)
+res = sweep_param(rtc_model, ssvals_rtc, params1, kdam_range, kdam, species_rtc)
+
+plot(scatter(x=kdam_range, y=res.rh), Layout(xaxis_title="kdam", yaxis_title="rh"))
+
+# plot(scatter(x=kdam_range, y=repeat([params_rtc[lam]], length(kdam_range))))
+
+lam1 = @. params_rtc[gr_c]*res.rh*params_rtc[g_max]*params_rtc[atp]/(params_rtc[θtlr]+params_rtc[atp])
+plot(scatter(x=kdam_range, y=lam1))

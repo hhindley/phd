@@ -147,11 +147,15 @@ percentage_size_rtcb = bf_size(rtcb_trna_inhib_model, ssvals_trna_rtcb_inhib, pa
 percentage_size_rtca = bf_size(rtca_trna_inhib_model, ssvals_trna_rtca_inhib, params_trna_inhib, 20., k_trna_inhib_vals, rtc_trna_model, ssvals_trna, params_trna)
 percentage_size_rtcr = bf_size(rtcr_trna_inhib_model, ssvals_trna_rtcr_inhib, params_trna_inhib, 20., k_trna_inhib_vals, rtc_trna_model, ssvals_trna, params_trna)
 
-rtcb_dec = protein_decrease(rtcb_trna_inhib_model, ssvals_trna_rtcb, params_trna_inhib, :rtcb, 20., k_trna_inhib_vals, rtc_trna_model, ssvals_trna, params_trna)
+ON_size_rtcb = ON_size(rtcb_trna_inhib_model, ssvals_trna_rtcb_inhib, params_trna_inhib, 20., k_trna_inhib_vals, rtc_trna_model, ssvals_trna, params_trna)
+ON_size_rtca = ON_size(rtca_trna_inhib_model, ssvals_trna_rtca_inhib, params_trna_inhib, 20., k_trna_inhib_vals, rtc_trna_model, ssvals_trna, params_trna)
+ON_size_rtcr = ON_size(rtcr_trna_inhib_model, ssvals_trna_rtcr_inhib, params_trna_inhib, 20., k_trna_inhib_vals, rtc_trna_model, ssvals_trna, params_trna)
+
+rtcb_dec = protein_decrease(rtcb_trna_inhib_model, ssvals_trna_rtcb_inhib, params_trna_inhib, :rtcb, 20., k_trna_inhib_vals, rtc_trna_model, ssvals_trna, params_trna)
 # rtcb_dec_rh = protein_decrease(rtc_inhib_mod_rtcb, :rh)
-rtca_dec = protein_decrease(rtca_trna_inhib_model, ssvals_trna_rtca, params_trna_inhib, :rtca, 20., k_trna_inhib_vals, rtc_trna_model, ssvals_trna, params_trna)
+rtca_dec = protein_decrease(rtca_trna_inhib_model, ssvals_trna_rtca_inhib, params_trna_inhib, :rtca, 20., k_trna_inhib_vals, rtc_trna_model, ssvals_trna, params_trna)
 # rtca_dec_rh = protein_decrease(rtc_inhib_mod_rtca, :rh)
-rtcr_dec = protein_decrease(rtcr_trna_inhib_model, ssvals_trna_rtcr, params_trna_inhib, :rtcr, 20., k_trna_inhib_vals, rtc_trna_model, ssvals_trna, params_trna)
+rtcr_dec = protein_decrease(rtcr_trna_inhib_model, ssvals_trna_rtcr_inhib, params_trna_inhib, :rtcr, 20., k_trna_inhib_vals, rtc_trna_model, ssvals_trna, params_trna)
 # rtcr_dec_rh = protein_decrease(rtc_inhib_mod_rtcr, :rh)
 
 
@@ -179,9 +183,9 @@ percs_rtcr = [100*(areas_rtcr[i]/areas_rtcr[1]) for i in range(2,4)]
 percs_rtca = [100*(areas_rtca[i]/areas_rtca[1]) for i in range(2,4)]
 
 rdf = DataFrame("data"=>["Rtc conc.","Bistability region","Growth Capacity"], 
-"rtcb"=>[round(av_dec_rtcb[3],digits=2),round(percentage_size_rtcb[3],digits=2),round(percs_rtcb[3],digits=2)],
-"rtcr"=>[round(av_dec_rtcr[3],digits=2),round(percentage_size_rtcr[3],digits=2),round(percs_rtcr[3],digits=2)],
-"rtca"=>[round(av_dec_rtca[3],digits=2),round(percentage_size_rtca[3],digits=2),round(percs_rtca[3],digits=2)])
+"rtcb"=>[round(av_dec_rtcb[3],digits=2),round(ON_size_rtcb[3],digits=2),round(percs_rtcb[3],digits=2)],
+"rtcr"=>[round(av_dec_rtcr[3],digits=2),round(ON_size_rtcr[3],digits=2),round(percs_rtcr[3],digits=2)],
+"rtca"=>[round(av_dec_rtca[3],digits=2),round(ON_size_rtca[3],digits=2),round(percs_rtca[3],digits=2)])
 
 
 p = plot([bar(rdf, x=:data, y=:rtcb, text=:rtcb, textposition="auto", name=String(:rtcb), marker_color=["#7e5c94ff","#7e5c94ff","#7e5c94ff"]),
@@ -191,6 +195,6 @@ Layout(xaxis_tickangle=0,yaxis_title="% of original",yaxis=attr(showline=true,li
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",showlegend=false,font=attr(size=24, color="black", family="sans-serif")))
 
 
-savefig(p,"$PATHrtc_model/paper_plots/tRNA/bar.svg")
+savefig(p,"$PATH/rtc_model/paper_plots/tRNA/bar.svg")
 
 

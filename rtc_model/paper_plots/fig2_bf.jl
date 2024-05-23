@@ -44,9 +44,13 @@ yaxis_title="Rtc protein (μM)",
 yaxis=attr(showline=true,linewidth=3,linecolor="black"),yaxis2=attr(overlaying="y",showline=true,linewidth=3,linecolor="black",side="right"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))#, showlegend=false))
 
-rh1, rh2, rh3 = plot_rtc_bf(df, kdam1, kdam2, :rh, "1", "ffd30cff", "RtcB", "y1")
-rt1, rt2, rt3 = plot_rtc_bf(df, kdam1, kdam2, :rt, "2", "e96100ff", "rt", "y1")
-rd1, rd2, rd3 = plot_rtc_bf(df, kdam1, kdam2, :rd, "3", "ac0606ff", "rd", "y1")
+rh1, rh2, rh3 = plot_rtc_bf(df, kdam1, kdam2, :rh, "4", "ffd30cff", "rh", "y1")
+rt1, rt2, rt3 = plot_rtc_bf(df, kdam1, kdam2, :rt, "5", "e96100ff", "rt", "y1")
+rd1, rd2, rd3 = plot_rtc_bf(df, kdam1, kdam2, :rd, "6", "ac0606ff", "rd", "y1")
+
+rma1, rma2, rma3 = plot_rtc_bf(df, kdam1, kdam2, :rm_a, "7", "e48080ff", "rma", "y1")
+rmb1, rmb2, rmb3 = plot_rtc_bf(df, kdam1, kdam2, :rm_b, "8", "b693ccff", "rmb", "y1")
+rmr1, rmr2, rmr3 = plot_rtc_bf(df, kdam1, kdam2, :rm_r, "9", "4ca7a2ff", "rmr", "y2")
 
 p1 = plot([rh1, rh2, rh3, rt1, rt2, rt3, rd1, rd2, rd3],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
@@ -59,40 +63,67 @@ xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="wh
 savefig(p, "$PATH/rtc_model/paper_plots/plots/rtc_proteins_doubley.svg")
 savefig(p1, "$PATH/may23_rtc/paper_plots/ribosomes.svg")
 
-
+margins = attr(l=180,r=100,t=100,b=100)
+axes_linewidth = 5.5
+axes_title_fs = 34
+tick_fs = attr(size=38)
 
 p = plot([rtcb1, rtcb2, rtcb3, rtca1, rtca2, rtca3],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="Rtc protein (μM)",
-yaxis=attr(showline=true,linewidth=3,linecolor="black"),yaxis2=attr(overlaying="y",showline=true,linewidth=3,linecolor="black",side="right"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
-xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif"), showlegend=false))#, showlegend=false))
+yaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,1],tickvals=[0,0.5,1],tickfont=tick_fs,automargin=true),xaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black", range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs,automargin=true),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=axes_title_fs, color="black", family="sans-serif"), showlegend=false, margin=margins))#, showlegend=false))
 
+#tickvals=[0,5e-4,1e-3,1.5e-3]
 p1 = plot([rtcr1, rtcr2, rtcr3, fa1, fa2, fa3],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="Rtc protein (μM)",
-yaxis=attr(showline=true,linewidth=3,linecolor="black"),yaxis2=attr(overlaying="y",showline=true,linewidth=3,linecolor="black",side="right"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
-xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif"), showlegend=false, yaxis_tickangle=77, yaxis2_tickangle=90))#, showlegend=false))
+yaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",tickformat="0.1e",range=[0,1.5e-3],tickvals=[0,5e-4,1e-3,1.5e-3],tickfont=tick_fs,automargin=true),yaxis2=attr(overlaying="y",showline=true,linewidth=axes_linewidth,linecolor="black",side="right",range=[0,1],tickvals=[0,0.5,1],tickfont=tick_fs,automargin=true),xaxis=attr(showline=true,linewidth=3,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs,automargin=true),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=axes_title_fs, color="black", family="sans-serif"), showlegend=false,margin=margins))# yaxis_tickangle=77, yaxis2_tickangle=90))#, showlegend=false))
+
+p1 = plot([rtcr1, rtcr2, rtcr3],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="Rtc protein (μM)",
+yaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",tickformat="0.1e",tickfont=tick_fs,automargin=true),xaxis=attr(showline=true,linewidth=3,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=axes_title_fs, color="black", family="sans-serif"), showlegend=false))# yaxis_tickangle=77, yaxis2_tickangle=90))#, showlegend=false))
+
 
 p2 = plot([rh1, rh2, rh3],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="Ribosomes (μM)", 
-yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
-xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif"), showlegend=false))
+yaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",tickfont=tick_fs,range=[0,19],tickvals=[0,5,10,15]),xaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",tickfont=tick_fs,range=[0,1.5],tickvals=[0,0.5,1,1.5]),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=axes_title_fs, color="black", family="sans-serif"), showlegend=false, margin=margins))
 
 p3 = plot([rt1, rt2, rt3, rd1, rd2, rd3],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="Ribosomes (μM)", 
-yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
-xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif"), showlegend=false))
+yaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,17.1],tickvals=[0,5,10,15],tickfont=tick_fs),xaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",tickfont=tick_fs,range=[0,1.5],tickvals=[0,0.5,1,1.5]),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=axes_title_fs, color="black", family="sans-serif"), showlegend=false, margin=margins))
 
+p4 = plot([rma1, rma2, rma3, rmb1, rmb2, rmb3],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="mA mB (μM)", 
+yaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",tickfont=tick_fs,range=[0,0.0004], tickvals=[0, 2e-4, 4e-4]),xaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",tickfont=tick_fs,range=[0,1.5],tickvals=[0,0.5,1,1.5]),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=axes_title_fs, color="black", family="sans-serif"), showlegend=false, margin=margins))
 
 savefig(p, "/home/holliehindley/phd/rtc_model/paper_plots/plots/rtc_proteinBA.svg")
 savefig(p1, "/home/holliehindley/phd/rtc_model/paper_plots/plots/rtcr_fa.svg")
 savefig(p2, "/home/holliehindley/phd/rtc_model/paper_plots/plots/rh.svg")
 savefig(p3, "/home/holliehindley/phd/rtc_model/paper_plots/plots/rt_rd.svg")
+savefig(p4, "/home/holliehindley/phd/rtc_model/paper_plots/plots/mrna.svg")
+
+
+p = plot([rma1, rma2, rma3, rmb1, rmb2, rmb3, rmr1, rmr2, rmr3, rtcb1, rtcb2, rtcb3, rtcr1, rtcr2, rtcr3, rtca1, rtca2, rtca3, rh1, rh2, rh3, rd1, rd2, rd3, rt1, rt2, rt3],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="Rtc protein (μM)",
+yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))#, showlegend=false))
 
 
 
+open("/home/holliehindley/phd/rtc_model/paper_plots/plots/bistab.html", "w") do io
+    PlotlyBase.to_html(io, p.plot)
+end
 # kdam_range1 = range(0,1.5,length=100)
 # kdam_range2 = range(1.5,0,length=100)
 # res = numerical_bistability_analysis(rtc_model, params_rtc, rtc_init, :rh, species_rtc, kdam_range1)

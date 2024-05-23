@@ -5,21 +5,25 @@ using PlotlyJS, ProgressBars
 
 PATH = "/home/holliehindley/phd"
 
-include("$PATH/rtc_model/models/rtc_orig.jl")
 include("$PATH/general_funcs/solving.jl")
+include("$PATH/rtc_model/models/rtc_orig.jl")
 include("$PATH/rtc_model/parameters/rtc_params.jl")
 include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
 
+margins = attr(l=180,r=100,t=100,b=100)
+axes_linewidth = 5.5
+axes_title_fs = 34
+tick_fs = attr(size=38)
 
 
-wr_range = 10 .^ range(log10(2e-7),log10(2e-6),length=4)
+wr_range = [2e-7,5e-7,1e-6,2e-6]#10 .^ range(log10(2e-7),log10(2e-6),length=4)
 # wr_range = 10 .^ range(log10(1e-8),log10(1e-4),length=3)
 
 bfs=[]; dfs=[];
 copyparams = deepcopy(params_rtc)
 for i in ProgressBar(wr_range)
     copyparams[ω_r] = i
-    br = get_br(rtc_model, ssvals_rtc, copyparams, 3.)
+    br = get_br(rtc_model, ssvals_rtc, copyparams, 2.5)
     bf = bf_point_df(br)
     df = create_br_df(br)
     push!(bfs, bf)
@@ -31,31 +35,36 @@ wr_rtcb1, wr_rtcb2, wr_rtcb3 = plot_rtc_bf(dfs[1], findall(x->x==bfs[1].kdam[1],
 wr_rtcb1a, wr_rtcb2a, wr_rtcb3a = plot_rtc_bf(dfs[2], findall(x->x==bfs[2].kdam[1],dfs[2].kdam)[1], findall(x->x==bfs[2].kdam[2],dfs[2].kdam)[1], :rtcb, "2", "ba55d3ff", "ω<sub>r</sub> = $(round.(wr_range[2]; sigdigits=2))", "1")
 wr_rtcb1b, wr_rtcb2b, wr_rtcb3b = plot_rtc_bf(dfs[3], findall(x->x==bfs[3].kdam[1],dfs[3].kdam)[1], findall(x->x==bfs[3].kdam[2],dfs[3].kdam)[1], :rtcb, "3", "800080ff", "ω<sub>r</sub> = $(round.(wr_range[3]; sigdigits=2))", "1")
 
-wr_rtcb_nonbs = scatter(x=dfs[4].kdam,y=dfs[4].rtcb,showlegend=true,line=attr(width=6.5, color="#c1c1c1ff"), name="ω<sub>r</sub> = $(round.(wr_range[4]; sigdigits=2))", legendgroup="3")
-wr_rtcb_nonbs1 = scatter(x=dfs[1].kdam,y=dfs[1].rtcb,showlegend=true,line=attr(width=6.5, color="#c1c1c1ff"), name="ω<sub>r</sub> = $(round.(wr_range[1]; sigdigits=2))", legendgroup="3")
+wr_rtcb_nonbs = scatter(x=dfs[4].kdam,y=dfs[4].rtcb,showlegend=true,line=attr(width=9, color="#c1c1c1ff"), name="ω<sub>r</sub> = $(round.(wr_range[4]; sigdigits=2))", legendgroup="3")
+wr_rtcb_nonbs1 = scatter(x=dfs[1].kdam,y=dfs[1].rtcb,showlegend=true,line=attr(width=9, color="#c1c1c1ff"), name="ω<sub>r</sub> = $(round.(wr_range[1]; sigdigits=2))", legendgroup="3")
 wr = plot([wr_rtcb1, wr_rtcb2, wr_rtcb3, wr_rtcb1a, wr_rtcb2a, wr_rtcb3a, wr_rtcb1b, wr_rtcb2b, wr_rtcb3b, wr_rtcb_nonbs],#wr_rtcb1b, wr_rtcb2b, wr_rtcb3b],
-Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
-yaxis_title="RtcB (μM)", 
-yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
-xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif"), showlegend=false))
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", yaxis_title="RtcB (μM)", 
+yaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs,automargin=true),xaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs,automargin=true),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=axes_title_fs, color="black", family="sans-serif"), showlegend=false, margin=margins))
 
 wr = plot([wr_rtcb1, wr_rtcb2, wr_rtcb3, wr_rtcb1a, wr_rtcb2a, wr_rtcb3a, wr_rtcb_nonbs],#wr_rtcb1b, wr_rtcb2b, wr_rtcb3b],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="RtcB (μM)", 
-yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
-xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
+yaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs,automargin=true),xaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs,automargin=true),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=axes_title_fs, color="black", family="sans-serif"), showlegend=false, margin=margins))
+
+wr = plot([wr_rtcb1, wr_rtcb2, wr_rtcb3, wr_rtcb1a, wr_rtcb2a, wr_rtcb3a, wr_rtcb_nonbs, wr_rtcb1b, wr_rtcb2b, wr_rtcb3b],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="RtcB (μM)", 
+yaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs,automargin=true),xaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,2.5],tickvals=[0,0.5,1,1.5,2,2.5],tickfont=tick_fs,automargin=true),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=axes_title_fs, color="black", family="sans-serif"), showlegend=false, margin=margins))
 
 PlotlyJS.savefig(wr, "/home/holliehindley/phd/rtc_model/paper_plots/plots/wr_rtcb.svg")
 
 
 
-wab_range = 10 .^range(log10(2e-6),log10(2e-5),length=4)
+wab_range = [2e-6,5e-6,1e-5,2e-5]# 10 .^range(log10(2e-6),log10(2e-5),length=4)
 
 bfs=[]; dfs=[];
 copyparams = deepcopy(params_rtc)
 for i in ProgressBar(wab_range)
     copyparams[ω_ab] = i
-    br = get_br(rtc_model, ssvals_rtc, copyparams, 3.)
+    br = get_br(rtc_model, ssvals_rtc, copyparams, 2.5)
     bf = bf_point_df(br)
     df = create_br_df(br)
     push!(bfs, bf)
@@ -66,21 +75,26 @@ wab_rtcb1, wab_rtcb2, wab_rtcb3 = plot_rtc_bf(dfs[1], findall(x->x==bfs[1].kdam[
 wab_rtcb1a, wab_rtcb2a, wab_rtcb3a = plot_rtc_bf(dfs[2], findall(x->x==bfs[2].kdam[1],dfs[2].kdam)[1], findall(x->x==bfs[2].kdam[2],dfs[2].kdam)[1], :rtcb, "2", "ba55d3ff", "ω<sub>ab</sub> = $(round.(wab_range[2]; sigdigits=2))", "1")
 wab_rtcb1b, wab_rtcb2b, wab_rtcb3b = plot_rtc_bf(dfs[3], findall(x->x==bfs[3].kdam[1],dfs[3].kdam)[1], findall(x->x==bfs[3].kdam[2],dfs[3].kdam)[1], :rtcb, "3", "800080ff", "ω<sub>ab</sub> = $(round.(wab_range[3]; sigdigits=2))", "1")
 
-wab_rtcb_nonbs = scatter(x=dfs[4].kdam,y=dfs[4].rtcb,showlegend=true,line=attr(width=6.5, color="#c1c1c1ff"), name="ω<sub>ab</sub> = $(round.(wab_range[4]; sigdigits=2))", legendgroup="3")
+wab_rtcb_nonbs = scatter(x=dfs[4].kdam,y=dfs[4].rtcb,showlegend=true,line=attr(width=9, color="#c1c1c1ff"), name="ω<sub>ab</sub> = $(round.(wab_range[4]; sigdigits=2))", legendgroup="3")
 
 wab = plot([wab_rtcb1, wab_rtcb2, wab_rtcb3,wab_rtcb1a, wab_rtcb2a, wab_rtcb3a, wab_rtcb1b, wab_rtcb2b, wab_rtcb3b, wab_rtcb_nonbs],#wab_rtcb_nonbs],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="RtcB (μM)", 
-yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
-xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif"), showlegend=false))
+yaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs,automargin=true),xaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs,automargin=true),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=axes_title_fs, color="black", family="sans-serif"), showlegend=false, margin=margins))
 
+wab = plot([wab_rtcb1, wab_rtcb2, wab_rtcb3,wab_rtcb1a, wab_rtcb2a, wab_rtcb3a, wab_rtcb1b, wab_rtcb2b, wab_rtcb3b, wab_rtcb_nonbs],#wab_rtcb_nonbs],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="RtcB (μM)", 
+yaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs,automargin=true),xaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,2.5],tickvals=[0,0.5,1,1.5,2,2.5],tickfont=tick_fs,automargin=true),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=axes_title_fs, color="black", family="sans-serif"), showlegend=false, margin=margins))
 
 
 
 PlotlyJS.savefig(wab, "/home/holliehindley/phd/rtc_model/paper_plots/plots/wab_rtcb.svg")
 
 
-atp_range = range(1000,stop=5000,length=4)
+atp_range = [1000,2500,3500,5000]#range(1000,stop=5000,length=4)
 
 bfs=[]; dfs=[];
 copyparams = deepcopy(params_rtc)
@@ -102,20 +116,19 @@ atp_rtcb1c, atp_rtcb2c, atp_rtcb3c = plot_rtc_bf(dfs[4], findall(x->x==bfs[4].kd
 atp_p = plot([atp_rtcb1, atp_rtcb2, atp_rtcb3, atp_rtcb1a, atp_rtcb2a, atp_rtcb3a, atp_rtcb1b, atp_rtcb2b, atp_rtcb3b, atp_rtcb1c, atp_rtcb2c, atp_rtcb3c],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="RtcB (μM)", 
-yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
-xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif"), showlegend=false))
-
-
+yaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,1],tickvals=[0,0.5,1],tickfont=tick_fs,automargin=true),xaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs,automargin=true),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=axes_title_fs, color="black", family="sans-serif"), showlegend=false, margin=margins))
 PlotlyJS.savefig(atp_p, "/home/holliehindley/phd/rtc_model/paper_plots/plots/atp_rtcb.svg")
 
 
-lam_range = range(0.01,stop=0.02,length=4)
+lam_range = [0.01,0.013,0.015,0.02]#range(0.01,stop=0.02,length=4)
+# lam_range = range(0.01,stop=0.03,length=4)
 
 bfs=[]; dfs=[];
 copyparams = deepcopy(params_rtc)
 for i in ProgressBar(lam_range)
     copyparams[lam] = i
-    br = get_br(rtc_model, ssvals_rtc, copyparams, 5.)
+    br = get_br(rtc_model, ssvals_rtc, copyparams, 1.5)
     bf = bf_point_df(br)
     df = create_br_df(br)
     push!(bfs, bf)
@@ -128,16 +141,105 @@ lam_rtcb1a, lam_rtcb2a, lam_rtcb3a = plot_rtc_bf(dfs[2], findall(x->x==bfs[2].kd
 lam_rtcb1b, lam_rtcb2b, lam_rtcb3b = plot_rtc_bf(dfs[3], findall(x->x==bfs[3].kdam[1],dfs[3].kdam)[1], findall(x->x==bfs[3].kdam[2],dfs[3].kdam)[1], :rtcb, "3", "800080ff", "λ = $(round.(lam_range[3]; sigdigits=2))", "1")
 lam_rtcb1c, lam_rtcb2c, lam_rtcb3c = plot_rtc_bf(dfs[4], findall(x->x==bfs[4].kdam[1],dfs[4].kdam)[1], findall(x->x==bfs[4].kdam[2],dfs[4].kdam)[1], :rtcb, "3", "800080ff", "λ = $(round.(lam_range[4]; sigdigits=2))", "1")
 
-lam_rtcb_nonbs = scatter(x=dfs[1].kdam,y=dfs[1].rtcb,showlegend=true,line=attr(width=6.5, color="#c1c1c1ff"), name="λ = $(round.(lam_range[1]; sigdigits=2))", legendgroup="1")
+lam_rtcb_nonbs = scatter(x=dfs[1].kdam,y=dfs[1].rtcb,showlegend=true,line=attr(width=9, color="#c1c1c1ff"), name="λ = $(round.(lam_range[1]; sigdigits=2))", legendgroup="1")
+lam_rtcb_nonbs1 = scatter(x=dfs[4].kdam,y=dfs[4].rtcb,showlegend=true,line=attr(width=9, color="#c1c1c1ff"), name="λ = $(round.(lam_range[1]; sigdigits=2))", legendgroup="1")
 
 lam_p = plot([lam_rtcb_nonbs, lam_rtcb1a, lam_rtcb2a, lam_rtcb3a, lam_rtcb1b, lam_rtcb2b, lam_rtcb3b, lam_rtcb1c, lam_rtcb2c, lam_rtcb3c],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="RtcB (μM)", 
-yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
-xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif"), showlegend=false))
+yaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,3],tickvals=[0,1,2,3],tickfont=tick_fs,automargin=true),xaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs,automargin=true),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=axes_title_fs, color="black", family="sans-serif"), showlegend=false, margin=margins))
+
+lam_p = plot([lam_rtcb_nonbs, lam_rtcb1a, lam_rtcb2a, lam_rtcb3a, lam_rtcb1b, lam_rtcb2b, lam_rtcb3b, lam_rtcb1c, lam_rtcb2c, lam_rtcb3c],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="RtcB (μM)", 
+yaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,3],tickvals=[0,1,2,3],tickfont=tick_fs,automargin=true),xaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,4],tickvals=[0,1,2,3,4],tickfont=tick_fs,automargin=true),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=axes_title_fs, color="black", family="sans-serif"), showlegend=false, margin=margins))
 
 PlotlyJS.savefig(lam_p, "/home/holliehindley/phd/rtc_model/paper_plots/plots/lam_rtcb.svg")
 
+
+
+kin_range = [1e-4, 1.8e-4, 2.4e-4, 3e-4]#range(0.0001,stop=0.0003,length=4)
+# lam_range = range(0.01,stop=0.03,length=4)
+
+bfs=[]; dfs=[];
+copyparams = deepcopy(params_rtc)
+for i in ProgressBar(kin_range)
+    copyparams[kin] = i
+    br = get_br(rtc_model, ssvals_rtc, copyparams, 1.5)
+    bf = bf_point_df(br)
+    df = create_br_df(br)
+    push!(bfs, bf)
+    push!(dfs, df)
+end
+
+kin_rtcb1, kin_rtcb2, kin_rtcb3 = plot_rtc_bf(dfs[1], findall(x->x==bfs[1].kdam[1],dfs[1].kdam)[1], findall(x->x==bfs[1].kdam[2],dfs[1].kdam)[1], :rtcb, "1", "dda0ddff", "λ = $(round.(kin_range[1]; sigdigits=2))", "1")
+kin_rtcb1a, kin_rtcb2a, kin_rtcb3a = plot_rtc_bf(dfs[2], findall(x->x==bfs[2].kdam[1],dfs[2].kdam)[1], findall(x->x==bfs[2].kdam[2],dfs[2].kdam)[1], :rtcb, "2", "ba55d3ff", "λ = $(round.(kin_range[2]; sigdigits=2))", "1")
+kin_rtcb1b, kin_rtcb2b, kin_rtcb3b = plot_rtc_bf(dfs[3], findall(x->x==bfs[3].kdam[1],dfs[3].kdam)[1], findall(x->x==bfs[3].kdam[2],dfs[3].kdam)[1], :rtcb, "3", "800080ff", "λ = $(round.(kin_range[3]; sigdigits=2))", "1")
+kin_rtcb1c, kin_rtcb2c, kin_rtcb3c = plot_rtc_bf(dfs[4], findall(x->x==bfs[4].kdam[1],dfs[4].kdam)[1], findall(x->x==bfs[4].kdam[2],dfs[4].kdam)[1], :rtcb, "3", "800080ff", "λ = $(round.(kin_range[4]; sigdigits=2))", "1")
+
+kin_rtcb_nonbs = scatter(x=dfs[1].kdam,y=dfs[1].rtcb,showlegend=true,line=attr(width=9, color="#c1c1c1ff"), name="λ = $(round.(kin_range[1]; sigdigits=2))", legendgroup="1")
+kin_rtcb_nonbs1 = scatter(x=dfs[4].kdam,y=dfs[4].rtcb,showlegend=true,line=attr(width=9, color="#c1c1c1ff"), name="λ = $(round.(kin_range[1]; sigdigits=2))", legendgroup="1")
+
+kin_p = plot([kin_rtcb1, kin_rtcb2, kin_rtcb3, kin_rtcb1a, kin_rtcb2a, kin_rtcb3a, kin_rtcb1b, kin_rtcb2b, kin_rtcb3b, kin_rtcb_nonbs1],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="RtcB (μM)", 
+yaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs,automargin=true),xaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs,automargin=true),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=axes_title_fs, color="black", family="sans-serif"), showlegend=false, margin=margins))
+
+PlotlyJS.savefig(kin_p, "/home/holliehindley/phd/rtc_model/paper_plots/plots/kin_rtcb.svg")
+
+
+# kin_range2 = [1e-4, 1.8e-4, 2.4e-4, 3e-4]
+lam_range2 = [0.01,0.013,0.015,0.02]
+
+kin_range2 ./ lam_range2
+
+kin_range2 = (lam_range2) .* [0.01,0.02,0.03,0.04]
+
+bfs=[]; dfs=[];
+copyparams = deepcopy(params_rtc)
+for (i,j) in zip(kin_range2, lam_range2)
+    copyparams[kin] = i
+    copyparams[lam] = j
+    br = get_br(rtc_model, ssvals_rtc, copyparams, 1.5)
+    bf = bf_point_df(br)
+    df = create_br_df(br)
+    push!(bfs, bf)
+    push!(dfs, df)
+end
+plot([scatter(x=dfs[1].kdam, y=dfs[1].rtcb),scatter(x=dfs[2].kdam, y=dfs[2].rtcb),scatter(x=dfs[3].kdam, y=dfs[3].rtcb),scatter(x=dfs[4].kdam, y=dfs[4].rtcb)])
+
+kl_rtcb1, kl_rtcb2, kl_rtcb3 = plot_rtc_bf(dfs[1], findall(x->x==bfs[1].kdam[1],dfs[1].kdam)[1], findall(x->x==bfs[1].kdam[2],dfs[1].kdam)[1], :rtcb, "1", "dda0ddff", "λ = $(round.(kin_range[1]; sigdigits=2))", "1")
+kl_rtcb1a, kl_rtcb2a, kl_rtcb3a = plot_rtc_bf(dfs[2], findall(x->x==bfs[2].kdam[1],dfs[2].kdam)[1], findall(x->x==bfs[2].kdam[2],dfs[2].kdam)[1], :rtcb, "2", "ba55d3ff", "λ = $(round.(kin_range[2]; sigdigits=2))", "1")
+kl_rtcb1b, kl_rtcb2b, kl_rtcb3b = plot_rtc_bf(dfs[3], findall(x->x==bfs[3].kdam[1],dfs[3].kdam)[1], findall(x->x==bfs[3].kdam[2],dfs[3].kdam)[1], :rtcb, "3", "800080ff", "λ = $(round.(kin_range[3]; sigdigits=2))", "1")
+kl_rtcb1c, kl_rtcb2c, kl_rtcb3c = plot_rtc_bf(dfs[4], findall(x->x==bfs[4].kdam[1],dfs[4].kdam)[1], findall(x->x==bfs[4].kdam[2],dfs[4].kdam)[1], :rtcb, "3", "800080ff", "λ = $(round.(kin_range[4]; sigdigits=2))", "1")
+
+kl_p = plot([kl_rtcb1, kl_rtcb2, kl_rtcb3, kl_rtcb1a, kl_rtcb2a, kl_rtcb3a, kl_rtcb1b, kl_rtcb2b, kl_rtcb3b, kl_rtcb1c, kl_rtcb2c, kl_rtcb3c],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="RtcB (μM)", 
+yaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs,automargin=true),xaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs,automargin=true),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=axes_title_fs, color="black", family="sans-serif"), showlegend=false, margin=margins))
+
+
+br = get_br(rtc_model, ssvals_rtc, params_rtc, 1.5)
+df = create_br_df(br)
+
+copyparams = deepcopy(params_rtc)
+copyparams[kin] = 0.01
+copyparams[lam] = 0.01#copyparams[kin]/(params_rtc[kin]/params_rtc[lam])
+br1 = get_br(rtc_model, ssvals_rtc, copyparams, 1.5)
+df1 = create_br_df(br1)
+plot([scatter(x=df.kdam, y=df.rtcb), scatter(x=df1.kdam, y=df1.rtcb)])
+
+2.4e-4/(params_rtc[kin]/params_rtc[lam])
+
+params_rtc[lam]
+params_rtc[kin]
+
+params_rtc[kin]/params_rtc[lam]
+copyparams[kin]/copyparams[lam]
 
 
 

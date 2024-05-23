@@ -23,7 +23,7 @@ open("$PATH/rtc_model/simple_run/rtc_molec.html", "w") do io
 end
 
 
-solu_rtc_molec = sol(rtc_model, init_rtc_molec, (0,2000), params_rtc_molec)
+solu_rtc_molec = sol(rtc_model, init_rtc_molec, (0,10000), params_rtc_molec)
 
 df_molec = create_solu_df(solu_rtc_molec, species_rtc)
 
@@ -62,13 +62,14 @@ end
 
 
 params_molec_kdam = deepcopy(params_rtc_molec)
-params_molec_kdam[kdam] = 0.1
+params_molec_kdam[kdam] = 0.6
 
-solu_rtc_kdam_molec = sol(rtc_model, ssvals_rtc_molec, tspan, params_molec_kdam)
+solu_rtc_kdam_molec = sol(rtc_model, ssvals_rtc_molec, (0,10000), params_molec_kdam)
 
 df_kdam_molec = create_solu_df(solu_rtc_kdam_molec, species_rtc)
 
 p_kdam_molec = plot([scatter(x=df_kdam_molec.time, y=col, name="$(names(df_kdam_molec)[i])", legendgroup="$i", marker_color=colours[i]) for (col, i) in zip(eachcol(df_kdam_molec[:,2:end]), range(2,length(names(df_kdam_molec))))], Layout(xaxis_type="log", yaxis_tickformat=".2e", title="kdam = $(params_molec_kdam[kdam])"))
+p_kdam_molec = plot([scatter(x=df_kdam_molec.time, y=col, name="$(names(df_kdam_molec)[i])", legendgroup="$i", marker_color=colours[i]) for (col, i) in zip(eachcol(df_kdam_molec[:,2:end]), range(2,length(names(df_kdam_molec))))], Layout(xaxis_type="", yaxis_tickformat=".2e", title="kdam = $(params_molec_kdam[kdam])"))
 
 
 # checking mRNA/protein ratios 

@@ -5,9 +5,9 @@ using PlotlyJS, ProgressBars, QuadGK, Interpolations
 
 PATH = "/home/holliehindley/phd"
 
+include("$PATH/general_funcs/solving.jl")
 include("$PATH/rtc_model/models/inhibition_models/rtc_inhibition_model.jl")
 include("$PATH/rtc_model/models/rtc_orig.jl")
-include("$PATH/general_funcs/solving.jl")
 include("$PATH/rtc_model/parameters/rtc_params.jl")
 include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
 
@@ -37,7 +37,7 @@ rtcb_traces = creating_rtc_inhib_plot(rtc_model, ssvals_rtc, params_rtc, rtcb_in
 p_rtcb = plot([i for i in rtcb_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="RtcB (μM)", showlegend=false,
-yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+yaxis=attr(showline=true,linewidth=3,linecolor="black",range=[0,1],tickvals=[0,0.5,1]),xaxis=attr(showline=true,linewidth=3,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5]),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white", font=attr(size=24, color="black", family="sans-serif")))
 
 
@@ -45,14 +45,14 @@ rtca_traces = creating_rtc_inhib_plot(rtc_model, ssvals_rtc, params_rtc, rtca_in
 p_rtca = plot([i for i in rtca_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="RtcA (μM)",showlegend=false,
-yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true,linewidth=3,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5]),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
 rtcr_traces = creating_rtc_inhib_plot(rtc_model, ssvals_rtc, params_rtc, rtcr_inhib_model, ssvals_rtcr, params_inhib, :rtcr, 1.5, colours_rtcr, k_inhib_vals)
 p_rtcr = plot([i for i in rtcr_traces],
 Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
 yaxis_title="RtcR (μM)", showlegend=false,#yaxis_tickformat=".1e",
-yaxis=attr(showline=true,linewidth=3,linecolor="black",tickangle=77),xaxis=attr(showline=true,linewidth=3,linecolor="black"),
+yaxis=attr(showline=true,linewidth=3,linecolor="black",tickangle=77),xaxis=attr(showline=true,linewidth=3,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5]),
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
 
