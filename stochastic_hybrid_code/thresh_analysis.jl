@@ -10,3 +10,5 @@ plot(scatter(x=df_times.threshold, y=df_times.time/60/60))
 
 
 dfs = [DataFrame(CSV.File(joinpath("/home/hollie_hindley/Documents/stochastic_hybrid/thresh_test", file), header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"])) for file in readdir("/home/hollie_hindley/Documents/stochastic_hybrid/thresh_test")]
+
+
