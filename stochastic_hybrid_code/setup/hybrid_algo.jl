@@ -6,6 +6,20 @@ struct Output
     lam::Vector{Float64}
 end
 
+function arrow_conv(folder_path, arrow_folder_path)
+    folder_path = folder_path
+    files = readdir(folder_path)
+    arrow_folder_path = arrow_folder_path
+    if !isdir(arrow_folder_path)
+        mkdir(arrow_folder_path)
+    end
+    for file in files
+        df = DataFrame(CSV.File(joinpath(folder_path, file), header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"]))
+        Arrow.write(joinpath(arrow_folder_path, splitext(basename(file))[1] * ".arrow"), df)
+    end
+    rm(folder_path, recursive=true, force=true)
+end
+
 function prop(X)
     nx = indV.nrOfItems - 1
     propen(X[1:nx]) 
@@ -14,7 +28,8 @@ function run_stoch(X0, thresh, kdam, file)
     par[pidx(:kdam)] = kdam
     threshold = thresh # set to zero for a deterministic result
     options["threshold"] = threshold
-    fout=open("/home/hollie_hindley/Documents/stochastic_hybrid/$file","w")
+    fout=open("$file","w")
+    # fout=open("/home/hollie_hindley/Documents/stochastic_hybrid/$file","w")
     global propen, S, propList  = defineStochModel(par, indV)    
     solu = hybrid_algo(X0, options, prop, S, out=fout)
     close(fout)

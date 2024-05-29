@@ -1,4 +1,4 @@
-using StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics
+using StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase
 using PlotlyJS
 # using InteractiveViz, GLMakie
 
@@ -16,14 +16,5 @@ props, df_rs, df_ps = df_sort_all(dfs)
 
 plot(scatter(x=df_ps[1].time, y=df_ps[1].rtca))
 
-using Arrow 
 
-Arrow.write("/home/hollie_hindley/Documents/phd/stochastic_hybrid_code/arrow_test.arrow", dfs[17])
-
-function compress_data(data::DataFrame)
-    io = Arrow.tobuffer(data)
-    d = Arrow.Table(io; convert=false)
-    Arrow.write("/home/hollie_hindley/Documents/phd/stochastic_hybrid_code/test.lz4", d; compress=:lz4)
-end
-compress_data(dfs[17])
 
