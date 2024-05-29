@@ -6,19 +6,7 @@ struct Output
     lam::Vector{Float64}
 end
 
-function arrow_conv(folder_path, arrow_folder_path)
-    folder_path = folder_path
-    files = readdir(folder_path)
-    arrow_folder_path = arrow_folder_path
-    if !isdir(arrow_folder_path)
-        mkdir(arrow_folder_path)
-    end
-    for file in files
-        df = DataFrame(CSV.File(joinpath(folder_path, file), header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"]))
-        Arrow.write(joinpath(arrow_folder_path, splitext(basename(file))[1] * ".arrow"), df)
-    end
-    rm(folder_path, recursive=true, force=true)
-end
+
 
 function prop(X)
     nx = indV.nrOfItems - 1

@@ -18,3 +18,7 @@ plot(scatter(x=df_ps[1].time, y=df_ps[1].rtca))
 
 
 
+dfs1 = load_arrow_files("/home/hollie_hindley/Documents/stochastic_hybrid/thresh_test_arrow")
+
+
+isequal(dfs, dfs1)
