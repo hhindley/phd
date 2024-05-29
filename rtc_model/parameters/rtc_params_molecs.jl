@@ -25,3 +25,4 @@ kin_val_molec = kin_val/sf #2.381 # uM molec aa-1
 kc_val_molec = kc_val*sf # kc (uM-1) is the binding constant (kb/ku) (uM-1) for ribosomes to mRNAs - kc/sf = uM-1 
 
 
+init_molec = [0,0,0,0,0,0,11.29/sf,0,0]
