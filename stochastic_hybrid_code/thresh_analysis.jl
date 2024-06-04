@@ -1,14 +1,15 @@
 using StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase, Distributed
-using PlotlyJS
-# using InteractiveViz, GLMakie
-addprocs(4)
+# using PlotlyJS
+using InteractiveViz, GLMakie
+# addprocs(4)
 
 include("/home/hollie_hindley/Documents/phd/stochastic_hybrid_code/analysis_funcs.jl")
-@everywhere include("/home/hollie_hindley/Documents/phd/stochastic_hybrid_code/setup/file_funcs.jl")
+include("/home/hollie_hindley/Documents/phd/stochastic_hybrid_code/setup/file_funcs.jl")
 
 threshold_vals = range(10,310,length=20)
 df_times = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/thresh_times.csv")) # times for kdam_test1
 
+ilines(threshold_vals, df_times.time/60/60, color=:blue, linewidth=2, label="Time to reach 1000 events")
 plot(scatter(x=df_times.threshold, y=df_times.time/60/60))
 
 
