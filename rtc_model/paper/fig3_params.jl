@@ -3,12 +3,10 @@ using Revise, ForwardDiff, Setfield, LinearAlgebra, Printf, ModelingToolkit
 # using Plots
 using PlotlyJS, ProgressBars
 
-PATH = "/home/holliehindley/phd"
-
-include("$PATH/general_funcs/solving.jl")
-include("$PATH/rtc_model/models/rtc_orig.jl")
-include("$PATH/rtc_model/parameters/rtc_params.jl")
-include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
+include(joinpath(homedir(), "phd/general_funcs/solving.jl"))
+include(joinpath(homedir(), "phd/rtc_model/models/rtc_orig.jl"))
+include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params.jl"))
+include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
 
 margins = attr(l=180,r=100,t=100,b=100)
 axes_linewidth = 5.5

@@ -3,14 +3,11 @@ using Revise, LinearAlgebra, Printf, ModelingToolkit, OrderedCollections
 # using Plots
 using PlotlyJS, ProgressBars
 
-PATH = "/home/holliehindley/phd"
-
-include("$PATH/general_funcs/solving.jl")
-include("$PATH/rtc_model/models/rtc_orig.jl")
-include("$PATH/rtc_model/parameters/rtc_params.jl")
-include("$PATH/rtc_model/parameters/rtc_params_molecs.jl")
-include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
-
+include(joinpath(homedir(), "phd/general_funcs/solving.jl"))
+include(joinpath(homedir(), "phd/rtc_model/models/rtc_orig.jl"))
+include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params.jl"))
+include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params_molecs.jl"))
+include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
 
 br = get_br(rtc_model, ssvals_rtc, params_rtc, 1.5)
 bf = bf_point_df(br)

@@ -3,10 +3,12 @@ using Revise, ForwardDiff, Parameters, Setfield, LinearAlgebra, Printf
 # using Plots
 using PlotlyJS, ProgressBars, Interpolations, QuadGK, ModelingToolkit
 
-include("$PATH/rtc_model/models/rtc_orig.jl")
-include("$PATH/general_funcs/solving.jl")
-include("$PATH/rtc_model/parameters/rtc_params.jl")
-include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
+
+include(joinpath(homedir(), "phd/general_funcs/solving.jl"))
+include(joinpath(homedir(), "phd/rtc_model/models/rtc_orig.jl"))
+include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params.jl"))
+include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params_molecs.jl"))
+include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
 
 colours = ["#f4e5ffff","#e6c5ffff","#d7a1ffff","#c06affff","#a730ffff"]
 
