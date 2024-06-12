@@ -1,16 +1,16 @@
 using StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase, Distributed
-# using PlotlyJS
-using InteractiveViz, GLMakie
-# addprocs(4)
+using PlotlyJS
+# using InteractiveViz, WGLMakie
 
-include("/home/hollie_hindley/Documents/phd/stochastic_hybrid_code/analysis_funcs.jl")
-include("/home/hollie_hindley/Documents/phd/stochastic_hybrid_code/setup/file_funcs.jl")
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/analysis_funcs.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 
 threshold_vals = range(10,310,length=20)
-df_times = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/thresh_times.csv")) # times for kdam_test1
+df_times = DataFrame(CSV.File(joinpath(homedir(), "Documents/stochastic_hybrid/thresh_times.csv"))) # times for kdam_test1
 
-ilines(threshold_vals, df_times.time/60/60, color=:blue, linewidth=2, label="Time to reach 1000 events")
-plot(scatter(x=df_times.threshold, y=df_times.time/60/60))
+# scatter(rand(4))
+# ilines(threshold_vals, df_times.time/60/60)
+plot(scatter(x=df_times.threshold, y=df_times.time/60/60), Layout(xaxis_title="threshold", yaxis_title="time (hours)"))
 
 
 df_props, df_reacts, df_res = loadsort_all_arrow_files("/home/hollie_hindley/Documents/stochastic_hybrid/thresh_test_arrow")
