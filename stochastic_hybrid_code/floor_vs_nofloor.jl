@@ -1,16 +1,15 @@
 using StatsBase, Distributions, Random, DataFrames, CSV, PlotlyJS, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools
 
-PATH = "/home/hollie_hindley/Documents"
+include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params.jl"))
+include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params_molecs.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/indexing.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/hybrid_algo.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/stoch_model.jl"))
 
-include("$PATH/paper/model_params_funcs_2024/params.jl")
-include("$PATH/paper/model_params_funcs_2024/rtc_params_molecs.jl")
-include("$PATH/stochastic_hybrid/indexing.jl")
-include("$PATH/stochastic_hybrid/hybrid_algo.jl")
-include("$PATH/stochastic_hybrid/stoch_model.jl")
 
 # include("/home/hollie_hindley/Documents/stochastic_hybrid/run_rtc_orig.jl")
 
-n= 10000#200 # number of cell cycles
+n= 100#200 # number of cell cycles
 options = Dict(
 "threshold"  =>  0.,       # Threshold to decide between determinisitic or stochastic reaction
 "FixDetReact"=> [14],# [10,11,12,13,14,15,16,17,18],       # Reactions to be treated determinisitically

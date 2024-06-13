@@ -18,55 +18,61 @@ function get_prop_cols(df)
     return @view df[findall(row -> length(row[:event]) > 3, eachrow(df)), :]
 end
 function str_to_arr(str)
-    str = replace(str, "[" => "", "]" => "", " " => "")
-    str_arr = split(str, ",")
+    str = replace!(str, "[" => "", "]" => "", " " => "")
+    str_arr = split!(str, ",")
     return parse.(Float64, str_arr)
 end
 function get_reacts(df)
     return @view df[findall(row -> length(row[:event]) < 3 && row[:event][1] != 0, eachrow(df)), :]
 end
 
+# function loadandsort_arrow_file(file)
+#     df = Arrow.Table(file) |> DataFrame
+
+#     df_p = df[findall(row -> length(row[:event]) > 3, eachrow(df)), :]
+#     df_r = df[findall(row -> length(row[:event]) < 3 && row[:event][1] != 0, eachrow(df)), :]
+
+#     react_names = [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr, :V]
+
+#     df_prop = split.(replace.(df_p.event, r"[\[\]\(Any)]" => ""), ",")
+#     df_prop = permutedims(mapcols(x -> parse.(Float64, x), DataFrame(df_prop, :auto)))
+#     rename!(df_prop, react_names)
+    
+#     df_results = select(df_p, Not(:event))
+#     df_r.event = [parse.(Float64, subarray) for subarray in df_r.event]
+    
+#     df_react = combine(groupby(df_r, :event), nrow => :count)[2:12,:]
+#     insertcols!(df_react, :reaction => react_names[Int64.(df_react.event)])
+
+#     return df_prop, df_react, df_results
+# end
+
 function loadandsort_arrow_file(file)
     df = Arrow.Table(file) |> DataFrame
 
-    df_p = df[findall(row -> length(row[:event]) > 3, eachrow(df)), :]
-    df_r = df[findall(row -> length(row[:event]) < 3 && row[:event][1] != 0, eachrow(df)), :]
-
-    react_names = [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr, :V]
-
-    df_prop = split.(replace.(df_p.event, r"[\[\]\(Any)]" => ""), ",")
-    df_prop = permutedims(mapcols(x -> parse.(Float64, x), DataFrame(df_prop, :auto)))
-    rename!(df_prop, react_names)
+    # takes a view of the data and keeps those rows that are less than 3 long and not zero 
+    df_r = @view df[findall(row -> length(row[:event]) < 3 && row[:event][1] != 0, eachrow(df)), :]
     
-    df_results = select(df_p, Not(:event))
-    df_r.event = [parse.(Float64, subarray) for subarray in df_r.event]
-    
-    df_react = combine(groupby(df_r, :event), nrow => :count)[2:12,:]
-    insertcols!(df_react, :reaction => react_names[Int64.(df_react.event)])
-
-    return df_prop, df_react, df_results
-end
-
-function new_func_arrow(file)
-    df = Arrow.Table(file) |> DataFrame
-
-    df_r = get_reacts(df)
-
-    df_p = get_prop_cols(df)
+    # takes a view of the data and keeps those rows that are more than 3 long
+    df_p = @view df[findall(row -> length(row[:event]) > 3, eachrow(df)), :]
     
     react_names = [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr, :V]
     
+    # converts the event column to an array 
     props = str_to_arr.(df_p.event)
     
+    # creates a new dataframe of the propensities next to the reaction names 
     df_prop = DataFrame(transpose(hcat(props...)), react_names)
         
+    # look into this? 
     df_r.event = [parse.(Float64, subarray) for subarray in df_r.event]
+    # new dataframe for reactions 
     df_react = combine(groupby(df_r, :event), nrow => :count)[2:12,:]
     insertcols!(df_react, :reaction => react_names[Int64.(df_react.event)])
     
-    df_results = select!(df_p, Not(:event))
+    # df_results = select!(df_p, Not(:event))
 
-return df_prop, df_react, df_results
+return df_prop, df_react, df_p
 end
 
 function loadsort_all_arrow_files(folder_path)

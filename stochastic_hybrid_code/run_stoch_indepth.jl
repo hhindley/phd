@@ -1,13 +1,12 @@
 using StatsBase, Distributions, Random, DataFrames, CSV, PlotlyJS, DifferentialEquations, OrderedCollections, ProgressBars
 
-PATH = "/home/hollie_hindley/Documents"
+include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params.jl"))
+include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params_molecs.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/indexing.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/hybrid_algo.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/stoch_model.jl"))
 
-include("$PATH/paper/model_params_funcs_2024/params.jl")
-include("$PATH/paper/model_params_funcs_2024/rtc_params_molecs.jl")
-include("$PATH/stochastic_hybrid/indexing.jl")
-include("$PATH/stochastic_hybrid/hybrid_algo.jl")
-include("$PATH/stochastic_hybrid/stoch_model.jl")
-include("$PATH/stochastic_hybrid/indexing.jl")
+
 
 options = Dict(
 "threshold"  =>  0.,       # Threshold to decide between determinisitic or stochastic reaction

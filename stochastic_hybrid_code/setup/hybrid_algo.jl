@@ -69,7 +69,7 @@ function hybrid_algo(X0, options, prop, S; out=stdout)
     global savedat = false
     global division = false
 
-    dump(0,t0,X0;output=out)
+    dump([0],t0,X0;output=out)
 
     # Random.seed!(111)
     nu = 0
@@ -121,7 +121,7 @@ function hybrid_algo(X0, options, prop, S; out=stdout)
             # nu += 1
 
             # dump(X0[vidx(:totProp)],ss[end],X0;output=out)
-            dump(prop(X0),ss[end],X0;output=out)
+            # dump(prop(X0),ss[end],X0;output=out)
 
             # dump(stochReact,ss[end],X0;output=out)
             # dump([X0[vidx(:totProp)][1],xi[1]],ss[end],X0;output=out)
@@ -159,7 +159,7 @@ function hybrid_algo(X0, options, prop, S; out=stdout)
             # dump([a1,a2],ss[end],X0;output=out)
 
             # nu += 1
-            dump(j, ss[end],X0;output=out)
+            dump([j], ss[end],X0;output=out)
 
             isStochReact = partition((X0)) # updates status of stochastic reactions based on new X0
 

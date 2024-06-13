@@ -1,16 +1,13 @@
 using StatsBase, Distributions, Random, DataFrames, CSV, PlotlyJS, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools
 
-PATH = "/home/hollie_hindley/Documents"
+include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params.jl"))
+include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params_molecs.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/indexing.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/hybrid_algo.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/stoch_model.jl"))
 
-include("$PATH/paper/model_params_funcs_2024/params.jl")
-include("$PATH/paper/model_params_funcs_2024/rtc_params_molecs.jl")
-include("$PATH/stochastic_hybrid/indexing.jl")
-include("$PATH/stochastic_hybrid/hybrid_algo.jl")
-include("$PATH/stochastic_hybrid/stoch_model.jl")
 
-# include("/home/hollie_hindley/Documents/stochastic_hybrid/run_rtc_orig.jl")
-
-n= 200 # number of cell cycles
+n= 2 # number of cell cycles
 options = Dict(
 "threshold"  =>  0.,       # Threshold to decide between determinisitic or stochastic reaction
 "FixDetReact"=> [14],# [10,11,12,13,14,15,16,17,18],       # Reactions to be treated determinisitically
@@ -27,20 +24,16 @@ par = collect(get_par(indP)')
 
 getssX0 = true
 if getssX0
-    fout=open("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat","w")
+    fout=open(joinpath(homedir(),"phd/stochastic_hybrid_code/X0.dat"),"w")
     propen, S, propList = defineStochModel(par, indV)
     nx = indV.nrOfItems-1
     prop(X) = propen(X[1:nx])
     X0 = hybrid_algo(X0, options, prop, S, out=fout)
     X0[vidx(:V)] = 1
-    # run_stoch(X0, 0, 0, "X0")
-    # df = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume"]))
-    # ss_df = df[1000:end,:]
-    # ss = [mean(df[:,col]) for col in names(eachcol(df[:,3:end-2]))]
-    # X0 = collect(get_X0(indV, ss)')
-    CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", DataFrame(X0,:auto), header=false)
+
+    CSV.write(joinpath(homedir(),"phd/stochastic_hybrid_code/X0.dat"), DataFrame(X0,:auto), header=false)
 else
-    X0 = CSV.read("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", Tables.matrix, header=false)
+    X0 = CSV.read(joinpath(homedir(),"phd/stochastic_hybrid_code/X0.dat"), Tables.matrix, header=false)
 end
 
 hinit=[3.39e-6/sf,90.7e-6/sf,3.39e-6/sf,75.16e-6/sf,4.4e-6/sf,12.57e-6/sf,0.182/sf,5.11/sf,12.58/sf]
@@ -48,11 +41,24 @@ X0 = collect(get_X0(indV, hinit)')
 
 X0
 
-include("$PATH/stochastic_hybrid/hybrid_algo.jl")
 
-# X0 = collect(get_X0(indV, ssvals_rtc_molec)')
-time_taken = @elapsed run_stoch(X0, 20, 0.6, "test_nofloor")
-df_n = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/test_nofloor.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"]))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/hybrid_algo.jl"))
+
+time_taken = @elapsed run_stoch(X0, 20, 0.6, "test.arrow")
+df = DataFrame(CSV.File(joinpath(homedir(),"phd/stochastic_hybrid_code/test.arrow"), header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"]))
+
+n = DataFrame(a=[[1,2,4],[2],[3]])
+typeof(n.a)
+
+a = [1.2,2,3,4]
+typeof(a)
+b =1 
+typeof(b)
+c = Vector(Vector{Float64}([Float64(4)]))
+typeof(c)
+
+b1 = [[Float64(b)]]
+
 
 time_taken = @elapsed run_stoch(X0, 20, 0.6, "test_floor")
 df = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/test_floor.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"]))
