@@ -121,7 +121,7 @@ function hybrid_algo(X0, options, prop, S; out=stdout)
             # nu += 1
 
             # dump(X0[vidx(:totProp)],ss[end],X0;output=out)
-            # dump(prop(X0),ss[end],X0;output=out)
+            dump(prop(X0),ss[end],X0;output=out)
 
             # dump(stochReact,ss[end],X0;output=out)
             # dump([X0[vidx(:totProp)][1],xi[1]],ss[end],X0;output=out)

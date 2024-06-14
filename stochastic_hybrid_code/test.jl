@@ -36,350 +36,353 @@ else
     X0 = CSV.read(joinpath(homedir(),"phd/stochastic_hybrid_code/X0.dat"), Tables.matrix, header=false)
 end
 
-hinit=[3.39e-6/sf,90.7e-6/sf,3.39e-6/sf,75.16e-6/sf,4.4e-6/sf,12.57e-6/sf,0.182/sf,5.11/sf,12.58/sf]
-X0 = collect(get_X0(indV, hinit)')
 
-X0
-
-
+using Arrow
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/hybrid_algo.jl"))
 
-time_taken = @elapsed run_stoch(X0, 20, 0.6, "test.arrow")
-df = DataFrame(CSV.File(joinpath(homedir(),"phd/stochastic_hybrid_code/test.arrow"), header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"]))
-
-n = DataFrame(a=[[1,2,4],[2],[3]])
-typeof(n.a)
-
-a = [1.2,2,3,4]
-typeof(a)
-b =1 
-typeof(b)
-c = Vector(Vector{Float64}([Float64(4)]))
-typeof(c)
-
-b1 = [[Float64(b)]]
+time_taken = @elapsed run_stoch(X0, 20, 0.6, "test/test.dat")
+df = DataFrame(CSV.File(joinpath(homedir(),"phd/stochastic_hybrid_code/test.dat"), header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"]))[:,1:end-1]
 
 
-time_taken = @elapsed run_stoch(X0, 20, 0.6, "test_floor")
-df = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/test_floor.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"]))
-
-[plot(scatter(x=df_n.time, y=df_n.totprop)) plot(scatter(x=df_n.time, y=df_n.rm_a)) plot(scatter(x=df_n.time, y=df_n.rtca));
-plot(scatter(x=df.time, y=df.totprop)) plot(scatter(x=df.time, y=df.rm_a)) plot(scatter(x=df.time, y=df.rtca));]
-
-[plot(scatter(x=df_n.time, y=df_n.rm_a)) plot(scatter(x=df.time, y=df.rm_a))]
-
-df_n.event = [split(replace(i, r"[\[\]\(Any)]" => ""), ",") for i in df_n.event]
-df_n.event = [parse.(Float64, subarray) for subarray in df_n.event]
-df_ns = filter(row -> length(row[:event]) > 1, df_n)
-
-df.event = [split(replace(i, r"[\[\]\(Any)]" => ""), ",") for i in df.event]
-df.event = [parse.(Float64, subarray) for subarray in df.event]
-df_s = filter(row -> length(row[:event]) > 1, df)
-
-function plotprops(df)
-    props = df.event
-    react_names = [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr, :V]
-
-    df_props = DataFrame([name => Float64[] for name in react_names])
-
-    for i in props
-        push!(df_props, [i[j] for j in 1:length(props[end])])
-    end
-    return plot([scatter(x=df.time, y=df_props[1:end,col], name="$col", mode="markers") for col in names(eachcol(df_props[:,1:end-1]))])
-
-end
-p_props = plotprops(df_ns);
-p_props1 = plotprops(df_s);
-[plot(scatter(x=df_n.time,y=df_n.rm_a)) plot(scatter(x=df.time,y=df.rm_a))]
+arrow_conv("/Users/s2257179/phd/stochastic_hybrid_code/test", "/Users/s2257179/phd/stochastic_hybrid_code/test_arrow")
+@elapsed df = Arrow.Table("/Users/s2257179/phd/stochastic_hybrid_code/test_arrow/test.arrow") |> DataFrame
+df
 
 
+# n = DataFrame(a=[[1,2,4],[2],[3]])
+# typeof(n.a)
 
-df.event = [eval(Meta.parse(i)) for i in df.event]
-df_r = filter(row -> length(row[:event]) == 1 && row[:event][1] != 0, df)
+# a = [1.2,2,3,4]
+# typeof(a)
+# b =1 
+# typeof(b)
+# c = Vector(Vector{Float64}([Float64(4)]))
+# typeof(c)
 
-df_n.event = [eval(Meta.parse(i)) for i in df_n.event]
-df_rn = filter(row -> length(row[:event]) == 1 && row[:event][1] != 0, df_n)
-
-react_names = [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr]
-pr1 = plot(scattergl(x=df_r.time, y=df_r.event, mode="markers", marker_color=df_r.event, marker=attr(colorscale="Viridis")), Layout(yaxis=attr(tickvals=range(1,13), ticktext=react_names)));
-pr2 = plot(scattergl(x=df_rn.time, y=df_rn.event, mode="markers", marker_color=df_rn.event, marker=attr(colorscale="Viridis")), Layout(yaxis=attr(tickvals=range(1,13), ticktext=react_names)));
-[plot(scatter(x=df_n.time, y=df_n.rm_a)) plot(scatter(x=df.time, y=df.rm_a));pr2 pr1]
-
-
-df_t = filter(row -> length(row[:event]) == 2, df)
-
-before = first.(df_t.event)
-after = last.(df_t.event)
-df_t
-
-df.event = [eval(Meta.parse(i)) for i in df.event]
-dfa = filter(row -> length(row[:event]) > 1, df)
-
-rma = []; rtca = []; rmb = []; rtcb = []; rmr = []; rtcr = []; rh = []; rd = []; rt = []
-for i in dfa.event
-    push!(rma, i[1])
-    push!(rtca, i[2])
-    push!(rmb, i[3])    
-    push!(rtcb, i[4])
-    push!(rmr, i[5])
-    push!(rtcr, i[6])
-    push!(rh, i[7])
-    push!(rd, i[8])
-    push!(rt, i[9])
-end
-
-plot([scatter(x=df.time, y=df.rm_a), scatter(x=dfa.time, y=rma)])
-plot([scatter(x=df.time, y=df.rtca), scatter(x=dfa.time, y=rtca)])
-plot([scatter(x=df.time, y=df.rm_b), scatter(x=dfa.time, y=rmb)])
-plot([scatter(x=df.time, y=df.rtcb), scatter(x=dfa.time, y=rtcb)])
-plot([scatter(x=df.time, y=df.rm_r), scatter(x=dfa.time, y=rmr)])
-plot([scatter(x=df.time, y=df.rtcr), scatter(x=dfa.time, y=rtcr)])
-plot([scatter(x=df.time, y=df.rh), scatter(x=dfa.time, y=rh)])
-plot([scatter(x=df.time, y=df.rd), scatter(x=dfa.time, y=rd)])
-plot([scatter(x=df.time, y=df.rt), scatter(x=dfa.time, y=rt)])
+# b1 = [[Float64(b)]]
 
 
-before = first.(df_s.event)
-after = last.(df_s.event)
-plot([scatter(x=df_t.time, y=before./df_t.volume),scatter(x=df_t.time, y=after./df_t.volume)])
-# df_f = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/test.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume"]))
+# time_taken = @elapsed run_stoch(X0, 20, 0.6, "test_floor")
+# df = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/test_floor.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"]))
 
-# df_rfloor = filter(row -> length(row[:event]) == 1 && row[:event][1] != 0, df_floor)
+
+# [plot(scatter(x=df_n.time, y=df_n.totprop)) plot(scatter(x=df_n.time, y=df_n.rm_a)) plot(scatter(x=df_n.time, y=df_n.rtca));
+# plot(scatter(x=df.time, y=df.totprop)) plot(scatter(x=df.time, y=df.rm_a)) plot(scatter(x=df.time, y=df.rtca));]
+
+# [plot(scatter(x=df_n.time, y=df_n.rm_a)) plot(scatter(x=df.time, y=df.rm_a))]
+
+# df_n.event = [split(replace(i, r"[\[\]\(Any)]" => ""), ",") for i in df_n.event]
+# df_n.event = [parse.(Float64, subarray) for subarray in df_n.event]
+# df_ns = filter(row -> length(row[:event]) > 1, df_n)
+
+# df.event = [split(replace(i, r"[\[\]\(Any)]" => ""), ",") for i in df.event]
+# df.event = [parse.(Float64, subarray) for subarray in df.event]
+# df_s = filter(row -> length(row[:event]) > 1, df)
+
+# function plotprops(df)
+#     props = df.event
+#     react_names = [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr, :V]
+
+#     df_props = DataFrame([name => Float64[] for name in react_names])
+
+#     for i in props
+#         push!(df_props, [i[j] for j in 1:length(props[end])])
+#     end
+#     return plot([scatter(x=df.time, y=df_props[1:end,col], name="$col", mode="markers") for col in names(eachcol(df_props[:,1:end-1]))])
+
+# end
+# p_props = plotprops(df_ns);
+# p_props1 = plotprops(df_s);
+# [plot(scatter(x=df_n.time,y=df_n.rm_a)) plot(scatter(x=df.time,y=df.rm_a))]
+
+
+
+# df.event = [eval(Meta.parse(i)) for i in df.event]
 # df_r = filter(row -> length(row[:event]) == 1 && row[:event][1] != 0, df)
 
-[plot(scatter(x=df_n.time,y=df_n.rm_a)) plot(scatter(x=df.time,y=df.rm_a))]
-[plot(scatter(x=df_n.time,y=df_n.event)) plot(scatter(x=df.time,y=df.event))]
+# df_n.event = [eval(Meta.parse(i)) for i in df_n.event]
+# df_rn = filter(row -> length(row[:event]) == 1 && row[:event][1] != 0, df_n)
 
-[plot(scatter(x=df.time,y=df.rh)) plot(scatter(x=df_floor.time,y=df_floor.rh))]
-
-[plot(scatter(x=df_r.time,y=df_r.rm_a)) plot(scatter(x=df_rfloor.time,y=df_rfloor.rm_a))]
-[plot(scatter(x=df.time,y=df.rh)) plot(scatter(x=df_floor.time,y=df_floor.rh))]
-
-df_n.event = [split(replace(i, r"[\[\]\(Any)]" => ""), ",") for i in df_n.event]
-df_n.event = [parse.(Float64, subarray) for subarray in df_n.event]
-
-df_t = filter(row -> row[:event] == [0], df)
-df_v = filter(row -> row[:event] == [20], df)
-df_p1 = filter(row -> length(row[:event]) > 1, df_n)
-df_r = filter(row -> length(row[:event]) == 1 && row[:event][1] != 0, df)
-df_r.event = first.(df_r.event)
-# plot([scattergl(x=df.time, y=df[:,col], name="$(names(df)[i])", marker_color=colours[i], legendgroup="$i", showlegend=true) for (col, i) in zip(names(eachcol(df[:,3:end-2])), range(3,length(names(df))-2))])#, title="kdam = $(params_rtc[kdam])"))
-# plot([scattergl(x=df.time, y=df[:,col] ./df.volume, name="$(names(df)[i])", marker_color=colours[i], legendgroup="$i", showlegend=true) for (col, i) in zip(names(eachcol(df[:,3:end-2])), range(3,length(names(df))-2))])#, title="kdam = $(params_rtc[kdam])"))
-df_p.event[120]
-df_p.event = [split(replace(i, r"[\[\]\(LinearAlgebra.Adjoint{Float64})]" => ""), ",") for i in df_p.event]
-
-# df_p.totprop = map(x -> x[1], df_p.event)
-# df_p.xi = map(x -> length(x) > 1 ? x[2] : NaN, df_p.event)
-# plot([scatter(x=df_p.time, y=df_p.totprop), scatter(x=df_p.time, y=df_p.xi)])
-
-plot(scatter(x=df_p.time, y=df_p.rd))# ./df_p.volume))
-mean(df.rtca[10000:end])#./df.volume[10000:end])
-
-X0
-
-c1 = [split(replace(i, r"" => ""), ",") for i in c]
-df1.event = [parse.(Float64, subarray) for subarray in df1.event]
-
-df[:,:rm_b]
-any(df_grouped[:,:rm_a] .< 0)
+# react_names = [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr]
+# pr1 = plot(scattergl(x=df_r.time, y=df_r.event, mode="markers", marker_color=df_r.event, marker=attr(colorscale="Viridis")), Layout(yaxis=attr(tickvals=range(1,13), ticktext=react_names)));
+# pr2 = plot(scattergl(x=df_rn.time, y=df_rn.event, mode="markers", marker_color=df_rn.event, marker=attr(colorscale="Viridis")), Layout(yaxis=attr(tickvals=range(1,13), ticktext=react_names)));
+# [plot(scatter(x=df_n.time, y=df_n.rm_a)) plot(scatter(x=df.time, y=df.rm_a));pr2 pr1]
 
 
-df.bins = ceil.(Int, (1:nrow(df))/100)
-df_grouped = combine(first, groupby(df, :bins))
-bins = 25#length(df_grouped.bins)
-h_rh = plot(histogram(x=df_grouped.rh ./df_grouped.volume, nbinsx=bins));
-h_rma = plot(histogram(x=df_grouped.rm_a ./df_grouped.volume, nbinsx=bins));
-h_rmb = plot(histogram(x=df_grouped.rm_b ./df_grouped.volume, nbinsx=bins));
-h_rmr = plot(histogram(x=df_grouped.rm_r ./df_grouped.volume, nbinsx=bins));
-h_rtca = plot(histogram(x=df_grouped.rtca ./df_grouped.volume, nbinsx=bins));
-h_rtcb = plot(histogram(x=df_grouped.rtcb ./df_grouped.volume, nbinsx=bins));
-h_rtcr = plot(histogram(x=df_grouped.rtcr ./df_grouped.volume, nbinsx=bins));
-h_rd = plot(histogram(x=df_grouped.rd ./df_grouped.volume, nbinsx=bins));
-h_rt = plot(histogram(x=df_grouped.rt ./df_grouped.volume, nbinsx=bins));
+# df_t = filter(row -> length(row[:event]) == 2, df)
+
+# before = first.(df_t.event)
+# after = last.(df_t.event)
+# df_t
+
+# df.event = [eval(Meta.parse(i)) for i in df.event]
+# dfa = filter(row -> length(row[:event]) > 1, df)
+
+# rma = []; rtca = []; rmb = []; rtcb = []; rmr = []; rtcr = []; rh = []; rd = []; rt = []
+# for i in dfa.event
+#     push!(rma, i[1])
+#     push!(rtca, i[2])
+#     push!(rmb, i[3])    
+#     push!(rtcb, i[4])
+#     push!(rmr, i[5])
+#     push!(rtcr, i[6])
+#     push!(rh, i[7])
+#     push!(rd, i[8])
+#     push!(rt, i[9])
+# end
+
+# plot([scatter(x=df.time, y=df.rm_a), scatter(x=dfa.time, y=rma)])
+# plot([scatter(x=df.time, y=df.rtca), scatter(x=dfa.time, y=rtca)])
+# plot([scatter(x=df.time, y=df.rm_b), scatter(x=dfa.time, y=rmb)])
+# plot([scatter(x=df.time, y=df.rtcb), scatter(x=dfa.time, y=rtcb)])
+# plot([scatter(x=df.time, y=df.rm_r), scatter(x=dfa.time, y=rmr)])
+# plot([scatter(x=df.time, y=df.rtcr), scatter(x=dfa.time, y=rtcr)])
+# plot([scatter(x=df.time, y=df.rh), scatter(x=dfa.time, y=rh)])
+# plot([scatter(x=df.time, y=df.rd), scatter(x=dfa.time, y=rd)])
+# plot([scatter(x=df.time, y=df.rt), scatter(x=dfa.time, y=rt)])
 
 
-plot(histogram(x=df_grouped.rh, nbinsx=bins))
-plot(histogram(x=df_grouped.rm_a, nbinsx=bins))
-plot(histogram(x=df_grouped.rm_b, nbinsx=bins))
-plot(histogram(x=df_grouped.rm_r, nbinsx=bins))
-plot(histogram(x=df_grouped.rtca, nbinsx=bins))
-plot(histogram(x=df_grouped.rtcb, nbinsx=bins))
-plot(histogram(x=df_grouped.rtcr, nbinsx=bins))
-plot(histogram(x=df_grouped.rd, nbinsx=bins))
-plot(histogram(x=df_grouped.rt, nbinsx=bins))
+# before = first.(df_s.event)
+# after = last.(df_s.event)
+# plot([scatter(x=df_t.time, y=before./df_t.volume),scatter(x=df_t.time, y=after./df_t.volume)])
+# # df_f = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/test.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume"]))
 
-mean(df.rm_a[10000:end])
+# # df_rfloor = filter(row -> length(row[:event]) == 1 && row[:event][1] != 0, df_floor)
+# # df_r = filter(row -> length(row[:event]) == 1 && row[:event][1] != 0, df)
 
+# [plot(scatter(x=df_n.time,y=df_n.rm_a)) plot(scatter(x=df.time,y=df.rm_a))]
+# [plot(scatter(x=df_n.time,y=df_n.event)) plot(scatter(x=df.time,y=df.event))]
 
-time_taken = @elapsed run_stoch(X0, 10, 0.6, "thresh10_kdam06")
-df = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/X0_init/thresh10_kdam01.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume"]))
+# [plot(scatter(x=df.time,y=df.rh)) plot(scatter(x=df_floor.time,y=df_floor.rh))]
 
-time_taken = @elapsed run_stoch(X0, 15, 0.6, "thresh15_kdam06")
-df1 = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/X0_init/thresh15_kdam01.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume"]))
+# [plot(scatter(x=df_r.time,y=df_r.rm_a)) plot(scatter(x=df_rfloor.time,y=df_rfloor.rm_a))]
+# [plot(scatter(x=df.time,y=df.rh)) plot(scatter(x=df_floor.time,y=df_floor.rh))]
 
-time_taken = @elapsed run_stoch(X0, 20, 0.6, "thresh20_kdam06")
-df2 = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/X0_init/thresh20_kdam01.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume"]))
+# df_n.event = [split(replace(i, r"[\[\]\(Any)]" => ""), ",") for i in df_n.event]
+# df_n.event = [parse.(Float64, subarray) for subarray in df_n.event]
 
-time_taken = @elapsed run_stoch(X0, 100, 0.6, "thresh100_kdam06")
-df3 = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/X0_init/thresh50_kdam01.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume"]))
+# df_t = filter(row -> row[:event] == [0], df)
+# df_v = filter(row -> row[:event] == [20], df)
+# df_p1 = filter(row -> length(row[:event]) > 1, df_n)
+# df_r = filter(row -> length(row[:event]) == 1 && row[:event][1] != 0, df)
+# df_r.event = first.(df_r.event)
+# # plot([scattergl(x=df.time, y=df[:,col], name="$(names(df)[i])", marker_color=colours[i], legendgroup="$i", showlegend=true) for (col, i) in zip(names(eachcol(df[:,3:end-2])), range(3,length(names(df))-2))])#, title="kdam = $(params_rtc[kdam])"))
+# # plot([scattergl(x=df.time, y=df[:,col] ./df.volume, name="$(names(df)[i])", marker_color=colours[i], legendgroup="$i", showlegend=true) for (col, i) in zip(names(eachcol(df[:,3:end-2])), range(3,length(names(df))-2))])#, title="kdam = $(params_rtc[kdam])"))
+# df_p.event[120]
+# df_p.event = [split(replace(i, r"[\[\]\(LinearAlgebra.Adjoint{Float64})]" => ""), ",") for i in df_p.event]
 
-s = :rm_a
-p1 = plot(scatter(x=df.time,y=df[:,s] ./df.volume))
-p2 = plot(scatter(x=df1.time,y=df1[:,s] ./df1.volume));
-p3 = plot(scatter(x=df2.time,y=df2[:,s] ./df2.volume))
-p4 = plot(scatter(x=df3.time,y=df3[:,s] ./df3.volume))
+# # df_p.totprop = map(x -> x[1], df_p.event)
+# # df_p.xi = map(x -> length(x) > 1 ? x[2] : NaN, df_p.event)
+# # plot([scatter(x=df_p.time, y=df_p.totprop), scatter(x=df_p.time, y=df_p.xi)])
 
-p5 = plot(scatter(x=df5.time,y=df5[:,s] ./df5.volume));
-p5
-[p1 p2 p3 p4]
+# plot(scatter(x=df_p.time, y=df_p.rd))# ./df_p.volume))
+# mean(df.rtca[10000:end])#./df.volume[10000:end])
 
-function df_sort(df)
-    df.event = [split(replace(i, r"[\[\]\(Any)]" => ""), ",") for i in df.event]
-    df.event = [parse.(Float64, subarray) for subarray in df.event]
-    df_p = filter(row -> length(row[:event]) > 1, df)
-    df_r = filter(row -> length(row[:event]) == 1 && row[:event][1] != 0, df)
-    df_r.event = first.(df_r.event)
+# X0
 
-    props = df_p.event
-    react_names = [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr, :V]
+# c1 = [split(replace(i, r"" => ""), ",") for i in c]
+# df1.event = [parse.(Float64, subarray) for subarray in df1.event]
 
-    df_props = DataFrame([name => Float64[] for name in react_names])
-
-    for i in props
-        push!(df_props, [i[j] for j in 1:length(props[end])])
-    end
-    return df_props, df_r, df_p
-end
-
-df_props, df_r, df_p = df_sort(df)
-df_props1, df_r1, df_p1 = df_sort(df1)
-df_props2, df_r2, df_p2 = df_sort(df2)
-df_props3, df_r3, df_p3 = df_sort(df3)
-
-react_names = [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr]
-pr1 = plot(scattergl(x=df_r.time, y=df_r.event, mode="markers", marker_color=df_r.event, marker=attr(colorscale="Viridis")), Layout(yaxis=attr(tickvals=range(1,13), ticktext=react_names)));
-pr2 = plot(scattergl(x=df_r1.time, y=df_r1.event, mode="markers", marker_color=df_r1.event, marker=attr(colorscale="Viridis")), Layout(yaxis=attr(tickvals=range(1,13), ticktext=react_names)));
-pr3 = plot(scattergl(x=df_r2.time, y=df_r2.event, mode="markers", marker_color=df_r2.event, marker=attr(colorscale="Viridis")), Layout(yaxis=attr(tickvals=range(1,13), ticktext=react_names)));
-pr4 = plot(scattergl(x=df_r3.time, y=df_r3.event, mode="markers", marker_color=df_r3.event, marker=attr(colorscale="Viridis")), Layout(yaxis=attr(tickvals=range(1,13), ticktext=react_names)));
-
-[pr1 pr2 pr3 pr4]
-length(df_props.tlr_a),length(df_props1.tlr_a),length(df_props2.tlr_a),length(df_props3.tlr_a)
-
-p_props = plot([scatter(x=df_p.time, y=df_props[1:100:end,col], name="$col", mode="markers") for col in names(eachcol(df_props[:,1:end-1]))])
-p_props1 = plot([scatter(x=df_p1.time, y=df_props1[1:100:end,col], name="$col", mode="markers") for col in names(eachcol(df_props1[:,1:end-1]))]);
-p_props2 = plot([scatter(x=df_p2.time, y=df_props2[1:100:end,col], name="$col", mode="markers") for col in names(eachcol(df_props2[:,1:end-1]))]);
-p_props3 = plot([scatter(x=df_p3.time, y=df_props3[1:100:end,col], name="$col", mode="markers") for col in names(eachcol(df_props3[:,1:end-1]))]);
-
-[p_props p_props1 p_props2 p_props3]
-
-function plot_hist(df)
-    df.bins = ceil.(Int, (1:nrow(df))/100)
-    df_grouped = combine(first, groupby(df, :bins))
-    bins = 59#length(df_grouped.bins)
-    h_rh = plot(histogram(x=df_grouped.rh ./df_grouped.volume, nbinsx=bins, name="rh"));
-    h_rma = plot(histogram(x=df_grouped.rm_a ./df_grouped.volume, nbinsx=bins, name="rm_a"));
-    h_rmb = plot(histogram(x=df_grouped.rm_b ./df_grouped.volume, nbinsx=bins, name="rm_b"));
-    h_rmr = plot(histogram(x=df_grouped.rm_r ./df_grouped.volume, nbinsx=bins, name="rm_r"));
-    h_rtca = plot(histogram(x=df_grouped.rtca ./df_grouped.volume, nbinsx=bins, name="rtca"));
-    h_rtcb = plot(histogram(x=df_grouped.rtcb ./df_grouped.volume, nbinsx=bins, name="rtcb"));
-    h_rtcr = plot(histogram(x=df_grouped.rtcr ./df_grouped.volume, nbinsx=bins, name="rtcr"));
-    h_rd = plot(histogram(x=df_grouped.rd ./df_grouped.volume, nbinsx=bins, name="rd"));
-    h_rt = plot(histogram(x=df_grouped.rt ./df_grouped.volume, nbinsx=bins, name="rt"));
-    return h_rh, h_rma, h_rmb, h_rmr, h_rtca, h_rtcb, h_rtcr, h_rd, h_rt
-end
-h_rh, h_rma, h_rmb, h_rmr, h_rtca, h_rtcb, h_rtcr, h_rd, h_rt = plot_hist(df);
-[h_rma h_rmb h_rmr; h_rtca h_rtcb h_rtcr; h_rh h_rd h_rt] 
-
-h_rh1, h_rma1, h_rmb1, h_rmr1, h_rtca1, h_rtcb1, h_rtcr1, h_rd1, h_rt1 = plot_hist(df1);
-[h_rma1 h_rmb1 h_rmr1; h_rtca1 h_rtcb1 h_rtcr1; h_rh1 h_rd1 h_rt1] 
-
-h_rh2, h_rma2, h_rmb2, h_rmr2, h_rtca2, h_rtcb2, h_rtcr2, h_rd2, h_rt2 = plot_hist(df2);
-[h_rma2 h_rmb2 h_rmr2; h_rtca2 h_rtcb2 h_rtcr2; h_rh2 h_rd2 h_rt2] 
-
-h_rh3, h_rma3, h_rmb3, h_rmr3, h_rtca3, h_rtcb3, h_rtcr3, h_rd3, h_rt3 = plot_hist(df3);
-[h_rma3 h_rmb3 h_rmr3; h_rtca3 h_rtcb3 h_rtcr3; h_rh3 h_rd3 h_rt3] 
-
-h_rh5, h_rma5, h_rmb5, h_rmr5, h_rtca5, h_rtcb5, h_rtcr5, h_rd5, h_rt5 = plot_hist(df5);
-[h_rma5 h_rmb5 h_rmr5; h_rtca5 h_rtcb5 h_rtcr5; h_rh5 h_rd5 h_rt5] 
-
-plot([scatter(x=df_r.time, y=repeat([1],length(df_r.time)), mode="markers"),
-      scatter(x=df_r1.time, y=repeat([2],length(df_r1.time)), mode="markers"),
-      scatter(x=df_r2.time, y=repeat([3],length(df_r2.time)), mode="markers"),
-      scatter(x=df_r3.time, y=repeat([4],length(df_r3.time)), mode="markers")])
+# df[:,:rm_b]
+# any(df_grouped[:,:rm_a] .< 0)
 
 
+# df.bins = ceil.(Int, (1:nrow(df))/100)
+# df_grouped = combine(first, groupby(df, :bins))
+# bins = 25#length(df_grouped.bins)
+# h_rh = plot(histogram(x=df_grouped.rh ./df_grouped.volume, nbinsx=bins));
+# h_rma = plot(histogram(x=df_grouped.rm_a ./df_grouped.volume, nbinsx=bins));
+# h_rmb = plot(histogram(x=df_grouped.rm_b ./df_grouped.volume, nbinsx=bins));
+# h_rmr = plot(histogram(x=df_grouped.rm_r ./df_grouped.volume, nbinsx=bins));
+# h_rtca = plot(histogram(x=df_grouped.rtca ./df_grouped.volume, nbinsx=bins));
+# h_rtcb = plot(histogram(x=df_grouped.rtcb ./df_grouped.volume, nbinsx=bins));
+# h_rtcr = plot(histogram(x=df_grouped.rtcr ./df_grouped.volume, nbinsx=bins));
+# h_rd = plot(histogram(x=df_grouped.rd ./df_grouped.volume, nbinsx=bins));
+# h_rt = plot(histogram(x=df_grouped.rt ./df_grouped.volume, nbinsx=bins));
 
 
+# plot(histogram(x=df_grouped.rh, nbinsx=bins))
+# plot(histogram(x=df_grouped.rm_a, nbinsx=bins))
+# plot(histogram(x=df_grouped.rm_b, nbinsx=bins))
+# plot(histogram(x=df_grouped.rm_r, nbinsx=bins))
+# plot(histogram(x=df_grouped.rtca, nbinsx=bins))
+# plot(histogram(x=df_grouped.rtcb, nbinsx=bins))
+# plot(histogram(x=df_grouped.rtcr, nbinsx=bins))
+# plot(histogram(x=df_grouped.rd, nbinsx=bins))
+# plot(histogram(x=df_grouped.rt, nbinsx=bins))
 
-plot(scatter(x=df.time, y=df.rm_a./df.volume))
-plot(scatter(x=df.time, y=df.rtca))
-plot(scatter(x=df.time,y=df.rtca./df.volume))
-plot(scatter(x=df.time,y=df.rh ./df.volume))
-plot(scatter(x=df.time,y=df.rt ./df.volume))
-plot(scatter(x=df.time,y=df.rd ./df.volume))
-
-
-plot([scatter(x=df.time, y=df.rm_a./df.volume),scattergl(x=df.time, y=df.rh./df.volume)])
-
-filter(row -> row[:event] == 2, df_r).event
-plot([scattergl(x=df.time,y=df.rm_r),scattergl(x=filter(row -> row[:event] == 2, df_r).time,y=filter(row -> row[:event] == 2, df_r).event, mode="markers")])
-plot([scatter(x=df.time,y=df.rm_a),scattergl(x=filter(row -> row[:event] == 1, df_r).time,y=filter(row -> row[:event] == 1, df_r).event, mode="markers")])
-plot([scatter(x=df.time,y=df.rtca),scattergl(x=filter(row -> row[:event] == 3, df_r).time,y=filter(row -> row[:event] == 3, df_r).event, mode="markers")])
+# mean(df.rm_a[10000:end])
 
 
+# time_taken = @elapsed run_stoch(X0, 10, 0.6, "thresh10_kdam06")
+# df = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/X0_init/thresh10_kdam01.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume"]))
 
-react_names = [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr]
-plot(scattergl(x=df_r.time, y=df_r.event, mode="markers", marker_color=df_r.event, marker=attr(colorscale="Viridis")), Layout(yaxis=attr(tickvals=range(1,13), ticktext=react_names)))
+# time_taken = @elapsed run_stoch(X0, 15, 0.6, "thresh15_kdam06")
+# df1 = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/X0_init/thresh15_kdam01.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume"]))
 
-function plotprops(df)
-    props = df.event
-    react_names = [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr, :V]
+# time_taken = @elapsed run_stoch(X0, 20, 0.6, "thresh20_kdam06")
+# df2 = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/X0_init/thresh20_kdam01.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume"]))
 
-    df_props = DataFrame([name => Float64[] for name in react_names])
+# time_taken = @elapsed run_stoch(X0, 100, 0.6, "thresh100_kdam06")
+# df3 = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/X0_init/thresh50_kdam01.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume"]))
 
-    for i in props
-        push!(df_props, [i[j] for j in 1:length(props[end])])
-    end
-    return plot([scatter(x=df.time, y=df_props[1:end,col], name="$col", mode="markers") for col in names(eachcol(df_props[:,1:end-1]))])
+# s = :rm_a
+# p1 = plot(scatter(x=df.time,y=df[:,s] ./df.volume))
+# p2 = plot(scatter(x=df1.time,y=df1[:,s] ./df1.volume));
+# p3 = plot(scatter(x=df2.time,y=df2[:,s] ./df2.volume))
+# p4 = plot(scatter(x=df3.time,y=df3[:,s] ./df3.volume))
 
-end
-p_props = plotprops(df_ns);
-p_props1 = plotprops(df_s);
-[p_props p_props1]
+# p5 = plot(scatter(x=df5.time,y=df5[:,s] ./df5.volume));
+# p5
+# [p1 p2 p3 p4]
 
-open("/home/hollie_hindley/Documents/stochastic_hybrid/p_props.html", "w") do io
-    PlotlyBase.to_html(io, p_props.plot)
-end
+# function df_sort(df)
+#     df.event = [split(replace(i, r"[\[\]\(Any)]" => ""), ",") for i in df.event]
+#     df.event = [parse.(Float64, subarray) for subarray in df.event]
+#     df_p = filter(row -> length(row[:event]) > 1, df)
+#     df_r = filter(row -> length(row[:event]) == 1 && row[:event][1] != 0, df)
+#     df_r.event = first.(df_r.event)
 
+#     props = df_p.event
+#     react_names = [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr, :V]
 
-plot([scatter(x=df.time, y=df.rm_r), scattergl(x=df_p.time,y=df_props[:, :tscr_r], mode="markers")])
+#     df_props = DataFrame([name => Float64[] for name in react_names])
 
-time_taken = @elapsed run_stoch(X0, 0, 0.6, "det")
+#     for i in props
+#         push!(df_props, [i[j] for j in 1:length(props[end])])
+#     end
+#     return df_props, df_r, df_p
+# end
 
-df = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/det.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume"]))
+# df_props, df_r, df_p = df_sort(df)
+# df_props1, df_r1, df_p1 = df_sort(df1)
+# df_props2, df_r2, df_p2 = df_sort(df2)
+# df_props3, df_r3, df_p3 = df_sort(df3)
 
-plot([scatter(x=df_rtc.time, y=df_rtc.rh), scatter(x=df.time, y=df.rh ./df.volume)])
-plot([scatter(x=df_rtc.time, y=df_rtc.rm_a), scatter(x=df.time, y=df.rm_a ./df.volume)])
-plot([scatter(x=df_rtc.time, y=df_rtc.rtca), scatter(x=df.time, y=df.rtca ./df.volume)])
-plot([scatter(x=df_rtc.time, y=df_rtc.rm_b), scatter(x=df.time, y=df.rm_b ./df.volume)])
-plot([scatter(x=df_rtc.time, y=df_rtc.rtcb), scatter(x=df.time, y=df.rtcb ./df.volume)])
-plot([scatter(x=df_rtc.time, y=df_rtc.rm_r), scatter(x=df.time, y=df.rm_r ./df.volume)])
-plot([scatter(x=df_rtc.time, y=df_rtc.rtcr), scatter(x=df.time, y=df.rtcr ./df.volume)])
-plot([scatter(x=df_rtc.time, y=df_rtc.rt), scatter(x=df.time, y=df.rt ./df.volume)])
-plot([scatter(x=df_rtc.time, y=df_rtc.rd), scatter(x=df.time, y=df.rd ./df.volume)])
+# react_names = [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr]
+# pr1 = plot(scattergl(x=df_r.time, y=df_r.event, mode="markers", marker_color=df_r.event, marker=attr(colorscale="Viridis")), Layout(yaxis=attr(tickvals=range(1,13), ticktext=react_names)));
+# pr2 = plot(scattergl(x=df_r1.time, y=df_r1.event, mode="markers", marker_color=df_r1.event, marker=attr(colorscale="Viridis")), Layout(yaxis=attr(tickvals=range(1,13), ticktext=react_names)));
+# pr3 = plot(scattergl(x=df_r2.time, y=df_r2.event, mode="markers", marker_color=df_r2.event, marker=attr(colorscale="Viridis")), Layout(yaxis=attr(tickvals=range(1,13), ticktext=react_names)));
+# pr4 = plot(scattergl(x=df_r3.time, y=df_r3.event, mode="markers", marker_color=df_r3.event, marker=attr(colorscale="Viridis")), Layout(yaxis=attr(tickvals=range(1,13), ticktext=react_names)));
+
+# [pr1 pr2 pr3 pr4]
+# length(df_props.tlr_a),length(df_props1.tlr_a),length(df_props2.tlr_a),length(df_props3.tlr_a)
+
+# p_props = plot([scatter(x=df_p.time, y=df_props[1:100:end,col], name="$col", mode="markers") for col in names(eachcol(df_props[:,1:end-1]))])
+# p_props1 = plot([scatter(x=df_p1.time, y=df_props1[1:100:end,col], name="$col", mode="markers") for col in names(eachcol(df_props1[:,1:end-1]))]);
+# p_props2 = plot([scatter(x=df_p2.time, y=df_props2[1:100:end,col], name="$col", mode="markers") for col in names(eachcol(df_props2[:,1:end-1]))]);
+# p_props3 = plot([scatter(x=df_p3.time, y=df_props3[1:100:end,col], name="$col", mode="markers") for col in names(eachcol(df_props3[:,1:end-1]))]);
+
+# [p_props p_props1 p_props2 p_props3]
+
+# function plot_hist(df)
+#     df.bins = ceil.(Int, (1:nrow(df))/100)
+#     df_grouped = combine(first, groupby(df, :bins))
+#     bins = 59#length(df_grouped.bins)
+#     h_rh = plot(histogram(x=df_grouped.rh ./df_grouped.volume, nbinsx=bins, name="rh"));
+#     h_rma = plot(histogram(x=df_grouped.rm_a ./df_grouped.volume, nbinsx=bins, name="rm_a"));
+#     h_rmb = plot(histogram(x=df_grouped.rm_b ./df_grouped.volume, nbinsx=bins, name="rm_b"));
+#     h_rmr = plot(histogram(x=df_grouped.rm_r ./df_grouped.volume, nbinsx=bins, name="rm_r"));
+#     h_rtca = plot(histogram(x=df_grouped.rtca ./df_grouped.volume, nbinsx=bins, name="rtca"));
+#     h_rtcb = plot(histogram(x=df_grouped.rtcb ./df_grouped.volume, nbinsx=bins, name="rtcb"));
+#     h_rtcr = plot(histogram(x=df_grouped.rtcr ./df_grouped.volume, nbinsx=bins, name="rtcr"));
+#     h_rd = plot(histogram(x=df_grouped.rd ./df_grouped.volume, nbinsx=bins, name="rd"));
+#     h_rt = plot(histogram(x=df_grouped.rt ./df_grouped.volume, nbinsx=bins, name="rt"));
+#     return h_rh, h_rma, h_rmb, h_rmr, h_rtca, h_rtcb, h_rtcr, h_rd, h_rt
+# end
+# h_rh, h_rma, h_rmb, h_rmr, h_rtca, h_rtcb, h_rtcr, h_rd, h_rt = plot_hist(df);
+# [h_rma h_rmb h_rmr; h_rtca h_rtcb h_rtcr; h_rh h_rd h_rt] 
+
+# h_rh1, h_rma1, h_rmb1, h_rmr1, h_rtca1, h_rtcb1, h_rtcr1, h_rd1, h_rt1 = plot_hist(df1);
+# [h_rma1 h_rmb1 h_rmr1; h_rtca1 h_rtcb1 h_rtcr1; h_rh1 h_rd1 h_rt1] 
+
+# h_rh2, h_rma2, h_rmb2, h_rmr2, h_rtca2, h_rtcb2, h_rtcr2, h_rd2, h_rt2 = plot_hist(df2);
+# [h_rma2 h_rmb2 h_rmr2; h_rtca2 h_rtcb2 h_rtcr2; h_rh2 h_rd2 h_rt2] 
+
+# h_rh3, h_rma3, h_rmb3, h_rmr3, h_rtca3, h_rtcb3, h_rtcr3, h_rd3, h_rt3 = plot_hist(df3);
+# [h_rma3 h_rmb3 h_rmr3; h_rtca3 h_rtcb3 h_rtcr3; h_rh3 h_rd3 h_rt3] 
+
+# h_rh5, h_rma5, h_rmb5, h_rmr5, h_rtca5, h_rtcb5, h_rtcr5, h_rd5, h_rt5 = plot_hist(df5);
+# [h_rma5 h_rmb5 h_rmr5; h_rtca5 h_rtcb5 h_rtcr5; h_rh5 h_rd5 h_rt5] 
+
+# plot([scatter(x=df_r.time, y=repeat([1],length(df_r.time)), mode="markers"),
+#       scatter(x=df_r1.time, y=repeat([2],length(df_r1.time)), mode="markers"),
+#       scatter(x=df_r2.time, y=repeat([3],length(df_r2.time)), mode="markers"),
+#       scatter(x=df_r3.time, y=repeat([4],length(df_r3.time)), mode="markers")])
 
 
 
-plot([scatter(x=df_rtc.time, y=df_rtc.rm_a), scatter(x=df.time, y=df.rm_a)])
-plot([scatter(x=df_rtc.time, y=df_rtc.rtca), scatter(x=df.time, y=df.rtca)])
-plot([scatter(x=df_rtc.time, y=df_rtc.rm_b), scatter(x=df.time, y=df.rm_b)])
-plot([scatter(x=df_rtc.time, y=df_rtc.rtcb), scatter(x=df.time, y=df.rtcb)])
-plot([scatter(x=df_rtc.time, y=df_rtc.rm_r), scatter(x=df.time, y=df.rm_r)])
-plot([scatter(x=df_rtc.time, y=df_rtc.rtcr), scatter(x=df.time, y=df.rtcr)])
-plot([scatter(x=df_rtc.time, y=df_rtc.rh), scatter(x=df.time, y=df.rh)])
 
 
-plot(scatter(x=df.time, y=df.volume))
+# plot(scatter(x=df.time, y=df.rm_a./df.volume))
+# plot(scatter(x=df.time, y=df.rtca))
+# plot(scatter(x=df.time,y=df.rtca./df.volume))
+# plot(scatter(x=df.time,y=df.rh ./df.volume))
+# plot(scatter(x=df.time,y=df.rt ./df.volume))
+# plot(scatter(x=df.time,y=df.rd ./df.volume))
+
+
+# plot([scatter(x=df.time, y=df.rm_a./df.volume),scattergl(x=df.time, y=df.rh./df.volume)])
+
+# filter(row -> row[:event] == 2, df_r).event
+# plot([scattergl(x=df.time,y=df.rm_r),scattergl(x=filter(row -> row[:event] == 2, df_r).time,y=filter(row -> row[:event] == 2, df_r).event, mode="markers")])
+# plot([scatter(x=df.time,y=df.rm_a),scattergl(x=filter(row -> row[:event] == 1, df_r).time,y=filter(row -> row[:event] == 1, df_r).event, mode="markers")])
+# plot([scatter(x=df.time,y=df.rtca),scattergl(x=filter(row -> row[:event] == 3, df_r).time,y=filter(row -> row[:event] == 3, df_r).event, mode="markers")])
+
+
+
+# react_names = [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr]
+# plot(scattergl(x=df_r.time, y=df_r.event, mode="markers", marker_color=df_r.event, marker=attr(colorscale="Viridis")), Layout(yaxis=attr(tickvals=range(1,13), ticktext=react_names)))
+
+# function plotprops(df)
+#     props = df.event
+#     react_names = [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr, :V]
+
+#     df_props = DataFrame([name => Float64[] for name in react_names])
+
+#     for i in props
+#         push!(df_props, [i[j] for j in 1:length(props[end])])
+#     end
+#     return plot([scatter(x=df.time, y=df_props[1:end,col], name="$col", mode="markers") for col in names(eachcol(df_props[:,1:end-1]))])
+
+# end
+# p_props = plotprops(df_ns);
+# p_props1 = plotprops(df_s);
+# [p_props p_props1]
+
+# open("/home/hollie_hindley/Documents/stochastic_hybrid/p_props.html", "w") do io
+#     PlotlyBase.to_html(io, p_props.plot)
+# end
+
+
+# plot([scatter(x=df.time, y=df.rm_r), scattergl(x=df_p.time,y=df_props[:, :tscr_r], mode="markers")])
+
+# time_taken = @elapsed run_stoch(X0, 0, 0.6, "det")
+
+# df = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/det.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume"]))
+
+# plot([scatter(x=df_rtc.time, y=df_rtc.rh), scatter(x=df.time, y=df.rh ./df.volume)])
+# plot([scatter(x=df_rtc.time, y=df_rtc.rm_a), scatter(x=df.time, y=df.rm_a ./df.volume)])
+# plot([scatter(x=df_rtc.time, y=df_rtc.rtca), scatter(x=df.time, y=df.rtca ./df.volume)])
+# plot([scatter(x=df_rtc.time, y=df_rtc.rm_b), scatter(x=df.time, y=df.rm_b ./df.volume)])
+# plot([scatter(x=df_rtc.time, y=df_rtc.rtcb), scatter(x=df.time, y=df.rtcb ./df.volume)])
+# plot([scatter(x=df_rtc.time, y=df_rtc.rm_r), scatter(x=df.time, y=df.rm_r ./df.volume)])
+# plot([scatter(x=df_rtc.time, y=df_rtc.rtcr), scatter(x=df.time, y=df.rtcr ./df.volume)])
+# plot([scatter(x=df_rtc.time, y=df_rtc.rt), scatter(x=df.time, y=df.rt ./df.volume)])
+# plot([scatter(x=df_rtc.time, y=df_rtc.rd), scatter(x=df.time, y=df.rd ./df.volume)])
+
+
+
+# plot([scatter(x=df_rtc.time, y=df_rtc.rm_a), scatter(x=df.time, y=df.rm_a)])
+# plot([scatter(x=df_rtc.time, y=df_rtc.rtca), scatter(x=df.time, y=df.rtca)])
+# plot([scatter(x=df_rtc.time, y=df_rtc.rm_b), scatter(x=df.time, y=df.rm_b)])
+# plot([scatter(x=df_rtc.time, y=df_rtc.rtcb), scatter(x=df.time, y=df.rtcb)])
+# plot([scatter(x=df_rtc.time, y=df_rtc.rm_r), scatter(x=df.time, y=df.rm_r)])
+# plot([scatter(x=df_rtc.time, y=df_rtc.rtcr), scatter(x=df.time, y=df.rtcr)])
+# plot([scatter(x=df_rtc.time, y=df_rtc.rh), scatter(x=df.time, y=df.rh)])
+
+
+# plot(scatter(x=df.time, y=df.volume))
 # sf1 = @. (1e6/(6.022e23*(df.volume*1e-15)))
 # atp1 = @. (par[pidx(:atp)]/sf1)#/df.volume
 # p=plot(scatter(x=df.time,y=sf1))

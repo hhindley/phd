@@ -1,4 +1,4 @@
-using CSV, Arrow, FilePathsBase, Distributed
+using CSV, Arrow, FilePathsBase, Distributed, JSON
 
 function arrow_conv(folder_path, arrow_folder_path)
     folder_path = folder_path
@@ -8,7 +8,8 @@ function arrow_conv(folder_path, arrow_folder_path)
         mkdir(arrow_folder_path)
     end
     for file in files
-        df = DataFrame(CSV.File(joinpath(folder_path, file), header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"]))
+        df = DataFrame(CSV.File(joinpath(folder_path, file), header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"]))[:,1:end-1]
+        df.event = Array{Float64}.(JSON.parse.(df.event))
         Arrow.write(joinpath(arrow_folder_path, splitext(basename(file))[1] * ".arrow"), df)
     end
     rm(folder_path, recursive=true, force=true)
