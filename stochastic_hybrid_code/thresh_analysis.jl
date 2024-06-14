@@ -1,4 +1,4 @@
-using StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase, Distributed
+using StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase, Distributed, TableOperations, JSON
 # using PlotlyJS
 using InteractiveViz, GLMakie
 
@@ -52,21 +52,16 @@ plotBIG(df_results.time, df_results.rm_a)
 @elapsed df_p = @view df[findall(row -> length(row[:event]) > 3, eachrow(df)), :]
 
 
-@elapsed atab = Arrow.Table("/Users/s2257179/stoch_files/thresh_test_arrow/thresh_10.0.arrow")
-@elapsed filtered_rows = [row for row in atab.event if length(row) > 3]
+ 
+react_names = [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr, :V]
 
-atab.event
-
-using TableOperations
-
-@elapsed atab |> TableOperations.filter(x -> length(x.event) > 3) |> Tables.columntable
-
-atab
-
-atab |> TableOperations.transform(event = x -> split(x, ",")) |> Tables.columntable
-
-ctable = (A=[1, missing, 3], B=[1.0, 2.0, 3.0], C=["hey", "there", "sailor"])
-table = ctable |> TableOperations.transform(C=x->Symbol(x)) |> Tables.columntable
+@elapsed atab = Arrow.Table("/Users/s2257179/phd/stochastic_hybrid_code/test.arrow")
+@elapsed df_p = atab |> TableOperations.filter(x -> length(x.event) > 3) |> DataFrame
+@elapsed df_r = atab |> TableOperations.filter(x -> length(x.event) < 3 && x.event[1] !=0) |> DataFrame
+@elapsed df_prop = DataFrame(transpose(hcat(df_p.event...)), react_names)
+@elapsed df_react = combine(groupby(df_r, :event), nrow => :count)[2:11,:]
+@elapsed df_react.event = reduce(vcat, map(v -> round.(Int64, v), collect.(df_react.event)))
+insertcols!(df_react, :reaction => react_names[df_react.event])
 
 
-
+@elapsed loadandsort_arrow_file("/Users/s2257179/phd/stochastic_hybrid_code/test.arrow")
