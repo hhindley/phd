@@ -5,48 +5,46 @@ include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params_molecs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/indexing.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/hybrid_algo.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/stoch_model.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 
-
-n= 2 # number of cell cycles
+n= 10 # number of cell cycles
 options = Dict(
 "threshold"  =>  0.,       # Threshold to decide between determinisitic or stochastic reaction
 "FixDetReact"=> [14],# [10,11,12,13,14,15,16,17,18],       # Reactions to be treated determinisitically
     "tspan"     =>   n*log(2)/lam_val,     # Max time for cell cycle
-    "samplingFreq"  => 1#0.1  # for sampling every x mins
+    "samplingFreq"  => 0.1  # for sampling every x mins
 )
-
-n*log(2)/lam_val
-# X0 = collect(get_X0(indV)')
 
 X0 = collect(get_X0(indV, init_molec)')
 par = collect(get_par(indP)')
 
-
 getssX0 = true
 if getssX0
-    fout=open(joinpath(homedir(),"phd/stochastic_hybrid_code/X0.dat"),"w")
+    fout=open(joinpath(homedir(), "Documents/stochastic_hybrid/X0.dat"),"w")
     propen, S, propList = defineStochModel(par, indV)
     nx = indV.nrOfItems-1
     prop(X) = propen(X[1:nx])
     X0 = hybrid_algo(X0, options, prop, S, out=fout)
     X0[vidx(:V)] = 1
-
-    CSV.write(joinpath(homedir(),"phd/stochastic_hybrid_code/X0.dat"), DataFrame(X0,:auto), header=false)
+    # run_stoch(X0, 0, 0, "X0")
+    # df = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume"]))
+    # ss_df = df[1000:end,:]
+    # ss = [mean(df[:,col]) for col in names(eachcol(df[:,3:end-2]))]
+    # X0 = collect(get_X0(indV, ss)')
+    CSV.write(joinpath(homedir(), "Documents/stochastic_hybrid/X0.dat"), DataFrame(X0,:auto), header=false)
 else
-    X0 = CSV.read(joinpath(homedir(),"phd/stochastic_hybrid_code/X0.dat"), Tables.matrix, header=false)
+    X0 = CSV.read(joinpath(homedir(), "Documents/stochastic_hybrid/X0.dat"), Tables.matrix, header=false)
 end
 
 
-using Arrow
-include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/hybrid_algo.jl"))
-
-time_taken = @elapsed run_stoch(X0, 20, 0.6, "test/test.dat")
-df = DataFrame(CSV.File(joinpath(homedir(),"phd/stochastic_hybrid_code/test.dat"), header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"]))[:,1:end-1]
+time_taken = @elapsed run_stoch(X0, 10, 0.05, "test/test.dat")
+# df = DataFrame(CSV.File(joinpath(homedir(),"phd/stochastic_hybrid_code/test.dat"), header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"]))[:,1:end-1]
 
 
-arrow_conv("/Users/s2257179/phd/stochastic_hybrid_code/test", "/Users/s2257179/phd/stochastic_hybrid_code/test_arrow")
-@elapsed df = Arrow.Table("/Users/s2257179/phd/stochastic_hybrid_code/test_arrow/test.arrow") |> DataFrame
-df
+arrow_conv(joinpath(homedir(), "phd/stochastic_hybrid_code/test"), joinpath(homedir(), "phd/stochastic_hybrid_code/test_arrow"))
+@elapsed df = Arrow.Table(joinpath(homedir(), "phd/stochastic_hybrid_code/test_arrow/test.arrow")) |> DataFrame
+
+
 
 
 # n = DataFrame(a=[[1,2,4],[2],[3]])
