@@ -7,41 +7,32 @@ function arrow_conv(folder_path, arrow_folder_path)
     if !isdir(arrow_folder_path)
         mkdir(arrow_folder_path)
     end
+
     for file in files
         df = DataFrame(CSV.File(joinpath(folder_path, file), header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"]))[:,1:end-1]
-        print("$file df complete \n")
+        # print("$file df complete \n")
         df.event = Array{Float64}.(JSON.parse.(df.event))
-        print("$file df event converted \n")
+        # print("$file df event converted \n")
         Arrow.write(joinpath(arrow_folder_path, splitext(basename(file))[1] * ".arrow"), df)
-        print("$file arrow file created \n")
-        rm(joinpath(folder_path, file), force=true)
-        print("$file removed \n")
+        # print("$file arrow file created \n")
+        # rm(joinpath(folder_path, file), force=true)
+        # print("$file removed \n")
     end
-    # rm(folder_path, recursive=true, force=true)
+    rm(folder_path, recursive=true, force=true)
 end
 
-function get_prop_cols(df)
-    return @view df[findall(row -> length(row[:event]) > 3, eachrow(df)), :]
-end
-function str_to_arr(str)
-    str = replace!(str, "[" => "", "]" => "", " " => "")
-    str_arr = split!(str, ",")
-    return parse.(Float64, str_arr)
-end
-function get_reacts(df)
-    return @view df[findall(row -> length(row[:event]) < 3 && row[:event][1] != 0, eachrow(df)), :]
-end
 
 function loadandsort_arrow_file(file)
     atab = Arrow.Table(file)
     df_p = atab |> TableOperations.filter(x -> length(x.event) > 3) |> DataFrame
     df_r = atab |> TableOperations.filter(x -> length(x.event) < 3 && x.event[1] !=0) |> DataFrame
-    df_prop = DataFrame(transpose(hcat(df_p.event...)), react_names)
+    df_prop = DataFrame(transpose(hcat(df_p.event...)), [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr, :V])
     df_react = combine(groupby(df_r, :event), nrow => :count)[2:11,:]
     df_react.event = reduce(vcat, map(v -> round.(Int64, v), collect.(df_react.event)))
     insertcols!(df_react, :reaction => react_names[df_react.event])
 
     return df_prop, df_react, df_p
+
 end
 
 # function loadandsort_arrow_file(file)
@@ -73,16 +64,23 @@ end
 # end
 
 function loadsort_all_arrow_files(folder_path)
-    files = readdir(folder_path)[1:2]
-    n = length(files)
-    df_props = Vector{DataFrame}(undef, n)
-    df_reacts = Vector{DataFrame}(undef, n)
-    df_res = Vector{DataFrame}(undef, n)
-
-    for (i, file) in collect(enumerate(files))
-        file_name = joinpath(folder_path, file)
-        df_props[i], df_reacts[i], df_res[i] = loadandsort_arrow_file(file_name)
+    # folder_path = folder_path
+    for i in ["results", "props", "reacts"]
+        if !isdir(joinpath(folder_path, i))
+            print(joinpath(folder_path, i))
+            mkdir(joinpath(folder_path, i))
+        end
+    end
+    files = filter(isfile, readdir(folder_path, join=true))#[1:2]
+    print(files)
+    for file in files
+        # file_name = joinpath(folder_path, file)
+        # print(file)
+        df_prop, df_react, df_res = loadandsort_arrow_file(file)
+        Arrow.write(joinpath(folder_path, "results/$(basename(file))"), df_res::DataFrame)
+        Arrow.write(joinpath(folder_path, "props/$(basename(file))"), df_prop::DataFrame)
+        Arrow.write(joinpath(folder_path, "reacts/$(basename(file))"), df_react::DataFrame)
+    
     end
 
-    return df_props, df_reacts, df_res
 end 
