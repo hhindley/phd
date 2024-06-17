@@ -7,3 +7,6 @@ arrow_conv("/home/hollie_hindley/Documents/stochastic_hybrid/thresh_test", "/hom
 dfs = load_arrow_files("/home/hollie_hindley/Documents/phd/stochastic_hybrid_code/testing_conv_arrow")
 
 # now need to convert all .dat files to .arrow files that I plan to analyse
+
+
+

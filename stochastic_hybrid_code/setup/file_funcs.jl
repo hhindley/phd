@@ -1,4 +1,4 @@
-using CSV, Arrow, FilePathsBase, Distributed, JSON
+using CSV, Arrow, FilePathsBase, Distributed, JSON, DataFrames
 
 function arrow_conv(folder_path, arrow_folder_path)
     folder_path = folder_path
@@ -9,10 +9,15 @@ function arrow_conv(folder_path, arrow_folder_path)
     end
     for file in files
         df = DataFrame(CSV.File(joinpath(folder_path, file), header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"]))[:,1:end-1]
+        print("$file df complete \n")
         df.event = Array{Float64}.(JSON.parse.(df.event))
+        print("$file df event converted \n")
         Arrow.write(joinpath(arrow_folder_path, splitext(basename(file))[1] * ".arrow"), df)
+        print("$file arrow file created \n")
+        rm(joinpath(folder_path, file), force=true)
+        print("$file removed \n")
     end
-    rm(folder_path, recursive=true, force=true)
+    # rm(folder_path, recursive=true, force=true)
 end
 
 function get_prop_cols(df)

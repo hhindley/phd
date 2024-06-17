@@ -33,22 +33,22 @@ end
 
 
 
-threshold_vals = range(10,310,length=20)
+threshold_vals = range(246,310,length=5)
 # threshold_vals = range(0,1,length=2)
 
 times=[]
 for i in ProgressBar(threshold_vals)
-    time_taken = @elapsed run_stoch(X0, i, 0.05, "/home/hollie_hindley/Documents/stochastic_hybrid/thresh_test/thresh_$i.dat")
+    time_taken = @elapsed run_stoch(X0, i, 0.05, "/home/hollie_hindley/Documents/stochastic_hybrid/thresh_test_last5/thresh_$i.dat")
     push!(times, time_taken)
 end
 
 df = DataFrame(threshold=threshold_vals, time=times)
 
-CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/thresh_times.csv", df)
+CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/thresh_times_last5.csv", df)
 
 println("total time = $(sum(times)/60/60) hours")
 
-arrow_conv(joinpath(homedir(), "Documents/stochastic_hybrid/thresh_test"), joinpath(homedir(), "Documents/stochastic_hybrid/thresh_test_arrow_files_14_06"))
+arrow_conv(joinpath(homedir(), "Documents/stochastic_hybrid/thresh_test_last5"), joinpath(homedir(), "Documents/stochastic_hybrid/thresh_test_arrow_files_14_06_last5"))
 
 print("finished!")
 
