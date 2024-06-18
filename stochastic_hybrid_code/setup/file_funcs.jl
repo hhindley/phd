@@ -87,10 +87,18 @@ function arrow_conv(folder_path, arrow_folder_path)
         # close(reacts_writer)
     end
 
-    # rm(folder_path, recursive=true, force=true)
+    rm(folder_path, recursive=true, force=true)
 end
 
-
+function load_files(folder_path)
+    files = readdir(folder_path)
+    df_list = []
+    for file in files
+        df = Arrow.Table(joinpath(folder_path, file)) |> DataFrame
+        push!(df_list, df)
+    end
+    return df_list
+end
 # function loadandsort_arrow_file(file)
 #     atab = Arrow.Table(file)
 #     df_p = atab |> TableOperations.filter(x -> length(x.event) > 3) |> DataFrame
