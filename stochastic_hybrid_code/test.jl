@@ -7,7 +7,7 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/hybrid_algo.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/stoch_model.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 
-n= 10000 # number of cell cycles
+n= 100 # number of cell cycles
 options = Dict(
 "threshold"  =>  0.,       # Threshold to decide between determinisitic or stochastic reaction
 "FixDetReact"=> [14],# [10,11,12,13,14,15,16,17,18],       # Reactions to be treated determinisitically
@@ -18,7 +18,7 @@ options = Dict(
 X0 = collect(get_X0(indV, init_molec)')
 par = collect(get_par(indP)')
 
-getssX0 = true
+getssX0 = false
 if getssX0
     fout=open(joinpath(homedir(), "Documents/stochastic_hybrid/X0.dat"),"w")
     propen, S, propList = defineStochModel(par, indV)
@@ -37,7 +37,7 @@ else
 end
 
 
-time_taken = @elapsed run_stoch(X0, 10, 0.05, "test/test.dat")
+time_taken = @elapsed run_stoch(X0, 10, 0.05, "/home/hollie_hindley/Documents/stochastic_hybrid/test/test.dat")
 # df = DataFrame(CSV.File(joinpath(homedir(),"phd/stochastic_hybrid_code/test.dat"), header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"]))[:,1:end-1]
 
 
