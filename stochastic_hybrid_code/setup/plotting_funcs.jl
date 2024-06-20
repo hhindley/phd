@@ -33,6 +33,7 @@ function plot_subplots(df_results, species, threshold_vals)
             end
         end
     end
+    linkaxes!(filter(x -> x isa Axis, f.content)...)
     save("/Users/s2257179/phd/stochastic_hybrid_code/thresh_plots/$species.png", f)
 
     return f
@@ -70,4 +71,37 @@ end
 
 function makiex(x)
     return range(minimum(x), maximum(x), length=length(x))
+end
+
+
+function plot_props(df_results)
+    max_value = mapreduce(df -> maximum(maximum(df.event)), max, df_results)
+
+    f = Figure(size=(1450, 900))
+    total_rows = 5
+    total_columns = 4
+
+    for j in 1:total_columns
+        for i in 1:total_rows
+            data_ind = i + total_rows * (j - 1)
+            println(data_ind)
+            ax = Axis(f[i, j], xlabel = "time", ylabel = "propensity", title="threshold: $(round(threshold_vals[data_ind], digits=2))")
+            for r in names(df_props[data_ind])
+                iscatter!(ax, df_results[data_ind].time, df_props[data_ind][:,r])
+            end
+            ylims!(ax, 0,max_value)
+
+            # Hide x-axis decorations for axes not in the bottom row
+            if i != total_rows
+                hidexdecorations!(ax, grid=false)
+            end
+
+            # Hide y-axis decorations for axes not in the first column
+            if j > 1
+                hideydecorations!(ax, grid=false)
+            end
+        end
+    end
+    linkaxes!(filter(x -> x isa Axis, f.content)...)
+    save("/Users/s2257179/phd/stochastic_hybrid_code/thresh_plots/props.png", f)
 end
