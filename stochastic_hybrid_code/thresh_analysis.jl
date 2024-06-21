@@ -77,134 +77,71 @@ plot_subplots_hists(df_reacts, threshold_vals)
 # ylims!(ax, 0,maximum([maximum(i) for i in eachcol(df_props[1])]))
 
 
+df = Arrow.Table("/Users/s2257179/phd/stochastic_hybrid_code/thresh_10.0.arrow") |> DataFrame
+
+total_time = df.time[end]
+hist_df = DataFrame(t = df.time, s = df[:,:rtca])
+bin_edges = range(minimum(hist_df.s),maximum(hist_df.s)+0.01, length=51)
+
+hist_df.bin = cut(hist_df.s, bin_edges)
+hist_df.bin_index = levelcode.(hist_df.bin)
+hist_df.actual_index = 1:length(hist_df.s)
+
+grouped_df = groupby(hist_df, :bin_index)
 
 
-
-
-hist_df = DataFrame(rtca = sort(df_results[1].rtca))
-length(hist_df.rtca) ÷ 20
-
-new_col = repeat(1:20, inner=length(hist_df.rtca) ÷ 20)
-addons = repeat([20], inner=length(hist_df.rtca) % 20)
-
-hist_df.group = vcat(new_col, addons)
-
-hist_df
-
-groupby(hist_df, :group)
-
-hist_df.rtca
-
-using CategoricalArrays
-bin_edges = 0:1000:maximum(hist_df.rtca) + 10
-
-maximum(hist_df.rtca)
-bin_indices = cut(hist_df.rtca, bin_edges)
-
-function custom_cut(values, edges)
-    bins = zeros(Int, length(values))
-    for (i, value) in enumerate(values)
-        for (j, edge) in enumerate(edges)
-            if j == length(edges) || (value >= edges[j] && value < edges[j+1])
-                bins[i] = j
-                break
+function get_time_in_state(grouped_df)
+    in_sequence = false
+    stops = []
+    starts = []
+    # println("looping through indexes")
+    for i in 1:length(grouped_df.actual_index) - 1
+        # println("checking if increasing by 1")
+        if grouped_df.actual_index[i] + 1 == grouped_df.actual_index[i + 1]
+            if !in_sequence
+                # Sequence starts increasing by 1
+                in_sequence = true
+                # println("storing the start index")
+                push!(starts, i)  # Store the start index
+            end
+        else
+            if in_sequence
+                # println("sequence stops increasing by 1")
+                # Sequence stops increasing by 1
+                in_sequence = false
+                # println("storing the stop index")
+                push!(stops, i)  # Store the stop index
             end
         end
     end
-    return bins
-end
 
-# Apply the custom cut function to assign each rtca value to a bin
-bin_indices = custom_cut(hist_df.rtca, bin_edges)
-
-bin_counts = countmap(bin_indices)
-
-bin_counts_full = [get(bin_counts, i, 0) for i in 1:length(bin_edges)-1]
-
-fig = Figure()
-ax = Axis(fig[1, 1], xlabel = "RTCA Range", ylabel = "Count", title = "RTCA Histogram")
-barplot!(ax, bin_edges[1:end-1], bin_counts_full)
-
-# Add the bin_indices as a column to your DataFrame
-hist_df.bin = bin_indices
-
-length(bin_edges)-1
-
-
-total_time = df_results[1].time[end]
-hist_df = DataFrame(t = df_results[1].time, s = df_results[1][:,:rtca])
-bin_edges = range(minimum(hist_df.s),maximum(hist_df.s)+0.01, length=21)
-hist_times = hist_df.t
-freqs = Float64[]
-for bin in 1:(length(bin_edges)-1)
-    println("$bin, $(bin+1)")
-    num_in_range = get_bins(hist_df, bin_edges, bin)
-    println("got num in range")
-    time_in_state = get_timeInState(num_in_range, hist_df)
-    println("got time in state")
-    push!(freqs, (length(num_in_range.s)*tot_time_in_state)/total_time)
-end
-
-function get_bins(hist_df, bin_edges, bin)
-    lb = bin_edges[bin]
-    ub = bin_edges[bin+1]
-    # num_in_range = filter(x -> lb <= x.s < ub, hist_df)
-    allowmissing!(hist_df)
-    num_in_range = subset(hist_df, AsTable(:s) => (@. x-> lb <= x.s < ub))
-    return num_in_range
-end
-
-function get_timeInState(num_in_range, hist_df)
-    tot_time_in_state = 0
-    hist_times = hist_df.t  
-    for row in ProgressBar(eachrow(num_in_range))
-        index = FindFirstFunctions.findfirstequal(row.t, hist_times)
-        if index != 1
-            prev_time = hist_times[index-1]
-            time_in_state = row.t - prev_time
-            tot_time_in_state += time_in_state
-        end
+    # Handle the case where the sequence ends with the last element
+    # println("sequence ends with last element case")
+    if in_sequence
+        push!(stops, length(grouped_df.actual_index))
     end
+
+    # println("calculating total time in each state!")
+    tot_time_in_state = 0
+    for i in eachindex(stops)
+        tot_time_in_state += grouped_df.t[stops[i]]-grouped_df.t[starts[i]]
+    end
+
+    println("finished!")
     return tot_time_in_state
 end
 
-num_in_range = get_bins(hist_df, bin_edges, 1)
-@elapsed tot = get_timeInState(num_in_range, hist_df)
+grouped_df[50].t[end]-grouped_df[50].t[1]
 
-tot
-total_time
-# why does it slow down so much in later stages of for loop ^^^^
+tot_time = get_time_in_state(grouped_df[20])
 
-bin_edges
-hist_df.bin = cut(hist_df.s, bin_edges)
+hist_freq = DataFrame(bin = unique(hist_df.bin), freq = zeros(length(unique(hist_df.bin))))
 
-grouped_df = groupby(hist_df, :bin)
-
-
-
-
-hist_df.bin
-bin_time_df = DataFrame(bin = unique(hist_df.bin), total_time = zeros(length(unique(hist_df.bin))))
-
-for bin in unique(hist_df.bin)
-    bin_df = filter(row -> row.bin == bin, hist_df)
-    # num_in_range = subset(hist_df, AsTable(:s) => (@. x-> lb <= x.s < ub))
-    sort!(bin_df, :t)
-    time_diffs = diff(bin_df.t)
-    bin_time_df[bin_time_df.bin .== bin, :total_time] .= sum(time_diffs)
+total_time = hist_df.t[end]
+for (df,i) in ProgressBar(zip(grouped_df, 1:length(grouped_df)))
+    tot_time_in_state = get_time_in_state(df)
+    hist_freq[i, :freq] = (length(df.t)*tot_time_in_state)/total_time
 end
 
-bin_time_df
-total_time
 
-
-
-
-
-
-df = Arrow.Table("/Users/s2257179/stoch_files/thresh_test_arrow_files_14_06/results/thresh_10.0.arrow")
-
-df.rtca
-
-new_df = DataFrame(t=df.time,s=df.rtca)
 
