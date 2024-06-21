@@ -79,16 +79,20 @@ plot_subplots_hists(df_reacts, threshold_vals)
 
 df = Arrow.Table("/Users/s2257179/phd/stochastic_hybrid_code/thresh_10.0.arrow") |> DataFrame
 
-total_time = df.time[end]
-hist_df = DataFrame(t = df.time, s = df[:,:rtca])
-bin_edges = range(minimum(hist_df.s),maximum(hist_df.s)+0.01, length=51)
+function get_grouped_df(data, specie)
+    total_time = df.time[end]
+    hist_df = DataFrame(t = data.time, s = data[:,specie])
+    bin_edges = range(minimum(hist_df.s),maximum(hist_df.s)+0.01, length=51)
 
-hist_df.bin = cut(hist_df.s, bin_edges)
-hist_df.bin_index = levelcode.(hist_df.bin)
-hist_df.actual_index = 1:length(hist_df.s)
+    hist_df.bin = cut(hist_df.s, bin_edges)
+    hist_df.bin_index = levelcode.(hist_df.bin)
+    hist_df.actual_index = 1:length(hist_df.s)
 
-grouped_df = groupby(hist_df, :bin_index)
+    grouped_df = groupby(hist_df, :bin_index)
+    return grouped_df, hist_df
+end
 
+grouped_df, hist_df = get_grouped_df(df, :rh)
 
 function get_time_in_state(grouped_df)
     in_sequence = false
@@ -131,17 +135,30 @@ function get_time_in_state(grouped_df)
     return tot_time_in_state
 end
 
-grouped_df[50].t[end]-grouped_df[50].t[1]
+
 
 tot_time = get_time_in_state(grouped_df[20])
 
-hist_freq = DataFrame(bin = unique(hist_df.bin), freq = zeros(length(unique(hist_df.bin))))
 
-total_time = hist_df.t[end]
-for (df,i) in ProgressBar(zip(grouped_df, 1:length(grouped_df)))
-    tot_time_in_state = get_time_in_state(df)
-    hist_freq[i, :freq] = (length(df.t)*tot_time_in_state)/total_time
+all_histos=[]
+for i in [:rm_a, :rm_b, :rm_r, :rtca, :rtcb, :rtcr, :rh, :rt, :rd]
+    grouped_df, hist_df = get_grouped_df(df, i)
+    hist_freq = DataFrame(bin = unique(hist_df.bin), freq = zeros(length(unique(hist_df.bin))))
+    total_time = hist_df.t[end]
+    for (df,i) in ProgressBar(zip(grouped_df, 1:length(grouped_df)))
+        tot_time_in_state = get_time_in_state(df)
+        hist_freq[i, :freq] = (length(df.t)*tot_time_in_state)/total_time
+    end
+    push!(all_histos, hist_freq)
 end
 
 
+hist_freq.bin = string.(hist_freq.bin)
 
+hist_freq
+f = Figure()
+ax = Axis(f[1,1], yscale=log10)
+barplot!(ax, bins, hist_freq.freq)
+
+bin_edges = range(minimum(hist_df.s),maximum(hist_df.s)+0.01, length=51)
+bins = range(bin_edges[1], bin_edges[end], length=50)
