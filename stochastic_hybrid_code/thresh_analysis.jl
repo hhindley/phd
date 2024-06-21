@@ -1,4 +1,4 @@
-using StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase, Distributed, TableOperations, JSON, Query, FindFirstFunctions
+using StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase, Distributed, TableOperations, JSON, Query, FindFirstFunctions, CategoricalArrays
 
 # using PlotlyJS
 using InteractiveViz, GLMakie
@@ -133,7 +133,7 @@ length(bin_edges)-1
 
 total_time = df_results[1].time[end]
 hist_df = DataFrame(t = df_results[1].time, s = df_results[1][:,:rtca])
-bin_edges = range(minimum(hist_df.s),maximum(hist_df.s), length=51)
+bin_edges = range(minimum(hist_df.s),maximum(hist_df.s)+0.01, length=21)
 hist_times = hist_df.t
 freqs = Float64[]
 for bin in 1:(length(bin_edges)-1)
@@ -157,8 +157,7 @@ end
 function get_timeInState(num_in_range, hist_df)
     tot_time_in_state = 0
     hist_times = hist_df.t  
-    for row in eachrow(num_in_range)
-        print(row)
+    for row in ProgressBar(eachrow(num_in_range))
         index = FindFirstFunctions.findfirstequal(row.t, hist_times)
         if index != 1
             prev_time = hist_times[index-1]
@@ -171,4 +170,41 @@ end
 
 num_in_range = get_bins(hist_df, bin_edges, 1)
 @elapsed tot = get_timeInState(num_in_range, hist_df)
+
+tot
+total_time
+# why does it slow down so much in later stages of for loop ^^^^
+
+bin_edges
+hist_df.bin = cut(hist_df.s, bin_edges)
+
+grouped_df = groupby(hist_df, :bin)
+
+
+
+
+hist_df.bin
+bin_time_df = DataFrame(bin = unique(hist_df.bin), total_time = zeros(length(unique(hist_df.bin))))
+
+for bin in unique(hist_df.bin)
+    bin_df = filter(row -> row.bin == bin, hist_df)
+    # num_in_range = subset(hist_df, AsTable(:s) => (@. x-> lb <= x.s < ub))
+    sort!(bin_df, :t)
+    time_diffs = diff(bin_df.t)
+    bin_time_df[bin_time_df.bin .== bin, :total_time] .= sum(time_diffs)
+end
+
+bin_time_df
+total_time
+
+
+
+
+
+
+df = Arrow.Table("/Users/s2257179/stoch_files/thresh_test_arrow_files_14_06/results/thresh_10.0.arrow")
+
+df.rtca
+
+new_df = DataFrame(t=df.time,s=df.rtca)
 
