@@ -83,11 +83,14 @@ end
 # end
 # CSV.write("/Users/s2257179/phd/stochastic_hybrid_code/hists/thresh10/rh.csv", hist_freq)
 
-
-files = readdir("/Users/s2257179/stoch_files/thresh_test_arrow_files_14_06/results")
+folderpath = "/home/hollie_hindley/Documents/stochastic_hybrid/thresh_test_arrow_files_14_06/results"
+files = readdir(folderpath)[1:2]
 for file in files
-    filepath = joinpath("/Users/s2257179/stoch_files/thresh_test_arrow_files_14_06/results", file)
+    filepath = joinpath(folderpath, file)
     res = Arrow.Table(filepath) |> DataFrame
+    if !isdir("/home/hollie_hindley/Documents/stochastic_hybrid/hists/$(file[1:end-6])")
+        mkdir("/home/hollie_hindley/Documents/stochastic_hybrid/hists/$(file[1:end-6])")
+    end
     for i in [:rm_a, :rm_b, :rm_r, :rtca, :rtcb, :rtcr, :rh, :rt, :rd]
         grouped_df, hist_df, bin_edges = get_grouped_df(res, i)
         hist_freq = make_hist_freq(bin_edges)
@@ -97,6 +100,6 @@ for file in files
             hist_freq[i, :freq] = (length(df.t)*tot_time_in_state)/total_time
         end
         # push!(all_histos, hist_freq)
-        CSV.write("/Users/s2257179/phd/stochastic_hybrid_code/hists/thresh10/rh.csv", hist_freq)
+        CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/hists/$(file[1:end-6])/$i.csv", hist_freq)
     end
 end
