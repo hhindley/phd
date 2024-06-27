@@ -7,24 +7,54 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/analysis_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_funcs.jl"))
 
-df_results = load_files("/Users/s2257179/stoch_files/thresh_test_arrow_files_14_06/results")
+df_results0 = load_files("/Users/s2257179/stoch_files/thresh_test_arrow_files_14_06/results")
+df_results = load_files("/Users/s2257179/stoch_files/thresh_1906_final_files/results")
 
-threshold_vals0 = range(10,310,length=20)
-threshold_vals1 = range(246,310,length=5)
-threshold_vals = [threshold_vals0[1:15]; threshold_vals1]
+threshold_vals1 = range(10,310,length=20)
+threshold_vals2 = range(246,310,length=5)
+threshold_vals0 = [threshold_vals1[1:15]; threshold_vals2]
 
-# times2 = DataFrame(CSV.File("/Users/s2257179/stoch_files/thresh_times_last5.csv"))
+times2 = DataFrame(CSV.File("/Users/s2257179/stoch_files/thresh_times_1906.csv"))
 
-# plotBIG(times2.threshold, times2.time/60/60, "threshold", "time (hours)")
+times_plot = plotBIG(times2.threshold, times2.time/60/60, xtitle="threshold", ytitle="time (hours)", title="")
+save("/Users/s2257179/phd/stochastic_hybrid_code/thresh_plots2/run_times.png", times_plot)
 
-plot_subplots(df_results, :rm_a, threshold_vals);
-plot_subplots(df_results, :rm_b, threshold_vals);
-plot_subplots(df_results, :rm_r, threshold_vals);
+@elapsed plotBIG(df_results[1].time, df_results[1].rm_a, xtitle="", ytitle="", title="")
+@elapsed ilines(range(minimum(df_results[1].time),maximum(df_results[1].time),length=length(df_results[1].time)), df_results[1].rm_a)
 
-plot_subplots(df_results, :rtca, threshold_vals)
-plot_subplots(df_results, :rtcb, threshold_vals);
-plot_subplots(df_results, :rtcr, threshold_vals);
+plotBIG(df_results[2].time, df_results[2].rm_a, xtitle="", ytitle="", title="")
+ilines(range(minimum(df_results[2].time),maximum(df_results[2].time),length=length(df_results[2].time)), df_results[2].rm_a)
 
-plot_subplots(df_results, :rh, threshold_vals);
-plot_subplots(df_results, :rd, threshold_vals);
-plot_subplots(df_results, :rt, threshold_vals);
+
+
+titles = ["threshold: $(round(threshold_vals1[i], digits=2))" for i in eachindex(threshold_vals1)]
+
+f_rma = plot_results(df_results, :rm_a, 5, 4, xlabel="time", ylabel="rm_a", titles=titles, folder="thresh_plots2")
+f_rmb = plot_results(df_results, :rm_b, 5, 4, xlabel="time", ylabel="rm_b", titles=titles, folder="thresh_plots2")
+f_rmr = plot_results(df_results, :rm_r, 5, 4, xlabel="time", ylabel="rm_r", titles=titles, folder="thresh_plots2")
+
+f_rtca = plot_results(df_results, :rtca, 5, 4, xlabel="time", ylabel="rtca", titles=titles, folder="thresh_plots2")
+f_rtcb = plot_results(df_results, :rtcb, 5, 4, xlabel="time", ylabel="rtcb", titles=titles, folder="thresh_plots2")
+f_rtcr = plot_results(df_results, :rtcr, 5, 4, xlabel="time", ylabel="rtcr", titles=titles, folder="thresh_plots2")
+
+f_rh = plot_results(df_results, :rh, 5, 4, xlabel="time", ylabel="rh", titles=titles, folder="thresh_plots2")
+f_rd = plot_results(df_results, :rd, 5, 4, xlabel="time", ylabel="rd", titles=titles, folder="thresh_plots2")
+f_rt = plot_results(df_results, :rt, 5, 4, xlabel="time", ylabel="rt", titles=titles, folder="thresh_plots2")
+
+
+display(GLMakie.Screen(), f_rtcb.plot)
+display(GLMakie.Screen(), f_rtca.plot)
+
+titles0 = ["threshold: $(round(threshold_vals1[i], digits=2))" for i in eachindex(threshold_vals1)]
+
+f_rma0 = plot_results(df_results0, :rm_a, 5, 4, xlabel="time", ylabel="rm_a", titles=titles0, folder="thresh_plots")
+f_rmb0 = plot_results(df_results0, :rm_b, 5, 4, xlabel="time", ylabel="rm_b", titles=titles0, folder="thresh_plots")
+f_rmr0 = plot_results(df_results0, :rm_r, 5, 4, xlabel="time", ylabel="rm_r", titles=titles0, folder="thresh_plots")
+
+f_rtca0 = plot_results(df_results0, :rtca, 5, 4, xlabel="time", ylabel="rtca", titles=titles0, folder="thresh_plots")
+f_rtcb0 = plot_results(df_results0, :rtcb, 5, 4, xlabel="time", ylabel="rtcb", titles=titles0, folder="thresh_plots")
+f_rtcr0 = plot_results(df_results0, :rtcr, 5, 4, xlabel="time", ylabel="rtcr", titles=titles0, folder="thresh_plots")
+
+f_rh0 = plot_results(df_results0, :rh, 5, 4, xlabel="time", ylabel="rh", titles=titles0, folder="thresh_plots")
+f_rd0 = plot_results(df_results0, :rd, 5, 4, xlabel="time", ylabel="rd", titles=titles0, folder="thresh_plots")
+f_rt0 = plot_results(df_results0, :rt, 5, 4, xlabel="time", ylabel="rt", titles=titles0, folder="thresh_plots")

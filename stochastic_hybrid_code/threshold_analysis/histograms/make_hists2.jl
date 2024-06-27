@@ -84,7 +84,7 @@ end
 # CSV.write("/Users/s2257179/phd/stochastic_hybrid_code/hists/thresh10/rh.csv", hist_freq)
 
 folderpath = "/home/hollie_hindley/Documents/stochastic_hybrid/thresh_1906_final_files/results"
-files = readdir(folderpath)[1:2]
+files = readdir(folderpath)
 for file in files
     filepath = joinpath(folderpath, file)
     res = Arrow.Table(filepath) |> DataFrame
