@@ -15,7 +15,7 @@ function get_column(df::DataFrame, column_name::Union{Symbol, String})
     return getproperty(df, column_name)
 end
 
-function create_subplots(rows, columns; size=(1450, 900), xlabel="", ylabel="", titles=[], hidelabels=true, yscale=identity)
+function create_subplots(plotting_func, rows, columns; size=(1450, 900), xlabel="", ylabel="", titles=[], hidelabels=[true, true], yscale=identity)
     f = Figure(size=size)
 
     for j in 1:columns
@@ -23,24 +23,27 @@ function create_subplots(rows, columns; size=(1450, 900), xlabel="", ylabel="", 
             data_ind = i + rows * (j - 1)
             # println(data_ind)
             title = titles != [] ? titles[data_ind] : "Plot $data_ind"
-
-            ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale)
+            if plotting_func == "plot_results" || plotting_func == "plot_hists" || plotting_func == "plot_individual_reacts"
+                ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale)
+            elseif plotting_func == "plot_stoch_reacts"
+                ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale, xticks=(1:14, react_names_str), xticklabelrotation=45)
+            end
             # ilines!(f[i,j], makiex(df_results[data_ind].time), df_results[data_ind][:,species])
 
             # Hide x-axis decorations for axes not in the bottom row
-            if i != rows && hidelabels == true
+            if i != rows && (hidelabels == [true, true] || hidelabels == [true, false])
                 hidexdecorations!(ax, grid=false)
             end
 
             # Hide y-axis decorations for axes not in the first column
-            if j > 1 && hidelabels == true
+            if j > 1 && (hidelabels == [true, true] || hidelabels == [false, true])
                 hideydecorations!(ax, grid=false)
             end
         end
     end
     return f
 end
-function add_subplots(f, plotting_func, df_results, species, rows, columns; linkaxes=true)
+function add_subplots(f, plotting_func, df_results, rows, columns; species=:rm_a, linkaxes=true)
     if plotting_func == "plot_results"
         preprocessed_times = [get_column(df, :time) for df in df_results]
         preprocessed_results = [get_column(df, species) for df in df_results]
@@ -57,6 +60,12 @@ function add_subplots(f, plotting_func, df_results, species, rows, columns; link
                 plot_timeres(preprocessed_times[data_ind], preprocessed_results[data_ind], f[i,j])
             elseif plotting_func == "plot_hists"
                 plot_hist(dfs[data_ind], f[i,j])
+            elseif plotting_func == "plot_stoch_reacts" 
+                barplot!(f[i,j], df_results[data_ind].event, df_results[data_ind].count)
+            elseif plotting_func == "plot_individual_reacts"
+                if data_ind <= length(react_names[1:end-1])
+                    barplot!(f[i,j], df_results[react_names[1:end-1][data_ind]].threshold, df_results[react_names[1:end-1][data_ind]].count)
+                end
             end
         end
     end
@@ -65,9 +74,9 @@ function add_subplots(f, plotting_func, df_results, species, rows, columns; link
     end
     return f
 end
-function plot_results(plotting_func, df_results, species, rows, columns; size=(1450, 900), xlabel="", ylabel="", titles=[], yscale=identity, hidelabels=true, linkaxes=true, folder="")
-    f = create_subplots(rows, columns; size=size, xlabel=xlabel, ylabel=ylabel, titles=titles, hidelabels=hidelabels, yscale=yscale)
-    f = add_subplots(f, plotting_func, df_results, species, rows, columns; linkaxes=linkaxes)
+function plot_results(plotting_func, df_results, rows, columns; species=:rm_a, size=(1450, 900), xlabel="", ylabel="", titles=[], yscale=identity, hidelabels=[true,true], linkaxes=true, folder="")
+    f = create_subplots(plotting_func, rows, columns; size=size, xlabel=xlabel, ylabel=ylabel, titles=titles, hidelabels=hidelabels, yscale=yscale)
+    f = add_subplots(f, plotting_func, df_results, rows, columns; species=species, linkaxes=linkaxes)
     if !isempty(folder)
         folder_path = joinpath("/Users/s2257179/phd/stochastic_hybrid_code", folder)
         save(joinpath(folder_path, "$species.png"), f)
@@ -93,6 +102,18 @@ end
 function makiex(x)
     return range(minimum(x), maximum(x), length=length(x))
 end
+
+function build_reaction_count_df(df_reacts, react, threshold_vals)
+    df_tag=[]
+    for i in eachindex(df_reacts)
+        df = filter(row -> row.reaction == react, df_reacts[i])
+        df.threshold = [threshold_vals[i]]
+        push!(df_tag, df)
+    end
+    combined_df = reduce(vcat, df_tag)
+    return combined_df
+end
+
 
 
 function plot_props(df_results)
