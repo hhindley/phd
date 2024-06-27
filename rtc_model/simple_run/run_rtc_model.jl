@@ -1,13 +1,14 @@
 using ModelingToolkit, DifferentialEquations, PlotlyJS, LinearAlgebra, DataFrames, LabelledArrays, Printf, BifurcationKit, OrderedCollections, ProgressBars
 
-PATH = "/home/holliehindley/phd"
 
-include("$PATH/general_funcs/solving.jl")
-include("$PATH/rtc_model/models/rtc_orig.jl")
-include("$PATH/rtc_model/parameters/rtc_params.jl")
-include("$PATH/rtc_model/parameters/rtc_params_molecs.jl")
-include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
-include("/home/holliehindley/phd/rtc_model/functions/sweep_params.jl")
+include(joinpath(homedir(), "phd/general_funcs/all_model_funcs.jl"))
+include(joinpath(homedir(), "phd/general_funcs/solving.jl"))
+include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params.jl"))
+include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params_molecs.jl"))
+
+include(joinpath(homedir(), "phd/rtc_model/models/rtc_orig.jl"))
+include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
+
 
 colours =["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", :blue]
 
