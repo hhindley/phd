@@ -11,8 +11,11 @@ end
 struct PlotWrapper
     plot::Any
 end
+function get_column(df::DataFrame, column_name::Union{Symbol, String})
+    return getproperty(df, column_name)
+end
 
-function create_subplots(rows, columns; size=(1450, 900), xlabel="", ylabel="", titles=[], hidelabels=true)
+function create_subplots(rows, columns; size=(1450, 900), xlabel="", ylabel="", titles=[], hidelabels=true, yscale=identity)
     f = Figure(size=size)
 
     for j in 1:columns
@@ -21,7 +24,7 @@ function create_subplots(rows, columns; size=(1450, 900), xlabel="", ylabel="", 
             # println(data_ind)
             title = titles != [] ? titles[data_ind] : "Plot $data_ind"
 
-            ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title)
+            ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale)
             # ilines!(f[i,j], makiex(df_results[data_ind].time), df_results[data_ind][:,species])
 
             # Hide x-axis decorations for axes not in the bottom row
@@ -37,14 +40,24 @@ function create_subplots(rows, columns; size=(1450, 900), xlabel="", ylabel="", 
     end
     return f
 end
-function add_subplots(f, df_results, species, rows, columns; linkaxes=true)
-    preprocessed_times = [df.time for df in df_results]
-    preprocessed_results = [df[:,species] for df in df_results]
+function add_subplots(f, plotting_func, df_results, species, rows, columns; linkaxes=true)
+    if plotting_func == "plot_results"
+        preprocessed_times = [get_column(df, :time) for df in df_results]
+        preprocessed_results = [get_column(df, species) for df in df_results]
+    elseif plotting_func == "plot_hists"
+        dfs = df_results[string(species)]
+    end
+
     for j in 1:columns
         for i in 1:rows
             data_ind = i + rows * (j - 1)
-            x = makiex(preprocessed_times[data_ind])
-            ilines!(f[i,j], x, preprocessed_results[data_ind])
+            if plotting_func == "plot_results"
+                # x = makiex(preprocessed_times[data_ind])
+                # ilines!(f[i,j], x, preprocessed_results[data_ind])
+                plot_timeres(preprocessed_times[data_ind], preprocessed_results[data_ind], f[i,j])
+            elseif plotting_func == "plot_hists"
+                plot_hist(dfs[data_ind], f[i,j])
+            end
         end
     end
     if linkaxes == true
@@ -52,9 +65,9 @@ function add_subplots(f, df_results, species, rows, columns; linkaxes=true)
     end
     return f
 end
-function plot_results(df_results, species, rows, columns; size=(1450, 900), xlabel="", ylabel="", titles=[], hidelabels=true, linkaxes=true, folder="")
-    f = create_subplots(rows, columns; size=size, xlabel=xlabel, ylabel=ylabel, titles=titles, hidelabels=hidelabels)
-    f = add_subplots(f, df_results, species, rows, columns; linkaxes=linkaxes)
+function plot_results(plotting_func, df_results, species, rows, columns; size=(1450, 900), xlabel="", ylabel="", titles=[], yscale=identity, hidelabels=true, linkaxes=true, folder="")
+    f = create_subplots(rows, columns; size=size, xlabel=xlabel, ylabel=ylabel, titles=titles, hidelabels=hidelabels, yscale=yscale)
+    f = add_subplots(f, plotting_func, df_results, species, rows, columns; linkaxes=linkaxes)
     if !isempty(folder)
         folder_path = joinpath("/Users/s2257179/phd/stochastic_hybrid_code", folder)
         save(joinpath(folder_path, "$species.png"), f)
@@ -66,7 +79,17 @@ function plot_results(df_results, species, rows, columns; size=(1450, 900), xlab
 end
 
 
-
+function plot_timeres(time, res, loc)
+    x = makiex(time)
+    ilines!(loc, x, res)
+end
+function plot_hist(df, loc)
+    bins = [i[1] for i in df.bin]
+    push!(bins, df.bin[end][2])
+    bin_c = (bins[1:end-1] .+ bins[2:end]) ./ 2
+    barplot!(loc, bin_c, df.freq, width=diff(bins), gap=0)
+    return f
+end
 function makiex(x)
     return range(minimum(x), maximum(x), length=length(x))
 end
