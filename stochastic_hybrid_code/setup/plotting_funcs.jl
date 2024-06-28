@@ -15,7 +15,7 @@ function get_column(df::DataFrame, column_name::Union{Symbol, String})
     return getproperty(df, column_name)
 end
 
-function create_subplots(plotting_func, rows, columns; size=(1450, 900), xlabel="", ylabel="", titles=[], hidelabels=[true, true], yscale=identity)
+function create_subplots(plotting_func, rows, columns; size=(1450, 800), xlabel="", ylabel="", titles=[], hidelabels=[true, true], yscale=identity)
     f = Figure(size=size)
 
     for j in 1:columns
@@ -27,6 +27,7 @@ function create_subplots(plotting_func, rows, columns; size=(1450, 900), xlabel=
                 ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale)
             elseif plotting_func == "plot_stoch_reacts"
                 ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale, xticks=(1:14, react_names_str), xticklabelrotation=45)
+
             end
             # ilines!(f[i,j], makiex(df_results[data_ind].time), df_results[data_ind][:,species])
 
@@ -50,7 +51,6 @@ function add_subplots(f, plotting_func, df_results, rows, columns; species=:rm_a
     elseif plotting_func == "plot_hists"
         dfs = df_results[string(species)]
     end
-
     for j in 1:columns
         for i in 1:rows
             data_ind = i + rows * (j - 1)
@@ -66,6 +66,11 @@ function add_subplots(f, plotting_func, df_results, rows, columns; species=:rm_a
                 if data_ind <= length(react_names[1:end-1])
                     barplot!(f[i,j], df_results[react_names[1:end-1][data_ind]].threshold, df_results[react_names[1:end-1][data_ind]].count)
                 end
+            elseif plotting_func == "plot_props"
+                # for r in eachindex(react_names[1:end-1])
+                #     iscatter!(f[i,j], df_results[data_ind].time, get_column(df_props[data_ind], react_names[r]), label="$(react_names[r])", color=color_list[r])
+                # end
+                [iscatter!(f[i,j], df_results[data_ind].time, get_column(df_props[data_ind], react_names[r]), label="$(react_names[r])", color=color_list[r]) for r in eachindex(react_names[1:end-1])]
             end
         end
     end
@@ -116,22 +121,18 @@ end
 
 
 
-function plot_props(df_results)
-    max_value = mapreduce(df -> maximum(maximum(df.event)), max, df_results)
-
-    f = Figure(size=(1450, 900))
+function plot_props(df_results, df_props, threshold_vals, max_value=31856.296174439733)
+    f = Figure(size=(1450, 800))
     rows = 5
     total_columns = 4
 
     for j in 1:total_columns
         for i in 1:rows
             data_ind = i + rows * (j - 1)
-            println(data_ind)
-            ax = Axis(f[i, j], xlabel = "time", ylabel = "propensity", title="threshold: $(round(threshold_vals[data_ind], digits=2))")
-            for r in names(df_props[data_ind])
-                iscatter!(ax, df_results[data_ind].time, df_props[data_ind][:,r])
-            end
-            ylims!(ax, 0,max_value)
+            ax = Axis(f[i,j], xlabel = "time", ylabel = "propensity", limits=(nothing,(0, max_value)))
+            [iscatter!(ax,df_results[data_ind].time, df_props[data_ind][r], label="$(react_names[r])", color=color_list[r]) for r in eachindex(react_names[1:end-1])]
+            axislegend(ax, framevisible=true)
+            lines!(range(minimum(df_results[data_ind].time), maximum(df_results[data_ind].time), length=2), [threshold_vals[data_ind], threshold_vals[data_ind]], linewidth=4, color=RGB(0.0, 0.0, 0.0))
 
             # Hide x-axis decorations for axes not in the bottom row
             if i != rows
@@ -145,5 +146,6 @@ function plot_props(df_results)
         end
     end
     linkaxes!(filter(x -> x isa Axis, f.content)...)
+    # return f
     save("/Users/s2257179/phd/stochastic_hybrid_code/thresh_plots/props.png", f)
 end

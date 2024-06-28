@@ -1,4 +1,5 @@
 using StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase, Distributed, TableOperations, JSON, Query, FindFirstFunctions, CategoricalArrays
+using InteractiveViz, GLMakie
 
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/analysis_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
@@ -58,21 +59,20 @@ ax = Axis(f[1,1], yscale=log10)
 plot_hist(dfs["rh"][1], f[1,1])
 
 
-plot_results("plot_hists", dfs, :rh, 1, 2, yscale=log10)
 
 
 
-rma_hist = plot_results("plot_hists", dfs, :rm_a, 5, 4, yscale=log10, xlabel="rm_a conc", ylabel="frequency", titles=titles, folder="thresh_plots2/hists")
-rmb_hist = plot_results("plot_hists", dfs, :rm_b, 5, 4, yscale=log10, xlabel="rm_b conc", ylabel="frequency", titles=titles, folder="thresh_plots2/hists")
-rmr_hist = plot_results("plot_hists", dfs, :rm_r, 5, 4, yscale=log10, xlabel="rm_r conc", ylabel="frequency", titles=titles, folder="thresh_plots2/hists")
+rma_hist = plot_results("plot_hists", dfs, 2, 3, yscale=log10, species=:rm_a, xlabel="rm_a conc", ylabel="frequency", titles=titles)#, folder="thresh_plots2/hists")
+rmb_hist = plot_results("plot_hists", dfs, 2, 3, yscale=log10, species=:rm_b, xlabel="rm_b conc", ylabel="frequency", titles=titles)#, folder="thresh_plots2/hists")
+rmr_hist = plot_results("plot_hists", dfs, 2, 2, yscale=log10, species=:rm_r, xlabel="rm_r conc", ylabel="frequency", titles=titles)#, folder="thresh_plots2/hists")
 
-rtca_hist = plot_results("plot_hists", dfs, :rtca, 5, 4, yscale=log10, xlabel="rtca conc", ylabel="frequency", titles=titles, folder="thresh_plots2/hists")
-rtcb_hist = plot_results("plot_hists", dfs, :rtcb, 5, 4, yscale=log10, xlabel="rtcb conc", ylabel="frequency", titles=titles, folder="thresh_plots2/hists")
-rtcr_hist = plot_results("plot_hists", dfs, :rtcr, 5, 4, yscale=log10, xlabel="rtcr conc", ylabel="frequency", titles=titles, folder="thresh_plots2/hists")
+rtca_hist = plot_results("plot_hists", dfs, 2, 2, yscale=log10, species=:rtca, xlabel="rtca conc", ylabel="frequency", titles=titles)#, folder="thresh_plots2/hists")
+rtcb_hist = plot_results("plot_hists", dfs, 2, 2, species=:rtcb, yscale=log10, xlabel="rtcb conc", ylabel="frequency", titles=titles)#, folder="thresh_plots2/hists")
+rtcr_hist = plot_results("plot_hists", dfs, 2, 2, species=:rtcr, yscale=log10, xlabel="rtcr conc", ylabel="frequency", titles=titles)#, folder="thresh_plots2/hists")
 
-rh_hist = plot_results("plot_hists", dfs, :rh, 5, 4, yscale=log10, xlabel="rh conc", ylabel="frequency", titles=titles, folder="thresh_plots2/hists")
-rd_hist = plot_results("plot_hists", dfs, :rd, 5, 4, yscale=log10, xlabel="rd conc", ylabel="frequency", titles=titles, folder="thresh_plots2/hists")
-rt_hist = plot_results("plot_hists", dfs, :rt, 5, 4, yscale=log10, xlabel="rt conc", ylabel="frequency", titles=titles, folder="thresh_plots2/hists")
+rh_hist = plot_results("plot_hists", dfs, 2, 2, yscale=identity, species=:rh, xlabel="rh conc", ylabel="frequency", titles=titles)#, folder="thresh_plots2/hists")
+rd_hist = plot_results("plot_hists", dfs, 2, 2, yscale=log10, species=:rd, xlabel="rd conc", ylabel="frequency", titles=titles)#, folder="thresh_plots2/hists")
+rt_hist = plot_results("plot_hists", dfs, 2, 2, yscale=log10, species=:rt, xlabel="rt conc", ylabel="frequency", titles=titles)#, folder="thresh_plots2/hists")
 
 
 rma_hist0 = plot_results("plot_hists", dfs0, :rm_a, 5, 4, yscale=log10, xlabel="rm_a conc", ylabel="frequency", titles=titles0, folder="thresh_plots/hists")
