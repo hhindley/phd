@@ -1,7 +1,7 @@
 using StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase, Distributed, TableOperations, JSON, Query, FindFirstFunctions, CategoricalArrays, Colors
 
 # using PlotlyJS
-using InteractiveViz, GLMakie
+using InteractiveViz, WGLMakie
 
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/analysis_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
@@ -32,7 +32,20 @@ threshold_vals1 = range(10,310,length=20)
 threshold_vals2 = range(246,310,length=5)
 threshold_vals0 = [threshold_vals1[1:15]; threshold_vals2]
 
+fig = Figure(size=(800,400))
+ax = Axis(fig[1,1], xlabel = "time", ylabel = "propensity",)
+ilines!(ax, makiex(df_results[11].time), df_results[11].totprop)
+ax2 = Axis(fig[1,2], xlabel = "time", ylabel = "propensity",)
+ilines!(ax2, makiex(df_results[12].time), df_results[12].totprop)
+ax3 = Axis(fig[1,3], xlabel = "time", ylabel = "propensity",)
+ilines!(ax3, makiex(df_results[13].time), df_results[13].totprop)
 
+
+tp1 = ilines(makiex(df_results[11].time), df_results[11].totprop)
+
+tp2 = ilines(makiex(df_results[12].time), df_results[12].totprop)
+
+df_results[11].totprop
 # f = create_subplots("plot_props", 5, 4)
 # [iscatter!(f[1,1], df_results[1].time, get_column(df_props[1], react_names[i]), label="$(react_names[i])", color=color_list[i]) for i in eachindex(react_names[1:end-1])]
 # display(f)
@@ -80,21 +93,53 @@ threshold_vals0 = [threshold_vals1[1:15]; threshold_vals2]
 
 
 function plot_prop(df_results, df_props, res_ind, savein, title, threshold_vals, max_val)
-    f = Figure(size=(1450, 800))
+    time_data = df_results[res_ind].time[1:1:end]
+    prop_data = [df_props[res_ind][i][1:1:end] for i in eachindex(react_names[1:end-1])]
+    
+    f = Figure()
     ax = Axis(f[1,1], xlabel = "time", ylabel = "propensity", title=title, limits=(nothing,(0, max_val)))
-    [iscatter!(ax,df_results[res_ind].time, df_props[res_ind][i], label="$(react_names[i])", color=color_list[i]) for i in eachindex(react_names[1:end-1])]
+    for i in eachindex(react_names[1:end-1])
+        iscatter!(ax, time_data, prop_data[i], label="$(react_names[i])", color=color_list[i])
+    end    
     axislegend(ax, framevisible=true)
-    lines!(range(minimum(df_results[res_ind].time), maximum(df_results[res_ind].time), length=2), [threshold_vals[res_ind], threshold_vals[res_ind]], linewidth=4, color=RGB(0.0, 0.0, 0.0))
-    # return f
-    save("/Users/s2257179/phd/stochastic_hybrid_code/$savein/$title.html", f)
+    lines!(ax, range(minimum(time_data), maximum(time_data), length = 2), [threshold_vals[res_ind], threshold_vals[res_ind]], linewidth = 4, color = :black)
+    return f
+    # save("/Users/s2257179/phd/stochastic_hybrid_code/$savein/$title.html", f)
 end
+
+df_results[1].time[1:1:end]
+
 
 df_results[1][:time]
 
+test = plot_prop(df_results, df_props, 1, "thresh_plots2/props", "threshold_$(threshold_vals1[1])", threshold_vals1, 31856.296174439733)
+test1 = plot_prop(df_results, df_props, 20, "thresh_plots2/props", "threshold_$(threshold_vals1[20])", threshold_vals1, 31856.296174439733)
+
+f1 = plot_prop(df_results, df_props, 1, "thresh_plots2/props", "threshold_$(threshold_vals1[1])", threshold_vals1, 31856.296174439733)
+f2 = plot_prop(df_results, df_props, 2, "thresh_plots2/props", "threshold_$(threshold_vals1[2])", threshold_vals1, 31856.296174439733)
+f3 = plot_prop(df_results, df_props, 3, "thresh_plots2/props", "threshold_$(threshold_vals1[3])", threshold_vals1, 31856.296174439733)
+f4 = plot_prop(df_results, df_props, 4, "thresh_plots2/props", "threshold_$(threshold_vals1[4])", threshold_vals1, 31856.296174439733)
+f5 = plot_prop(df_results, df_props, 5, "thresh_plots2/props", "threshold_$(threshold_vals1[5])", threshold_vals1, 31856.296174439733)
+f6 = plot_prop(df_results, df_props, 6, "thresh_plots2/props", "threshold_$(threshold_vals1[6])", threshold_vals1, 31856.296174439733)
+f7 = plot_prop(df_results, df_props, 7, "thresh_plots2/props", "threshold_$(threshold_vals1[7])", threshold_vals1, 31856.296174439733)
+f8 = plot_prop(df_results, df_props, 8, "thresh_plots2/props", "threshold_$(threshold_vals1[8])", threshold_vals1, 31856.296174439733)
+f9 = plot_prop(df_results, df_props, 9, "thresh_plots2/props", "threshold_$(threshold_vals1[9])", threshold_vals1, 31856.296174439733)
+f10 = plot_prop(df_results, df_props, 10, "thresh_plots2/props", "threshold_$(threshold_vals1[10])", threshold_vals1, 31856.296174439733)
+f11 = plot_prop(df_results, df_props, 11, "thresh_plots2/props", "threshold_$(threshold_vals1[11])", threshold_vals1, 31856.296174439733)
+f12 = plot_prop(df_results, df_props, 12, "thresh_plots2/props", "threshold_$(threshold_vals1[12])", threshold_vals1, 31856.296174439733)
+f13 = plot_prop(df_results, df_props, 13, "thresh_plots2/props", "threshold_$(threshold_vals1[13])", threshold_vals1, 31856.296174439733)
+f14 = plot_prop(df_results, df_props, 14, "thresh_plots2/props", "threshold_$(threshold_vals1[14])", threshold_vals1, 31856.296174439733)
+f15 = plot_prop(df_results, df_props, 15, "thresh_plots2/props", "threshold_$(threshold_vals1[15])", threshold_vals1, 31856.296174439733)
+f16 = plot_prop(df_results, df_props, 16, "thresh_plots2/props", "threshold_$(threshold_vals1[16])", threshold_vals1, 31856.296174439733)
+f17 = plot_prop(df_results, df_props, 17, "thresh_plots2/props", "threshold_$(threshold_vals1[17])", threshold_vals1, 31856.296174439733)
+f18 = plot_prop(df_results, df_props, 18, "thresh_plots2/props", "threshold_$(threshold_vals1[18])", threshold_vals1, 31856.296174439733)
+f19 = plot_prop(df_results, df_props, 19, "thresh_plots2/props", "threshold_$(threshold_vals1[19])", threshold_vals1, 31856.296174439733)
+f20 = plot_prop(df_results, df_props, 20, "thresh_plots2/props", "threshold_$(threshold_vals1[20])", threshold_vals1, 31856.296174439733)
 
 
-f = plot_prop(df_results, df_props, 11, "thresh_plots2/props", "threshold_$(threshold_vals1[11])", threshold_vals1, 31856.296174439733)
+display(f17)
 
+threshold_vals1[13]
 
 f = create_subplots("plot_results", 5, 4);
 [iscatter!(f[1,1],df_results[1].time, df_props[1][i], label="$(react_names[i])", color=color_list[i]) for i in eachindex(react_names[1:end-1])]
@@ -146,16 +191,13 @@ save("/Users/s2257179/phd/stochastic_hybrid_code/thresh_plots2/props/props_test.
 
 WGLMakie.activate!()
 
-
-f = Figure()
-ax = Axis(f[1,1])
-lines!(ax, 1:4)
-
-save("/Users/s2257179/Desktop/test.html", f)
+using WGLMakie
+WGLMakie.activate!()
+f = lines(1:4)
+save(joinpath(homedir(), "test.html"), f)
 
 
-using GLMakie
-GLMakie.activate!()
+
 
 f = Figure(size=(1450, 800))
 ax = Axis(f[1,1], xlabel = "time", ylabel = "propensity", limits=(nothing,(0, 31856.296174439733)))
