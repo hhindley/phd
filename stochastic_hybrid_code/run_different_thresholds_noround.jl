@@ -3,7 +3,7 @@ using StatsBase, Distributions, Random, DataFrames, CSV, PlotlyJS, DifferentialE
 include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params.jl"))
 include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params_molecs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/indexing.jl"))
-include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/hybrid_algo.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/hybrid_algo_nofloor.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/stoch_model.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 
@@ -40,17 +40,17 @@ push!(threshold_vals_new, 210)
 
 times=[]
 for i in ProgressBar(threshold_vals_new)
-    time_taken = @elapsed run_stoch(X0, i, 0.05, "/home/hollie_hindley/Documents/stochastic_hybrid/thresh_0107_repeat3/thresh_$i.dat")
+    time_taken = @elapsed run_stoch(X0, i, 0.05, "/home/hollie_hindley/Documents/stochastic_hybrid/thresh_0107_noround/thresh_$i.dat")
     push!(times, time_taken)
 end
 
 df = DataFrame(threshold=threshold_vals_new, time=times)
 
-CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/thresh_times_0107.csv", df)
+CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/thresh_times_0107_noround.csv", df)
 
 println("total time = $(sum(times)/60/60) hours")
 
-arrow_conv(joinpath(homedir(), "Documents/stochastic_hybrid/thresh_0107_repeat3"), joinpath(homedir(), "Documents/stochastic_hybrid/thresh_0107_final_files"))
+arrow_conv(joinpath(homedir(), "Documents/stochastic_hybrid/thresh_0107_noround"), joinpath(homedir(), "Documents/stochastic_hybrid/thresh_0107_noround_final_files"))
 
 print("finished!")
 
