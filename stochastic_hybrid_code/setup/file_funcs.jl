@@ -94,7 +94,7 @@ function load_files(folder_path)
     files = readdir(folder_path)
     df_list = []
     for file in files
-        df = Arrow.Table(joinpath(folder_path, file)) |> DataFrame
+        df = Arrow.Table(joinpath(folder_path, file)) #|> DataFrame
         push!(df_list, df)
     end
     return df_list

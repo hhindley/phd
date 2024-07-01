@@ -146,6 +146,6 @@ function plot_props(df_results, df_props, threshold_vals, max_value=31856.296174
         end
     end
     linkaxes!(filter(x -> x isa Axis, f.content)...)
-    # return f
-    save("/Users/s2257179/phd/stochastic_hybrid_code/thresh_plots/props.png", f)
+    return f
+    
 end

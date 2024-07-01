@@ -1,7 +1,7 @@
 using StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase, Distributed, TableOperations, JSON, Query, FindFirstFunctions, CategoricalArrays, Colors
 
 # using PlotlyJS
-using InteractiveViz, WGLMakie
+using InteractiveViz, GLMakie
 
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/analysis_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
@@ -80,21 +80,21 @@ threshold_vals0 = [threshold_vals1[1:15]; threshold_vals2]
 
 
 function plot_prop(df_results, df_props, res_ind, savein, title, threshold_vals, max_val)
-    f = Figure()
+    f = Figure(size=(1450, 800))
     ax = Axis(f[1,1], xlabel = "time", ylabel = "propensity", title=title, limits=(nothing,(0, max_val)))
-    [iscatter!(ax,df_results[res_ind].time, get_column(df_props[res_ind], react_names[i]), label="$(react_names[i])", color=color_list[i]) for i in eachindex(react_names[1:end-1])]
+    [iscatter!(ax,df_results[res_ind].time, df_props[res_ind][i], label="$(react_names[i])", color=color_list[i]) for i in eachindex(react_names[1:end-1])]
     axislegend(ax, framevisible=true)
     lines!(range(minimum(df_results[res_ind].time), maximum(df_results[res_ind].time), length=2), [threshold_vals[res_ind], threshold_vals[res_ind]], linewidth=4, color=RGB(0.0, 0.0, 0.0))
-    return f
-    # save("/Users/s2257179/phd/stochastic_hybrid_code/$savein/$title.png", f)
+    # return f
+    save("/Users/s2257179/phd/stochastic_hybrid_code/$savein/$title.html", f)
 end
 
 df_results[1][:time]
 
 
-WGLMakie.activate!()
 
-f = plot_prop(df_results, df_props, 1, "thresh_plots2/props", "threshold_$(threshold_vals1[1])", threshold_vals1, 31856.296174439733)
+f = plot_prop(df_results, df_props, 11, "thresh_plots2/props", "threshold_$(threshold_vals1[11])", threshold_vals1, 31856.296174439733)
+
 
 f = create_subplots("plot_results", 5, 4);
 [iscatter!(f[1,1],df_results[1].time, df_props[1][i], label="$(react_names[i])", color=color_list[i]) for i in eachindex(react_names[1:end-1])]
@@ -121,5 +121,127 @@ end
 
 
 
+WGLMakie.activate!()
 
-plot_props(df_results, df_props, threshold_vals1)
+f = plot_props(df_results, df_props, threshold_vals1)
+save("/Users/s2257179/phd/stochastic_hybrid_code/thresh_plots2/props/props.html", f)
+
+
+f0 = plot_props(df_results0, df_props0, threshold_vals0)
+save("/Users/s2257179/phd/stochastic_hybrid_code/thresh_plots/props/props.html", f0)
+
+
+
+f = Figure(size=(1450, 800))
+ax = Axis(f[1,1], xlabel = "time", ylabel = "propensity", limits=(nothing,(0, 31856.296174439733)))
+[iscatter!(ax,df_results[11].time, df_props[11][i], label="$(react_names[i])", color=color_list[i]) for i in eachindex(react_names[1:end-1])]
+axislegend(ax, framevisible=true)
+lines!(range(minimum(df_results[11].time), maximum(df_results[11].time), length=2), [threshold_vals[11], threshold_vals[11]], linewidth=4, color=RGB(0.0, 0.0, 0.0))
+
+save("/Users/s2257179/phd/stochastic_hybrid_code/thresh_plots2/props/props_test.html", f)
+
+
+
+
+
+WGLMakie.activate!()
+
+
+f = Figure()
+ax = Axis(f[1,1])
+lines!(ax, 1:4)
+
+save("/Users/s2257179/Desktop/test.html", f)
+
+
+using GLMakie
+GLMakie.activate!()
+
+f = Figure(size=(1450, 800))
+ax = Axis(f[1,1], xlabel = "time", ylabel = "propensity", limits=(nothing,(0, 31856.296174439733)))
+[iscatter!(ax,df_results[11].time, df_props[11][i], label="$(react_names[i])", color=color_list[i]) for i in eachindex(react_names[1:end-1])]
+axislegend(ax, framevisible=true)
+lines!(range(minimum(df_results[11].time), maximum(df_results[11].time), length=2), [threshold_vals[11], threshold_vals[11]], linewidth=4, color=RGB(0.0, 0.0, 0.0))
+
+
+
+min_time = minimum(df_results[11].time)
+max_time = maximum(df_results[11].time)
+threshold_val = [threshold_vals1[11], threshold_vals1[11]]
+
+f = Figure(size=(1450, 800))
+ax = Axis(f[1,1], xlabel="time", ylabel="propensity", limits=(nothing, (0, 31856.296174439733)))
+
+for i in eachindex(react_names[1:end-1])
+    iscatter!(ax, df_results[11].time, df_props[11][i], label="$(react_names[i])", color=color_list[i])
+end
+
+ax = Axis(f[1,2], xlabel="time", ylabel="propensity", limits=(nothing, (0, 31856.296174439733)))
+
+for i in eachindex(react_names[1:end-1])
+    iscatter!(ax, df_results[1].time, df_props[1][i], label="$(react_names[i])", color=color_list[i])
+end
+
+axislegend(ax, framevisible=true)
+
+# Use precomputed values
+lines!(range(min_time, max_time, length=2), threshold_val, linewidth=4, color=RGB(0.0, 0.0, 0.0))
+
+cols=2
+rows=2
+f = Figure(size=(1450, 800))
+for j in 1:cols
+    for i in 1:rows
+        data_ind = i + rows * (j - 1)
+        ax = Axis(f[i,j], xlabel = "time", ylabel = "propensity", limits=(nothing,(0, 31856)))
+        for i in eachindex(react_names[1:end-1])
+            iscatter!(ax, df_results[data_ind].time, df_props[1][i], label="$(react_names[i])", color=color_list[i])
+        end
+        lines!(range(minimum(df_results[data_ind].time), maximum(df_results[data_ind].time), length=2), [threshold_vals1[data_ind], threshold_vals1[data_ind]], linewidth=4, color=RGB(0.0, 0.0, 0.0))
+
+        # Hide x-axis decorations for axes not in the bottom row
+        if i != rows
+            hidexdecorations!(ax, grid=false)
+        end
+
+        # Hide y-axis decorations for axes not in the first column
+        if j > 1
+            hideydecorations!(ax, grid=false)
+        end
+    end
+end
+axislegend(ax, framevisible=true)
+
+linkaxes!(filter(x -> x isa Axis, f.content)...)
+
+
+
+
+
+
+
+
+
+
+open("index.html", "w") do io
+    println(io, """
+    <html>
+        <head>
+        </head>
+        <body>
+    """)
+    Page(exportable=true, offline=true)
+    # Then, you can just inline plots or whatever you want :)
+    # Of course it would make more sense to put this into a single app
+    app = App() do
+        f = Figure()
+        ax = Axis(f[1,1])
+        lines!(ax, 1:4)
+    end
+    show(io, MIME"text/html"(), app)
+    # or anything else from Bonito, or that can be displayed as html:
+    println(io, """
+        </body>
+    </html>
+    """)
+end
