@@ -90,12 +90,19 @@ function arrow_conv(folder_path, arrow_folder_path)
     rm(folder_path, recursive=true, force=true)
 end
 
-function load_files(folder_path)
+function load_files(folder_path; dataframe=true)
     files = readdir(folder_path)
     df_list = []
-    for file in files
-        df = Arrow.Table(joinpath(folder_path, file)) #|> DataFrame
-        push!(df_list, df)
+    if dataframe
+        for file in files
+            df = Arrow.Table(joinpath(folder_path, file)) |> DataFrame
+            push!(df_list, df)
+        end
+    else
+        for file in files
+            df = Arrow.Table(joinpath(folder_path, file))
+            push!(df_list, df)
+        end
     end
     return df_list
 end
