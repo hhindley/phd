@@ -46,7 +46,7 @@ if !isdir(folderpath)
 end
 
 df = DataFrame(threshold=threshold_vals_new, time=zeros(length(threshold_vals_new)))
-Threads.@threads for i in eachindex(threshold_vals_new)
+Threads.@threads :static for i in eachindex(threshold_vals_new)
     println("starting $i")
     time_taken = @elapsed run_stoch(X0, threshold_vals_new[i], 0.05, joinpath(folderpath,"thresh_$(threshold_vals_new[i]).dat"))
     df.time[i] = time_taken

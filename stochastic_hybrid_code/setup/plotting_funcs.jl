@@ -26,7 +26,7 @@ function create_subplots(plotting_func, rows, columns; size=(1450, 800), xlabel=
             if plotting_func == "plot_results" || plotting_func == "plot_hists" || plotting_func == "plot_individual_reacts"
                 ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale)
             elseif plotting_func == "plot_stoch_reacts"
-                ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale, xticks=(1:14, react_names_str), xticklabelrotation=45)
+                ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale, xticks=(1:13, react_names_str), xticklabelrotation=45)
 
             end
             # ilines!(f[i,j], makiex(df_results[data_ind].time), df_results[data_ind][:,species])

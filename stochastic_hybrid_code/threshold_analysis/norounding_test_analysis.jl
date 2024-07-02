@@ -21,36 +21,17 @@ end
 df_times = CSV.File("/Users/s2257179/stoch_files/thresh_times_0107_noround.csv") |> DataFrame
 lines(df_times.threshold, df_times.time/60/60)
 
-threshold_vals1 = range(10,310,length=20)
-threshold_vals2 = range(246,310,length=5)
-threshold_vals0 = [threshold_vals1[1:15]; threshold_vals2]
-
-
-
-# f = Figure();
-# ax = Axis(f[1,1],yscale=log10);
-# barplot!(ax, 1:length(collect(df_reacts[16].event)), df_reacts[16].count, bottom=1);
-# display(GLMakie.Screen(), f)
-
-
-tot_counts0 = Int64[]
-for i in eachindex(df_reacts0)
-    push!(tot_counts0,sum(df_reacts0[i].count))
-end
+threshold_vals = df_times.threshold
 
 tot_counts = Int64[]
 for i in eachindex(df_reacts)
     push!(tot_counts,sum(df_reacts[i].count))
 end
 
-f = Figure()
-ax = Axis(f[1,1],xlabel="threshold", ylabel="total stochastic reaction count")
-barplot!(threshold_vals0, tot_counts0)
-save("/Users/s2257179/phd/stochastic_hybrid_code/thresh_plots/total_counts.png", f)
 
 f = Figure()
 ax = Axis(f[1,1],xlabel="threshold", ylabel="total stochastic reaction count")
-barplot!(threshold_vals1, tot_counts)
+barplot!(threshold_vals, tot_counts)
 save("/Users/s2257179/phd/stochastic_hybrid_code/thresh_plots2/total_counts.png", f)
 
 df_reacts
@@ -59,11 +40,9 @@ f = Figure(size=(1450,900))
 ax = Axis(f[1,1],xlabel="reactions", ylabel="reaction count", title="thresh_val", xticks=(1:14, react_names_str), xticklabelrotation=45)
 barplot!(df_reacts[1].event, df_reacts[1].count)
 
-titles = ["threshold: $(round(threshold_vals1[i], digits=2))" for i in eachindex(threshold_vals1)]
-titles0 = ["threshold: $(round(threshold_vals1[i], digits=2))" for i in eachindex(threshold_vals1)]
+titles = ["threshold: $(round(threshold_vals[i], digits=2))" for i in eachindex(threshold_vals)]
 
-f = plot_results("plot_stoch_reacts", df_reacts0, 5, 4, xlabel="reaction", ylabel="count", titles=titles, hidelabels=[true, false], linkaxes=false, species="stoch_reacts", folder="thresh_plots")
-f = plot_results("plot_stoch_reacts", df_reacts, 5, 4, xlabel="reaction", ylabel="count", titles=titles, hidelabels=[true, false], linkaxes=false, species="stoch_reacts", folder="thresh_plots2")
+f = plot_results("plot_stoch_reacts", df_reacts, 2, 2, xlabel="reaction", ylabel="count", titles=titles, hidelabels=[true, false], linkaxes=false, species="stoch_reacts", size=(600,400))#, folder="thresh_plots")
 
 display(GLMakie.Screen(), f.plot)
 
