@@ -38,21 +38,27 @@ threshold_vals_new = collect(range(threshold_vals[11], threshold_vals[13], lengt
 pushfirst!(threshold_vals_new, 160)
 push!(threshold_vals_new, 210)
 
+mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/"
+dir = "thresh_0107_noround"
+folderpath = joinpath(mainpath, dir)
+if !isdir(folderpath)
+    mkdir(folderpath)
+end
+
 df = DataFrame(threshold=threshold_vals_new, time=zeros(length(threshold_vals_new)))
 Threads.@threads for i in eachindex(threshold_vals_new)
     println("starting $i")
-    time_taken = @elapsed run_stoch(X0, threshold_vals_new[i], 0.05, "/home/hollie_hindley/Documents/stochastic_hybrid/thresh_0107_noround/thresh_$(threshold_vals_new[i]).dat")
+    time_taken = @elapsed run_stoch(X0, threshold_vals_new[i], 0.05, joinpath(folderpath,"thresh_$(threshold_vals_new[i]).dat"))
     df.time[i] = time_taken
     println("finished $i")
 end
-
-df = DataFrame(threshold=threshold_vals_new, time=times)
 
 CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/thresh_times_0107_noround.csv", df)
 
 println("total time = $(sum(df.time)/60/60) hours")
 
+println("starting file conversion")
+
 arrow_conv(joinpath(homedir(), "Documents/stochastic_hybrid/thresh_0107_noround"), joinpath(homedir(), "Documents/stochastic_hybrid/thresh_0107_noround_final_files"))
 
 print("finished!")
-

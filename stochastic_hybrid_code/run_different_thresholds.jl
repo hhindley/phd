@@ -31,18 +31,24 @@ else
     X0 = CSV.read(joinpath(homedir(), "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat"), Tables.matrix, header=false)
 end
 
-Threads.nthreads()
 
 threshold_vals = range(10,310,length=20)
 threshold_vals_new = collect(range(threshold_vals[11], threshold_vals[13], length=3))
 pushfirst!(threshold_vals_new, 160)
 push!(threshold_vals_new, 210)
 
-df = DataFrame(threshold=threshold_vals_new, time=zeros(length(threshold_vals_new)))
 
+mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/"
+dir = "thresh_0107_repeat3"
+folderpath = joinpath(mainpath, dir)
+if !isdir(folderpath)
+    mkdir(folderpath)
+end
+
+df = DataFrame(threshold=threshold_vals_new, time=zeros(length(threshold_vals_new)))
 Threads.@threads for i in eachindex(threshold_vals_new)
     println("starting $i")
-    time_taken = @elapsed run_stoch(X0, threshold_vals_new[i], 0.05, "/home/hollie_hindley/Documents/stochastic_hybrid/thresh_0107_repeat3/thresh_$(threshold_vals_new[i]).dat")
+    time_taken = @elapsed run_stoch(X0, threshold_vals_new[i], 0.05, joinpath(folderpath,"thresh_$(threshold_vals_new[i]).dat"))
     df.time[i] = time_taken
     println("finished $i")
 end
@@ -51,19 +57,10 @@ CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/thresh_times_0107.cs
 
 println("total time = $(sum(df.time)/60/60) hours")
 
+println("starting file conversion")
+
 arrow_conv(joinpath(homedir(), "Documents/stochastic_hybrid/thresh_0107_repeat3"), joinpath(homedir(), "Documents/stochastic_hybrid/thresh_0107_final_files"))
 
 print("finished!")
 
 
-
-i = Threads.Atomic{Int}(0)
-ids = zeros(4)
-old_is = zeros(4)
-Threads.@threads for id in 1:4
-    old_is[id] = Threads.atomic_add!(i, id)
-    ids[id]= id
-end
-old_is
-i[]
-ids

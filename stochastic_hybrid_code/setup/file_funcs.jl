@@ -45,6 +45,7 @@ function arrow_conv(folder_path, arrow_folder_path)
             mkdir(joinpath(arrow_folder_path, i))
         end
     end
+    react_names=[:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr, :V]
 
     for file in files
         # print(joinpath(folder_path, file))
@@ -55,7 +56,6 @@ function arrow_conv(folder_path, arrow_folder_path)
         println("opened writes for $(basename(file))")
     
         df_reacts = DataFrame[]
-        react_names=[:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr, :V]
         for chunk in CSV.Chunks(joinpath(folder_path, file); header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop", "missing"], drop=["missing"])
             df_chunk = DataFrame(chunk) 
             df_chunk.event = Array{Float64}.(JSON.parse.(df_chunk.event))
