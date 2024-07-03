@@ -26,7 +26,7 @@ end
 function flooring(X0)
     X0_new = deepcopy(X0)
     for i in range(1,9)
-        if X0_new[i] < floor(X0_new[i]) + 0.98
+        if X0_new[i] < floor(X0_new[i]) + 0.99
             X0_new[i] = floor(X0_new[i])
             # X0_new[end] = floor(X0_new[end])
         else
@@ -71,7 +71,7 @@ function hybrid_algo(X0, options, prop, S; out=stdout)
 
     dump([0],t0,X0;output=out)
 
-    # Random.seed!(111)
+    Random.seed!(111)
     nu = 0
 
     while ~division && (tf > s0)

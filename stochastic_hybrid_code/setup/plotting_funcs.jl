@@ -15,13 +15,18 @@ function get_column(df::DataFrame, column_name::Union{Symbol, String})
     return getproperty(df, column_name)
 end
 
-function create_subplots(plotting_func, rows, columns; size=(1450, 800), xlabel="", ylabel="", titles=[], hidelabels=[true, true], yscale=identity)
+function create_subplots(plotting_func, num_plots; size=(600, 450), xlabel="", ylabel="", titles=[], hidelabels=[true, true], yscale=identity)
     f = Figure(size=size)
-
+    base = ceil(sqrt(num_plots))
+    columns = Int(base)
+    rows = Int(ceil(num_plots / columns))
     for j in 1:columns
         for i in 1:rows
             data_ind = i + rows * (j - 1)
             # println(data_ind)
+            if length(titles) % 2 == 1
+                titles = push!(titles, "empty")
+            end
             title = titles != [] ? titles[data_ind] : "Plot $data_ind"
             if plotting_func == "plot_results" || plotting_func == "plot_hists" || plotting_func == "plot_individual_reacts"
                 ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale)
@@ -44,33 +49,38 @@ function create_subplots(plotting_func, rows, columns; size=(1450, 800), xlabel=
     end
     return f
 end
-function add_subplots(f, plotting_func, df_results, rows, columns; species=:rm_a, linkaxes=true)
+function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, linkaxes=true)
     if plotting_func == "plot_results"
         preprocessed_times = [get_column(df, :time) for df in df_results]
         preprocessed_results = [get_column(df, species) for df in df_results]
     elseif plotting_func == "plot_hists"
         dfs = df_results[string(species)]
     end
+    base = ceil(sqrt(num_plots))
+    columns = Int(base)
+    rows = Int(ceil(num_plots / columns))
     for j in 1:columns
         for i in 1:rows
             data_ind = i + rows * (j - 1)
-            if plotting_func == "plot_results"
-                # x = makiex(preprocessed_times[data_ind])
-                # ilines!(f[i,j], x, preprocessed_results[data_ind])
-                plot_timeres(preprocessed_times[data_ind], preprocessed_results[data_ind], f[i,j])
-            elseif plotting_func == "plot_hists"
-                plot_hist(dfs[data_ind], f[i,j])
-            elseif plotting_func == "plot_stoch_reacts" 
-                barplot!(f[i,j], df_results[data_ind].event, df_results[data_ind].count)
-            elseif plotting_func == "plot_individual_reacts"
-                if data_ind <= length(react_names[1:end-1])
-                    barplot!(f[i,j], df_results[react_names[1:end-1][data_ind]].threshold, df_results[react_names[1:end-1][data_ind]].count)
+            if data_ind <= num_plots
+                if plotting_func == "plot_results"
+                    # x = makiex(preprocessed_times[data_ind])
+                    # ilines!(f[i,j], x, preprocessed_results[data_ind])
+                    plot_timeres(preprocessed_times[data_ind], preprocessed_results[data_ind], f[i,j])
+                elseif plotting_func == "plot_hists"
+                    plot_hist(dfs[data_ind], f[i,j])
+                elseif plotting_func == "plot_stoch_reacts" 
+                    barplot!(f[i,j], df_results[data_ind].event, df_results[data_ind].count)
+                elseif plotting_func == "plot_individual_reacts"
+                    if data_ind <= length(react_names[1:end-1])
+                        barplot!(f[i,j], df_results[react_names[1:end-1][data_ind]].threshold, df_results[react_names[1:end-1][data_ind]].count)
+                    end
+                elseif plotting_func == "plot_props"
+                    # for r in eachindex(react_names[1:end-1])
+                    #     iscatter!(f[i,j], df_results[data_ind].time, get_column(df_props[data_ind], react_names[r]), label="$(react_names[r])", color=color_list[r])
+                    # end
+                    [iscatter!(f[i,j], df_results[data_ind].time, get_column(df_props[data_ind], react_names[r]), label="$(react_names[r])", color=color_list[r]) for r in eachindex(react_names[1:end-1])]
                 end
-            elseif plotting_func == "plot_props"
-                # for r in eachindex(react_names[1:end-1])
-                #     iscatter!(f[i,j], df_results[data_ind].time, get_column(df_props[data_ind], react_names[r]), label="$(react_names[r])", color=color_list[r])
-                # end
-                [iscatter!(f[i,j], df_results[data_ind].time, get_column(df_props[data_ind], react_names[r]), label="$(react_names[r])", color=color_list[r]) for r in eachindex(react_names[1:end-1])]
             end
         end
     end
@@ -79,9 +89,9 @@ function add_subplots(f, plotting_func, df_results, rows, columns; species=:rm_a
     end
     return f
 end
-function plot_results(plotting_func, df_results, rows, columns; species=:rm_a, size=(1450, 900), xlabel="", ylabel="", titles=[], yscale=identity, hidelabels=[true,true], linkaxes=true, folder="")
-    f = create_subplots(plotting_func, rows, columns; size=size, xlabel=xlabel, ylabel=ylabel, titles=titles, hidelabels=hidelabels, yscale=yscale)
-    f = add_subplots(f, plotting_func, df_results, rows, columns; species=species, linkaxes=linkaxes)
+function plot_results(plotting_func, df_results, num_plots; species=:rm_a, size=(600, 450), xlabel="", ylabel="", titles=[], yscale=identity, hidelabels=[true,true], linkaxes=true, folder="")
+    f = create_subplots(plotting_func, num_plots; size=size, xlabel=xlabel, ylabel=ylabel, titles=titles, hidelabels=hidelabels, yscale=yscale)
+    f = add_subplots(f, plotting_func, df_results, num_plots; species=species, linkaxes=linkaxes)
     if !isempty(folder)
         folder_path = joinpath("/Users/s2257179/phd/stochastic_hybrid_code", folder)
         save(joinpath(folder_path, "$species.png"), f)
@@ -149,3 +159,37 @@ function plot_props(df_results, df_props, threshold_vals, max_value=31856.296174
     return f
     
 end
+
+
+function plot_prop(df_results, df_props, res_ind, savein, title, threshold_vals, max_val)
+    time_data = df_results[res_ind].time[1:1:end]
+    prop_data = [df_props[res_ind][i][1:1:end] for i in eachindex(react_names[1:end-1])]
+    
+    f = Figure()
+    ax = Axis(f[1,1], xlabel = "time", ylabel = "propensity", title=title, limits=(nothing,(0, max_val)))
+    for i in eachindex(react_names[1:end-1])
+        iscatter!(ax, time_data, prop_data[i], label="$(react_names[i])", color=color_list[i])
+    end    
+    axislegend(ax, framevisible=true)
+    lines!(ax, range(minimum(time_data), maximum(time_data), length = 2), [threshold_vals[res_ind], threshold_vals[res_ind]], linewidth = 4, color = :black)
+    return f
+    # save("/Users/s2257179/phd/stochastic_hybrid_code/$savein/$title.html", f)
+end
+
+color_list = [
+    RGB(0.121, 0.466, 0.705),  # Blue
+    RGB(1.0, 0.498, 0.054),    # Orange
+    RGB(0.172, 0.627, 0.172),  # Green
+    RGB(0.839, 0.152, 0.156),  # Red
+    RGB(0.580, 0.403, 0.741),  # Purple
+    RGB(0.549, 0.337, 0.294),  # Brown
+    RGB(0.890, 0.466, 0.760),  # Pink
+    RGB(0.498, 0.498, 0.498),  # Gray
+    RGB(22/255, 219/255, 180/255),  # Olive
+    RGB(13/255, 48/255, 222/255),  # Cyan
+    RGB(57/255, 235/255, 21/255),        # Black
+    RGB(255/255, 219/255, 38/255),        # Yellow
+    RGB(1.0, 0.0, 1.0)         # Magenta
+];
+
+react_names_str = [string(i) for i in react_names]

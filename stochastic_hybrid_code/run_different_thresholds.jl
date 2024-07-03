@@ -7,7 +7,7 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/hybrid_algo.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/stoch_model.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 
-n= 10000 # number of cell cycles
+n= 100 # number of cell cycles
 options = Dict(
 "threshold"  =>  0.,       # Threshold to decide between determinisitic or stochastic reaction
 "FixDetReact"=> [14],# [10,11,12,13,14,15,16,17,18],       # Reactions to be treated determinisitically
@@ -36,31 +36,36 @@ threshold_vals = range(10,310,length=20)
 threshold_vals_new = collect(range(threshold_vals[11], threshold_vals[13], length=3))
 pushfirst!(threshold_vals_new, 160)
 push!(threshold_vals_new, 210)
+threshold_vals_new = range(1,3, length=3)
 
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/"
-dir = "thresh_0107_repeat3"
+dir = "test_threads"
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
 end
 
+
 df = DataFrame(threshold=threshold_vals_new, time=zeros(length(threshold_vals_new)))
 # Threads.@threads :static for i in eachindex(threshold_vals_new)
 for i in eachindex(threshold_vals_new)
     println("starting $i")
+    # time_taken = i*100
     time_taken = @elapsed run_stoch(X0, threshold_vals_new[i], 0.05, joinpath(folderpath,"thresh_$(threshold_vals_new[i]).dat"))
     df.time[i] = time_taken
     println("finished $i")
 end
 
-CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/thresh_times_0107.csv", df)
+df
+
+CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/test_threads_times.csv", df)
 
 println("total time = $(sum(df.time)/60/60) hours")
 
 println("starting file conversion")
 
-arrow_conv(joinpath(homedir(), "Documents/stochastic_hybrid/thresh_0107_repeat3"), joinpath(homedir(), "Documents/stochastic_hybrid/thresh_0107_final_files"))
+arrow_conv(joinpath(mainpath, dir), joinpath(mainpath, "test_threads_final"))
 
 print("finished!")
 

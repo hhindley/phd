@@ -12,21 +12,6 @@ df_props = load_files("/Users/s2257179/stoch_files/thresh_1906_final_files/props
 df_results0 = load_files("/Users/s2257179/stoch_files/thresh_test_arrow_files_14_06/results")
 df_results = load_files("/Users/s2257179/stoch_files/thresh_1906_final_files/results")
 
-color_list = [
-    RGB(0.121, 0.466, 0.705),  # Blue
-    RGB(1.0, 0.498, 0.054),    # Orange
-    RGB(0.172, 0.627, 0.172),  # Green
-    RGB(0.839, 0.152, 0.156),  # Red
-    RGB(0.580, 0.403, 0.741),  # Purple
-    RGB(0.549, 0.337, 0.294),  # Brown
-    RGB(0.890, 0.466, 0.760),  # Pink
-    RGB(0.498, 0.498, 0.498),  # Gray
-    RGB(22/255, 219/255, 180/255),  # Olive
-    RGB(13/255, 48/255, 222/255),  # Cyan
-    RGB(57/255, 235/255, 21/255),        # Black
-    RGB(255/255, 219/255, 38/255),        # Yellow
-    RGB(1.0, 0.0, 1.0)         # Magenta
-]
 
 threshold_vals1 = range(10,310,length=20)
 threshold_vals2 = range(246,310,length=5)
@@ -92,20 +77,7 @@ df_results[11].totprop
 # end
 
 
-function plot_prop(df_results, df_props, res_ind, savein, title, threshold_vals, max_val)
-    time_data = df_results[res_ind].time[1:1:end]
-    prop_data = [df_props[res_ind][i][1:1:end] for i in eachindex(react_names[1:end-1])]
-    
-    f = Figure()
-    ax = Axis(f[1,1], xlabel = "time", ylabel = "propensity", title=title, limits=(nothing,(0, max_val)))
-    for i in eachindex(react_names[1:end-1])
-        iscatter!(ax, time_data, prop_data[i], label="$(react_names[i])", color=color_list[i])
-    end    
-    axislegend(ax, framevisible=true)
-    lines!(ax, range(minimum(time_data), maximum(time_data), length = 2), [threshold_vals[res_ind], threshold_vals[res_ind]], linewidth = 4, color = :black)
-    return f
-    # save("/Users/s2257179/phd/stochastic_hybrid_code/$savein/$title.html", f)
-end
+
 
 df_results[1].time[1:1:end]
 
