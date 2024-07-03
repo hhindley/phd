@@ -7,12 +7,12 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/hybrid_algo.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/stoch_model.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 
-n= 100 # number of cell cycles
+n= 10000 # number of cell cycles
 options = Dict(
 "threshold"  =>  0.,       # Threshold to decide between determinisitic or stochastic reaction
 "FixDetReact"=> [14],# [10,11,12,13,14,15,16,17,18],       # Reactions to be treated determinisitically
     "tspan"     =>   n*log(2)/lam_val,     # Max time for cell cycle
-    "samplingFreq"  => 0.1  # for sampling every x mins
+    "samplingFreq"  => 10/60  # for sampling every x mins
 )
 
 X0 = collect(get_X0(indV, init_molec)')
@@ -32,15 +32,13 @@ else
 end
 
 
-threshold_vals = range(10,310,length=20)
-threshold_vals_new = collect(range(threshold_vals[11], threshold_vals[13], length=3))
-pushfirst!(threshold_vals_new, 160)
-push!(threshold_vals_new, 210)
-threshold_vals_new = range(1,3, length=3)
-
+# threshold_vals = range(10,310,length=20)
+threshold_vals_new = collect(range(threshold_vals[10], threshold_vals[14], length=5))
+# pushfirst!(threshold_vals_new, 160)
+# push!(threshold_vals_new, 210)
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/"
-dir = "test_threads"
+dir = "test_0307_5_values_from_original_range"
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
@@ -57,15 +55,15 @@ for i in eachindex(threshold_vals_new)
     println("finished $i")
 end
 
-df
-
-CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/test_threads_times.csv", df)
+time_file = dir * "_times.csv"
+CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/$time_file", df)
 
 println("total time = $(sum(df.time)/60/60) hours")
 
 println("starting file conversion")
 
-arrow_conv(joinpath(mainpath, dir), joinpath(mainpath, "test_threads_final"))
+final_path = dir * "_final_files"
+arrow_conv(joinpath(mainpath, dir), joinpath(mainpath, final_path))
 
 print("finished!")
 

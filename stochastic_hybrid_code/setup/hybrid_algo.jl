@@ -23,21 +23,24 @@ function run_stoch(X0, thresh, kdam, file)
     close(fout)
 end
 
-function flooring(X0)
-    X0_new = deepcopy(X0)
-    for i in range(1,9)
-        if X0_new[i] < floor(X0_new[i]) + 0.99
-            X0_new[i] = floor(X0_new[i])
-            # X0_new[end] = floor(X0_new[end])
-        else
-            X0_new[i] = ceil(X0_new[i])
-            # X0_new[end] = ceil(X0_new[end])
-        end
-    end
+# function flooring(X0)
+#     X0_new = deepcopy(X0)
+#     for i in 1:9
+#         if X0_new[i] < floor(X0_new[i]) + 0.99
+#             X0_new[i] = floor(X0_new[i])
+#             # X0_new[end] = floor(X0_new[end])
+#         else
+#             X0_new[i] = ceil(X0_new[i])
+#             # X0_new[end] = ceil(X0_new[end])
+#         end
+#     end
     
+#     return X0_new
+# end
+function flooring(X0)
+    X0_new = X0 < floor.(X0) + 0.99 ? floor.(X0) : ceil.(X0)
     return X0_new
 end
-
 
 function hybrid_algo(X0, options, prop, S; out=stdout)
     # save_when = 10 .^ range(log10(1e-6), log10(1e6), length=1000)
@@ -145,7 +148,7 @@ function hybrid_algo(X0, options, prop, S; out=stdout)
             #     a = prop(X0)
             # end
 
-            a = prop(flooring(X0))
+            a = prop(flooring.(X0))
             a[.!isStochReact] .= 0 # zeros out propensities of deterministic reactions
 
             a0 = sum(a)
@@ -174,7 +177,7 @@ end
 
 function determine_partitioning(u, prop, thresh, FixDetReact)
 
-    isStochReact = prop(flooring(u)) .< thresh # if the propensity is less than the threshold then the reaction will be stochastic 
+    isStochReact = prop(flooring.(u)) .< thresh # if the propensity is less than the threshold then the reaction will be stochastic 
 
     if !isempty(FixDetReact)
         for i in FixDetReact
@@ -202,7 +205,7 @@ end
 function odefunction!(du, u, isStochReact, t) # dont need to pass parameters here because that was done when building the stochastic model so this information is already stored within the propensities 
     u[u .< 0] .= 0 # zero any negatives (non-negativity)
 
-    a = prop(flooring(u)) # calculate reaction propensities
+    a = prop(flooring.(u)) # calculate reaction propensities
     a2 = prop(u)
 
     a0_s = sum(a[isStochReact]) # total reaction propensities for stochastic reactions
