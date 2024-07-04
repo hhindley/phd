@@ -49,7 +49,7 @@ i = 5 # change this to change threshold value
 df = DataFrame(threshold=threshold_vals_new[i], time=zeros(length(1)))
 
 time_taken = @elapsed run_stoch(X0, threshold_vals_new[i], 0.05, joinpath(folderpath,"thresh_$(threshold_vals_new[i]).dat"))
-df.time[i] = time_taken
+df.time[1] = time_taken
 
 println("finished $i")
 
