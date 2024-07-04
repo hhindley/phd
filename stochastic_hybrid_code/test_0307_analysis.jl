@@ -84,3 +84,48 @@ display(f2)
 
 
 f = plot_props(df_results, df_props, 5, threshold_vals)
+
+
+
+
+
+
+
+
+
+
+
+
+df = Arrow.Table("/Users/s2257179/stoch_files/test_0307_5_values_from_original_range_final_files/results/thresh_183.68421052631578.arrow") |> DataFrame
+
+hist_freq = DataFrame(CSV.File("/Users/s2257179/Desktop/test_rh.csv"))
+
+hist_freq.bin = Array{Float64}.(JSON.parse.(hist_freq.bin))
+
+
+
+grouped_df, hist_df, bin_edges = get_grouped_df(df, :rh)
+counts=[]
+for df in grouped_df
+    push!(counts, length(df.t))
+end
+
+counts
+
+
+f = Figure(size=(1000,650))
+ax = Axis(f[1,1], title="my data")
+mydat = plot_hist(hist_freq, f[1,1])
+ax = Axis(f[1,2], title="makie")
+f_lib = hist!(f[1,2],df.rh, bins=50)
+
+bins = [i[1] for i in hist_freq.bin]
+push!(bins, hist_freq.bin[end][2])
+bin_c = (bins[1:end-1] .+ bins[2:end]) ./ 2
+ax = Axis(f[1,3], title="my data counts")
+barplot!(f[1,3], bin_c, counts, width=diff(bins), gap=0)
+
+linkaxes!(f.content...)
+
+
+
