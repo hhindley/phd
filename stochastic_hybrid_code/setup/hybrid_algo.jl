@@ -74,7 +74,7 @@ function hybrid_algo(X0, options, prop, S; out=stdout)
 
     dump([0],t0,X0;output=out)
 
-    Random.seed!(111)
+    # Random.seed!(111)
     nu = 0
 
     while ~division && (tf > s0)

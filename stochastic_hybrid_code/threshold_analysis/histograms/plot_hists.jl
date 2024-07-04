@@ -6,25 +6,8 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_funcs.jl"))
 
 mainfolder = "/Users/s2257179/stoch_files/hists2"
-foldernames = readdir(mainfolder)
-all_filenames = [readdir(joinpath(mainfolder, foldernames[i])) for i in eachindex(foldernames)]
 
-dfs = Dict{String, Vector{DataFrame}}()
-for folder in foldernames
-    folderpath = joinpath(mainfolder, folder)
-    filenames = readdir(folderpath)
-    for file in filenames
-        prefix = split(file, ".")[1]
-        filepath = joinpath(folderpath, file)
-        df = DataFrame(CSV.File(filepath))
-        df.bin = Array{Float64}.(JSON.parse.(df.bin))
-        if haskey(dfs, prefix)
-            push!(dfs[prefix], df)
-        else
-            dfs[prefix] = [df]
-        end
-    end
-end
+load_hist_files(mainfolder)
 
 mainfolder0 = "/Users/s2257179/stoch_files/hists"
 foldernames0 = readdir(mainfolder0)
