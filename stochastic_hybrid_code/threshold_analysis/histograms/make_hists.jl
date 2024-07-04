@@ -52,30 +52,33 @@ end
 #     hist_freq[i, :freq] = (length(df.t)*tot_time_in_state)/total_time
 # end
 
-
-mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid"
-folder = "test_0307_5_values_from_original_range_final_files"
-folderpath = joinpath(joinpath(mainpath,folder), "results")
-folder_to_store_hists = "hists_0407"
-files = readdir(folderpath)
-for file in files
-    filepath = joinpath(folderpath, file)
-    res = Arrow.Table(filepath) |> DataFrame
-    if !isdir(joinpath(mainpath, folder_to_store_hists))
-        mkdir(joinpath(mainpath, folder_to_store_hists))
-    end
-    if !isdir(joinpath(joinpath(mainpath, folder_to_store_hists), "$(file[1:end-6])"))
-        mkdir(joinpath(joinpath(mainpath, folder_to_store_hists), "$(file[1:end-6])"))
-    end
-    for i in [:rm_a, :rm_b, :rm_r, :rtca, :rtcb, :rtcr, :rh, :rt, :rd]
-        grouped_df, hist_df, bin_edges = get_grouped_df(res, i)
-        hist_freq = make_hist_freq(bin_edges)
-        total_time = hist_df.t[end]
-        for i in 1:length(grouped_df)
-            df = grouped_df[i]
-            tot_time_in_state = vec_time_in_state(df)
-            hist_freq[i, :freq] = (length(df.t)*tot_time_in_state)/total_time
+function create_histogram_files(folder_to_convert, folder_to_store_hists)
+    mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid"
+    folder = folder_to_convert # change this for different folders 
+    folderpath = joinpath(joinpath(mainpath,folder), "results")
+    folder_to_store_hists = folder_to_store_hists # change this for different folders
+    files = readdir(folderpath)
+    for file in files
+        filepath = joinpath(folderpath, file)
+        res = Arrow.Table(filepath) |> DataFrame
+        if !isdir(joinpath(mainpath, folder_to_store_hists))
+            mkdir(joinpath(mainpath, folder_to_store_hists))
         end
-        CSV.write(joinpath(joinpath(joinpath(mainpath, folder_to_store_hists), "$(file[1:end-6])"), "$i.csv"), hist_freq)
+        if !isdir(joinpath(joinpath(mainpath, folder_to_store_hists), "$(file[1:end-6])"))
+            mkdir(joinpath(joinpath(mainpath, folder_to_store_hists), "$(file[1:end-6])"))
+        end
+        for i in [:rm_a, :rm_b, :rm_r, :rtca, :rtcb, :rtcr, :rh, :rt, :rd]
+            grouped_df, hist_df, bin_edges = get_grouped_df(res, i)
+            hist_freq = make_hist_freq(bin_edges)
+            total_time = hist_df.t[end]
+            for i in 1:length(grouped_df)
+                df = grouped_df[i]
+                tot_time_in_state = vec_time_in_state(df)
+                hist_freq[i, :freq] = (length(df.t)*tot_time_in_state)/total_time
+            end
+            CSV.write(joinpath(joinpath(joinpath(mainpath, folder_to_store_hists), "$(file[1:end-6])"), "$i.csv"), hist_freq)
+        end
     end
 end
+
+create_histogram_files("run_individually_0407_final_files", "hists_run_individually_0407")
