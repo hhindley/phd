@@ -106,6 +106,18 @@ function load_files(folder_path; dataframe=true)
     end
     return df_list
 end
+
+function create_df_reacts(df_reacts)
+    df_reacts = [DataFrame(df_reacts[i]) for i in eachindex(df_reacts)]
+    for i in eachindex(df_reacts)
+        for num in 1:13
+            if num ∉ df_reacts[i].event
+                push!(df_reacts[i], (event=num, count=0, reaction=react_names[num]))
+            end
+        end
+    end
+    return df_reacts
+end
 # function loadandsort_arrow_file(file)
 #     atab = Arrow.Table(file)
 #     df_p = atab |> TableOperations.filter(x -> length(x.event) > 3) |> DataFrame

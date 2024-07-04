@@ -76,10 +76,14 @@ function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, li
                         barplot!(f[i,j], df_results[react_names[1:end-1][data_ind]].threshold, df_results[react_names[1:end-1][data_ind]].count)
                     end
                 elseif plotting_func == "plot_props"
-                    # for r in eachindex(react_names[1:end-1])
-                    #     iscatter!(f[i,j], df_results[data_ind].time, get_column(df_props[data_ind], react_names[r]), label="$(react_names[r])", color=color_list[r])
-                    # end
-                    [iscatter!(f[i,j], df_results[data_ind].time, get_column(df_props[data_ind], react_names[r]), label="$(react_names[r])", color=color_list[r]) for r in eachindex(react_names[1:end-1])]
+                    time_data = df_results[data_ind].time
+                    prop_data = [df_props[data_ind][react] for react in eachindex(react_names[1:end-1])]
+
+                    for r in eachindex(react_names[1:end-1])
+                        iscatter!(f[i,j], time_data, prop_data[r], label="$(react_names[r])", color=color_list[r])
+                    end    
+                    axislegend(f[i,j], framevisible=true)
+                    lines!(f[i,j], range(minimum(time_data), maximum(time_data), length = 2), [threshold_vals[data_ind], threshold_vals[data_ind]], linewidth = 4, color = :black)
                 end
             end
         end
@@ -131,27 +135,34 @@ end
 
 
 
-function plot_props(df_results, df_props, threshold_vals, max_value=31856.296174439733)
-    f = Figure(size=(1450, 800))
-    rows = 5
-    total_columns = 4
+function plot_props(df_results, df_props, num_plots, threshold_vals; max_value=31856.296174439733)
+    f = Figure(size=(1200, 850))
+    base = ceil(sqrt(num_plots))
+    columns = Int(base)
+    rows = Int(ceil(num_plots / columns))
 
-    for j in 1:total_columns
+    for j in 1:columns
         for i in 1:rows
             data_ind = i + rows * (j - 1)
-            ax = Axis(f[i,j], xlabel = "time", ylabel = "propensity", limits=(nothing,(0, max_value)))
-            [iscatter!(ax,df_results[data_ind].time, df_props[data_ind][r], label="$(react_names[r])", color=color_list[r]) for r in eachindex(react_names[1:end-1])]
-            axislegend(ax, framevisible=true)
-            lines!(range(minimum(df_results[data_ind].time), maximum(df_results[data_ind].time), length=2), [threshold_vals[data_ind], threshold_vals[data_ind]], linewidth=4, color=RGB(0.0, 0.0, 0.0))
+            if data_ind <= num_plots
+                time_data = df_results[data_ind].time
+                prop_data = [df_props[data_ind][i] for i in eachindex(react_names[1:end-1])]
+        
+                ax = Axis(f[i,j], xlabel = "time", ylabel = "propensity", limits=(nothing,(0, max_value)))
+                for i in eachindex(react_names[1:end-1])
+                    iscatter!(ax, time_data, prop_data[i], label="$(react_names[i])", color=color_list[i])
+                end    
+                axislegend(ax, framevisible=true)
+                lines!(ax, range(minimum(time_data), maximum(time_data), length = 2), [threshold_vals[data_ind], threshold_vals[data_ind]], linewidth = 4, color = :black)
+                # Hide x-axis decorations for axes not in the bottom row
+                if i != rows
+                    hidexdecorations!(ax, grid=false)
+                end
 
-            # Hide x-axis decorations for axes not in the bottom row
-            if i != rows
-                hidexdecorations!(ax, grid=false)
-            end
-
-            # Hide y-axis decorations for axes not in the first column
-            if j > 1
-                hideydecorations!(ax, grid=false)
+                # Hide y-axis decorations for axes not in the first column
+                if j > 1
+                    hideydecorations!(ax, grid=false)
+                end
             end
         end
     end
@@ -162,8 +173,8 @@ end
 
 
 function plot_prop(df_results, df_props, res_ind, savein, title, threshold_vals, max_val)
-    time_data = df_results[res_ind].time[1:1:end]
-    prop_data = [df_props[res_ind][i][1:1:end] for i in eachindex(react_names[1:end-1])]
+    time_data = df_results[res_ind].time
+    prop_data = [df_props[res_ind][i] for i in eachindex(react_names[1:end-1])]
     
     f = Figure()
     ax = Axis(f[1,1], xlabel = "time", ylabel = "propensity", title=title, limits=(nothing,(0, max_val)))
