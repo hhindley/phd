@@ -99,8 +99,10 @@ f = plot_props(df_results, df_props, 5, threshold_vals)
 df = Arrow.Table("/Users/s2257179/stoch_files/test_0307_5_values_from_original_range_final_files/results/thresh_183.68421052631578.arrow") |> DataFrame
 
 hist_freq = DataFrame(CSV.File("/Users/s2257179/Desktop/test_rh.csv"))
+hist_freq1 = DataFrame(CSV.File("/Users/s2257179/Desktop/rh_NEW.csv"))
 
 hist_freq.bin = Array{Float64}.(JSON.parse.(hist_freq.bin))
+hist_freq1.bin = Array{Float64}.(JSON.parse.(hist_freq1.bin))
 
 
 
@@ -116,6 +118,10 @@ counts
 f = Figure(size=(1000,650))
 ax = Axis(f[1,1], title="my data")
 mydat = plot_hist(hist_freq, f[1,1])
+ax = Axis(f[1,2], title="my data2")
+mydat = plot_hist(hist_freq1, f[1,2])
+
+
 ax = Axis(f[1,2], title="makie")
 f_lib = hist!(f[1,2],df.rh, bins=50)
 
