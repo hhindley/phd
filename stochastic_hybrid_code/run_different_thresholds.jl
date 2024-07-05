@@ -32,25 +32,27 @@ else
 end
 
 
-threshold_vals = range(10,310,length=20)
-threshold_vals_new = collect(range(threshold_vals[10], threshold_vals[14], length=5))
+# threshold_vals = range(10,310,length=20)
+# threshold_vals_new = collect(range(threshold_vals[10], threshold_vals[14], length=5))
 # pushfirst!(threshold_vals_new, 160)
 # push!(threshold_vals_new, 210)
+threshold_vals = range(50,500,length=10)
+
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/"
-dir = "test_0307_5_values_from_original_range"
+dir = "new_thresh_vals_0507"
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
 end
 
 
-df = DataFrame(threshold=threshold_vals_new, time=zeros(length(threshold_vals_new)))
+df = DataFrame(threshold=threshold_vals, time=zeros(length(threshold_vals)))
 # Threads.@threads :static for i in eachindex(threshold_vals_new)
-for i in eachindex(threshold_vals_new)
+for i in eachindex(threshold_vals)
     println("starting $i")
     # time_taken = i*100
-    time_taken = @elapsed run_stoch(X0, threshold_vals_new[i], 0.05, joinpath(folderpath,"thresh_$(threshold_vals_new[i]).dat"))
+    time_taken = @elapsed run_stoch(X0, threshold_vals[i], 0.05, joinpath(folderpath,"thresh_$(threshold_vals[i]).dat"))
     df.time[i] = time_taken
     println("finished $i")
 end
