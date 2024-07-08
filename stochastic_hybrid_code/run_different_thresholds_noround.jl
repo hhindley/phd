@@ -12,7 +12,7 @@ options = Dict(
 "threshold"  =>  0.,       # Threshold to decide between determinisitic or stochastic reaction
 "FixDetReact"=> [14],# [10,11,12,13,14,15,16,17,18],       # Reactions to be treated determinisitically
     "tspan"     =>   n*log(2)/lam_val,     # Max time for cell cycle
-    "samplingFreq"  => 0.1  # for sampling every x mins
+    "samplingFreq"  => 10/60  # for sampling every x mins
 )
 
 X0 = collect(get_X0(indV, init_molec)')
@@ -32,14 +32,15 @@ else
 end
 
 
+threshold_vals = range(50,500,length=10)
 
-threshold_vals = range(10,310,length=20)
-threshold_vals_new = collect(range(threshold_vals[11], threshold_vals[13], length=3))
-pushfirst!(threshold_vals_new, 160)
-push!(threshold_vals_new, 210)
+# threshold_vals = range(10,310,length=20)
+# threshold_vals_new = collect(range(threshold_vals[11], threshold_vals[13], length=3))
+# pushfirst!(threshold_vals_new, 160)
+# push!(threshold_vals_new, 210)
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/"
-dir = "thresh_0107_noround"
+dir = "new_thresh_vals_0507_nofloor" 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
@@ -54,12 +55,14 @@ for i in eachindex(threshold_vals_new)
     println("finished $i")
 end
 
-CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/thresh_times_0107_noround.csv", df)
+time_file = dir * "_times.csv"
+CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/$time_file", df)
 
 println("total time = $(sum(df.time)/60/60) hours")
 
 println("starting file conversion")
 
-arrow_conv(joinpath(homedir(), "Documents/stochastic_hybrid/thresh_0107_noround"), joinpath(homedir(), "Documents/stochastic_hybrid/thresh_0107_noround_final_files"))
+final_path = dir * "_final_files"
+arrow_conv(joinpath(mainpath, dir), joinpath(mainpath, final_path))
 
 print("finished!")
