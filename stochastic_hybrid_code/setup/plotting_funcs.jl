@@ -23,27 +23,27 @@ function create_subplots(plotting_func, num_plots; size=(600, 450), xlabel="", y
     for j in 1:columns
         for i in 1:rows
             data_ind = i + rows * (j - 1)
-            # println(data_ind)
             if length(titles) % 2 == 1
                 titles = push!(titles, "empty")
             end
-            title = titles != [] ? titles[data_ind] : "Plot $data_ind"
-            if plotting_func == "plot_results" || plotting_func == "plot_hists" || plotting_func == "plot_individual_reacts"
-                ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale)
-            elseif plotting_func == "plot_stoch_reacts"
-                ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale, xticks=(1:13, react_names_str), xticklabelrotation=45)
+            if data_ind <= length(titles)
+                title = titles != [] ? titles[data_ind] : "Plot $data_ind"
+                if plotting_func == "plot_results" || plotting_func == "plot_hists" || plotting_func == "plot_individual_reacts"
+                    ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale)
+                elseif plotting_func == "plot_stoch_reacts"
+                    ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale, xticks=(1:13, react_names_str), xticklabelrotation=45)
+    
+                end
+                # Hide x-axis decorations for axes not in the bottom row
+                if i != rows && (hidelabels == [true, true] || hidelabels == [true, false])
+                    hidexdecorations!(ax, grid=false)
+                end
 
-            end
-            # ilines!(f[i,j], makiex(df_results[data_ind].time), df_results[data_ind][:,species])
-
-            # Hide x-axis decorations for axes not in the bottom row
-            if i != rows && (hidelabels == [true, true] || hidelabels == [true, false])
-                hidexdecorations!(ax, grid=false)
-            end
-
-            # Hide y-axis decorations for axes not in the first column
-            if j > 1 && (hidelabels == [true, true] || hidelabels == [false, true])
-                hideydecorations!(ax, grid=false)
+                # Hide y-axis decorations for axes not in the first column
+                if j > 1 && (hidelabels == [true, true] || hidelabels == [false, true])
+                    hideydecorations!(ax, grid=false)
+                    
+                end
             end
         end
     end

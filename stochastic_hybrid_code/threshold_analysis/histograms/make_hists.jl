@@ -52,8 +52,8 @@ end
 #     hist_freq[i, :freq] = (length(df.t)*tot_time_in_state)/total_time
 # end
 
-function create_histogram_files(folder_to_convert, folder_to_store_hists)
-    mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid"
+function create_histogram_files(mainpath, folder_to_convert, folder_to_store_hists)
+    mainpath = mainpath
     folder = folder_to_convert # change this for different folders 
     folderpath = joinpath(joinpath(mainpath,folder), "results")
     folder_to_store_hists = folder_to_store_hists # change this for different folders
@@ -81,4 +81,5 @@ function create_histogram_files(folder_to_convert, folder_to_store_hists)
     end
 end
 
-create_histogram_files("run_individually_0407_final_files", "hists_run_individually_0407")
+
+create_histogram_files("/Users/s2257179", "new_thresh_vals_0507_final_files", "new_thresh_vals_0507_hists")
