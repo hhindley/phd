@@ -46,11 +46,11 @@ if !isdir(folderpath)
     mkdir(folderpath)
 end
 
-df = DataFrame(threshold=threshold_vals_new, time=zeros(length(threshold_vals_new)))
+df = DataFrame(threshold=threshold_vals, time=zeros(length(threshold_vals)))
 # Threads.@threads for i in eachindex(threshold_vals_new)
-for i in eachindex(threshold_vals_new)
+for i in eachindex(threshold_vals)
     println("starting $i")
-    time_taken = @elapsed run_stoch(X0, threshold_vals_new[i], 0.05, joinpath(folderpath,"thresh_$(threshold_vals_new[i]).dat"))
+    time_taken = @elapsed run_stoch(X0, threshold_vals[i], 0.05, joinpath(folderpath,"thresh_$(threshold_vals[i]).dat"))
     df.time[i] = time_taken
     println("finished $i")
 end
