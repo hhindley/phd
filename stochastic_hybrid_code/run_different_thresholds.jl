@@ -18,6 +18,7 @@ options = Dict(
 X0 = collect(get_X0(indV, init_molec)')
 par = collect(get_par(indP)')
 
+println("starting X0 calc")
 getssX0 = true
 if getssX0
     fout=open(joinpath(homedir(), "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat"),"w")
@@ -30,6 +31,8 @@ if getssX0
 else
     X0 = CSV.read(joinpath(homedir(), "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat"), Tables.matrix, header=false)
 end
+
+println("finished X0 calc")
 
 
 # threshold_vals = range(10,310,length=20)
