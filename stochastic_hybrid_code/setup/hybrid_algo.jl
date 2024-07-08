@@ -95,7 +95,7 @@ function hybrid_algo(X0, options, prop, S; out=stdout)
         division_cb = DiscreteCallback(condition_div, affect_division!, save_positions=(false,false)) # is called at every time step during integration, if t is greater than division time then make division = true and terminate integration
         # division_cb = PresetTimeCallback(div_times, affect_division!) # is called at every time step during integration, if t is greater than division time then make division = true and terminate integration
 
-        solu = solve(prob, Rodas4(), callback=CallbackSet(division_cb, stochreact_cb, sampling_cb), tstops = div_times, save_everystep=false, abstol=1e-9, reltol=1e-6, dtmax=0.05) # solve for deterministic reactions and stop when one of the callbacks is reached
+        solu = solve(prob, Rodas4(), callback=CallbackSet(division_cb, stochreact_cb, sampling_cb), tstops = div_times, save_everystep=false)#, abstol=1e-9, reltol=1e-6, dtmax=0.05) # solve for deterministic reactions and stop when one of the callbacks is reached
 
         ss = solu.t # time solution
         Y = vcat(solu.u...)' # species solution
