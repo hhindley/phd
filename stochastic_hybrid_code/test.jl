@@ -32,24 +32,24 @@ else
 end
 
 
-threshold_vals = range(10,310,length=20)
-threshold_vals_new = collect(range(threshold_vals[10], threshold_vals[14], length=5))
+threshold_vals = range(50,500,length=10)
+# threshold_vals_new = collect(range(threshold_vals[10], threshold_vals[14], length=5))
 # pushfirst!(threshold_vals_new, 160)
 # push!(threshold_vals_new, 210)
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid"
-dir = "run_individually_0407"
+dir = "new_thresh_vals_0507"
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
 end
 
-i = 5 # change this to change threshold value 
+i = 1 # change this to change threshold value 
 
 df = DataFrame(threshold=threshold_vals_new[i], time=zeros(length(1)))
 
 time_taken = @elapsed run_stoch(X0, threshold_vals_new[i], 0.05, joinpath(folderpath,"thresh_$(threshold_vals_new[i]).dat"))
-df.time[i] = time_taken
+df.time[1] = time_taken
 
 println("finished $i")
 

@@ -18,7 +18,6 @@ options = Dict(
 X0 = collect(get_X0(indV, init_molec)')
 par = collect(get_par(indP)')
 
-println("starting X0 calc")
 getssX0 = true
 if getssX0
     fout=open(joinpath(homedir(), "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat"),"w")
@@ -32,18 +31,16 @@ else
     X0 = CSV.read(joinpath(homedir(), "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat"), Tables.matrix, header=false)
 end
 
-println("finished X0 calc")
-
 
 # threshold_vals = range(10,310,length=20)
 # threshold_vals_new = collect(range(threshold_vals[10], threshold_vals[14], length=5))
 # pushfirst!(threshold_vals_new, 160)
 # push!(threshold_vals_new, 210)
-threshold_vals = range(10,500,length=5)
+threshold_vals = range(10,100,length=5)
 
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/"
-dir = "new_thresh_vals_0807_tols_dtmax_changed"
+dir = "LOW_thresh_0807"
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
