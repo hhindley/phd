@@ -41,15 +41,21 @@ function arrow_conv(folder_path, arrow_folder_path)
     end
     for i in ["results", "props", "reacts"]
         if !isdir(joinpath(arrow_folder_path, i))
-            # print(joinpath(arrow_folder_path, i))
             mkdir(joinpath(arrow_folder_path, i))
         end
     end
     react_names=[:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr, :V]
 
     for file in files
-        # print(joinpath(folder_path, file))
-        
+        results_file_path = joinpath(joinpath(arrow_folder_path, "results"), splitext(basename(file))[1] * ".arrow")
+        reacts_file_path = joinpath(joinpath(arrow_folder_path, "reacts"), splitext(basename(file))[1] * ".arrow")
+        props_file_path = joinpath(joinpath(arrow_folder_path, "props"), splitext(basename(file))[1] * ".arrow")
+
+        if isfile(results_file_path) && isfile(reacts_file_path) && isfile(props_file_path)
+            println("File $(basename(file)) already processed. Skipping.")
+            continue
+        end
+
         results_writer = open(Arrow.Writer, joinpath(joinpath(arrow_folder_path, "results"), splitext(basename(file))[1] * ".arrow"))
         props_writer = open(Arrow.Writer, joinpath(joinpath(arrow_folder_path, "props"), splitext(basename(file))[1] * ".arrow"))
         # reacts_writer = open(Arrow.Writer, joinpath(joinpath(arrow_folder_path, "reacts"), splitext(basename(file))[1] * ".arrow"))
