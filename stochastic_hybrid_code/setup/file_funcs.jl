@@ -1,37 +1,5 @@
 using CSV, Arrow, FilePathsBase, Distributed, JSON, DataFrames
 
-# function arrow_conv(folder_path, arrow_folder_path)
-#     folder_path = folder_path
-#     files = readdir(folder_path)
-#     arrow_folder_path = arrow_folder_path
-#     if !isdir(arrow_folder_path)
-#         mkdir(arrow_folder_path)
-#     end
-
-#     for file in files
-#         # print(joinpath(folder_path, file))
-#         open(Arrow.Writer, joinpath(arrow_folder_path, splitext(basename(file))[1] * ".arrow")) do writer
-#             for chunk in CSV.Chunks(joinpath(folder_path, file); header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop", "missing"], drop=["missing"])
-#                 df_chunk = DataFrame(chunk) 
-#                 df_chunk.event = Array{Float64}.(JSON.parse.(df_chunk.event))
-#                 Arrow.write(writer, df_chunk)
-#             end
-#         end
-#     end
-
-#     # for file in files
-#     #     df = DataFrame(CSV.File(joinpath(folder_path, file), header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"]))[:,1:end-1]
-#     #     # print("$file df complete \n")
-#     #     df.event = Array{Float64}.(JSON.parse.(df.event))
-#     #     # print("$file df event converted \n")
-#     #     Arrow.write(joinpath(arrow_folder_path, splitext(basename(file))[1] * ".arrow"), df)
-#     #     # print("$file arrow file created \n")
-#     #     # rm(joinpath(folder_path, file), force=true)
-#     #     # print("$file removed \n")
-#     # end
-#     # rm(folder_path, recursive=true, force=true)
-# end
-
 function arrow_conv(folder_path, arrow_folder_path)
     folder_path = folder_path
     files = readdir(folder_path)
@@ -144,4 +112,56 @@ function load_hist_files(mainfolder)
         end
     end
     return dfs
+end
+
+function prod_tot_count(df_reacts)
+    tot_counts = Int64[]
+    for i in eachindex(df_reacts)
+        push!(tot_counts,sum(df_reacts[i].count))
+    end
+    return tot_counts
+end
+
+
+function LoadDataVars(folder; reacts=true, results=true, props=true, timefilepath="times.csv")
+    folder = folder
+    filepath = joinpath(mount_path, folder)
+    if isfile(joinpath(filepath, replace(folder, "final_files" => "") * "times.csv"))
+        df_times = CSV.File(joinpath(filepath, replace(folder, "final_files" => "") * "times.csv")) |> DataFrame
+    else
+        df_times = CSV.File(joinpath(filepath, timefilepath)) |> DataFrame
+    end
+    threshold_vals = df_times.threshold
+    titles = ["threshold: $(round(threshold_vals[i], digits=2))" for i in eachindex(threshold_vals)]
+    if reacts && results && props
+        df_reacts = load_files(joinpath(filepath, "reacts"))
+        df_reacts = create_df_reacts(df_reacts)
+        df_results = load_files(joinpath(filepath, "results"))
+        df_props = load_files(joinpath(filepath, "props"), dataframe=false)
+        return df_times, threshold_vals, titles, df_reacts, df_results, df_props
+    elseif reacts && results
+        df_reacts = load_files(joinpath(filepath, "reacts"))
+        df_reacts = create_df_reacts(df_reacts)
+        df_results = load_files(joinpath(filepath, "results"))
+        return df_times, threshold_vals, titles, df_reacts, df_results
+    elseif reacts && props
+        df_reacts = load_files(joinpath(filepath, "reacts"))
+        df_reacts = create_df_reacts(df_reacts)
+        df_props = load_files(joinpath(filepath, "props"), dataframe=false)
+        return df_times, threshold_vals, titles, df_reacts, df_props
+    elseif results && props
+        df_results = load_files(joinpath(filepath, "results"))
+        df_props = load_files(joinpath(filepath, "props"), dataframe=false)
+        return df_times, threshold_vals, titles, df_results, df_props
+    elseif results
+        df_results = load_files(joinpath(filepath, "results"))
+        return df_times, threshold_vals, titles, df_results
+    elseif props
+        df_props = load_files(joinpath(filepath, "props"), dataframe=false)
+        return df_times, threshold_vals, titles, df_props
+    elseif reacts
+        df_reacts = load_files(joinpath(filepath, "reacts"))
+        df_reacts = create_df_reacts(df_reacts)
+        return df_times, threshold_vals, titles, df_reacts
+    end
 end

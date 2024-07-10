@@ -1,12 +1,29 @@
 function plotBIG(x, y; xtitle="", ytitle="", title="")
     xvals = range(minimum(x), maximum(x), length=length(x))
-
     f = Figure()
     ax = Axis(f[1, 1], xlabel = "$xtitle", ylabel = "$ytitle", title="$title")
     ilines!(f[1,1], xvals, y)
 
     return f
 end
+function plot_times(df_times, title)
+    threshold_vals = df_times.threshold
+    title = "$title, thresh vals: $(minimum(threshold_vals)), $(maximum(threshold_vals)), step=$(threshold_vals[2]-threshold_vals[1]), length=$(length(threshold_vals))"
+    f=Figure()
+    ax=Axis(f[1,1],xlabel="threshold", ylabel="time (hours)", title=title)
+    lines!(ax,df_times.threshold, df_times.time/60/60)
+    return f 
+end
+function plot_totstochcount(threshold_vals, tot_counts, title)
+    title = "$title, thresh vals: $(minimum(threshold_vals)), $(maximum(threshold_vals)), step=$(threshold_vals[2]-threshold_vals[1]), length=$(length(threshold_vals))"
+    f = Figure()
+    ax = Axis(f[1,1],xlabel="threshold", ylabel="total stochastic reaction count", title=title)
+    barplot!(threshold_vals, tot_counts)
+
+    return f 
+end
+
+
 
 struct PlotWrapper
     plot::Any
@@ -20,6 +37,7 @@ function create_subplots(plotting_func, num_plots; size=(600, 450), xlabel="", y
     base = ceil(sqrt(num_plots))
     columns = Int(base)
     rows = Int(ceil(num_plots / columns))
+    
     for j in 1:columns
         for i in 1:rows
             data_ind = i + rows * (j - 1)
