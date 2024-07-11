@@ -43,7 +43,7 @@ threshold_vals = range(10,500,length=5)
 
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/"
-dir = "new_thresh_vals_0807_tols_dtmax_changed"
+dir = "thresh_analysis_fixed_xi" # change this! 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)

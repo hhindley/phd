@@ -62,16 +62,29 @@ f_tsc8 = plot_totstochcount(threshold_vals8, tot_counts8, "01/07 with flooring",
 f_tsc9 = plot_totstochcount(threshold_vals9, tot_counts9, "19/06", folder=folders[9])
 
 
-# need to work out how to put titles into main function to make this complete
-f_rtca1 = plot_results("plot_results", df_results1, length(threshold_vals1), species=:rtca, xlabel="time", ylabel="rtca", titles=titles1, size=(1000,650), folder=folders[1])
-f_rtca2 = plot_results("plot_results", df_results2, length(threshold_vals2), species=:rtca, xlabel="time", ylabel="rtca", titles=titles2, size=(1000,650), folder=folders[2])
-f_rtca3 = plot_results("plot_results", df_results3, length(threshold_vals3), species=:rtca, xlabel="time", ylabel="rtca", titles=titles3, size=(1000,650), folder=folders[3])
-f_rtca4 = plot_results("plot_results", df_results4, length(threshold_vals4), species=:rtca, xlabel="time", ylabel="rtca", titles=titles4, size=(1000,650), folder=folders[4])
-f_rtca5 = plot_results("plot_results", df_results5, length(threshold_vals5), species=:rtca, xlabel="time", ylabel="rtca", titles=titles5, size=(1000,650), folder=folders[5])
-f_rtca6 = plot_results("plot_results", df_results6, length(threshold_vals6), species=:rtca, xlabel="time", ylabel="rtca", titles=titles6, size=(1000,650), folder=folders[6])
-f_rtca7 = plot_results("plot_results", df_results7, length(threshold_vals7), species=:rtca, xlabel="time", ylabel="rtca", titles=titles7, size=(1000,650), folder=folders[7])
-f_rtca8 = plot_results("plot_results", df_results8, length(threshold_vals8), species=:rtca, xlabel="time", ylabel="rtca", titles=titles8, size=(1000,650), folder=folders[8])
-f_rtca9 = plot_results("plot_results", df_results9, length(threshold_vals9), species=:rtca, xlabel="time", ylabel="rtca", titles=titles9, size=(1000,650), folder=folders[9])
+for i in all_species
+    f_rtca1 = plot_results("plot_results", df_results1, length(threshold_vals1), species=i, xlabel="time", ylabel="$i", titles=titles1, size=(1000,650), folder=folders[1]);
+    f_rtca2 = plot_results("plot_results", df_results2, length(threshold_vals2), species=i, xlabel="time", ylabel="$i", titles=titles2, size=(1000,650), folder=folders[2]);
+    f_rtca3 = plot_results("plot_results", df_results3, length(threshold_vals3), species=i, xlabel="time", ylabel="$i", titles=titles3, size=(1000,650), folder=folders[3]);
+    f_rtca4 = plot_results("plot_results", df_results4, length(threshold_vals4), species=i, xlabel="time", ylabel="$i", titles=titles4, size=(1000,650), folder=folders[4]);
+    f_rtca5 = plot_results("plot_results", df_results5, length(threshold_vals5), species=i, xlabel="time", ylabel="$i", titles=titles5, size=(1000,650), folder=folders[5]);
+    f_rtca6 = plot_results("plot_results", df_results6, length(threshold_vals6), species=i, xlabel="time", ylabel="$i", titles=titles6, size=(1000,650), folder=folders[6]);
+    f_rtca7 = plot_results("plot_results", df_results7, length(threshold_vals7), species=i, xlabel="time", ylabel="$i", titles=titles7, size=(1000,650), folder=folders[7]);
+    f_rtca8 = plot_results("plot_results", df_results8, length(threshold_vals8), species=i, xlabel="time", ylabel="$i", titles=titles8, size=(1000,650), folder=folders[8]);
+    f_rtca9 = plot_results("plot_results", df_results9, length(threshold_vals9), species=i, xlabel="time", ylabel="$i", titles=titles9, size=(1000,650), folder=folders[9]);
+
+    h_rh1 = plot_results("plot_hists", hists1, length(threshold_vals1), species=i, xlabel="$i", ylabel="frequency", titles=titles1, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[1]);
+    h_rh2 = plot_results("plot_hists", hists2, length(threshold_vals2), species=i, xlabel="$i", ylabel="frequency", titles=titles2, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[2]);
+    h_rh3 = plot_results("plot_hists", hists3, length(threshold_vals3), species=i, xlabel="$i", ylabel="frequency", titles=titles3, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[3]);
+    h_rh4 = plot_results("plot_hists", hists4, length(threshold_vals4), species=i, xlabel="$i", ylabel="frequency", titles=titles4, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[4]);
+    h_rh5 = plot_results("plot_hists", hists5, length(threshold_vals5), species=i, xlabel="$i", ylabel="frequency", titles=titles5, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[5]);
+    h_rh6 = plot_results("plot_hists", hists6, length(threshold_vals6), species=i, xlabel="$i", ylabel="frequency", titles=titles6, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[6]);
+    h_rh7 = plot_results("plot_hists", hists7, length(threshold_vals7), species=i, xlabel="$i", ylabel="frequency", titles=titles7, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[7]);
+    h_rh8 = plot_results("plot_hists", hists8, length(threshold_vals8), species=i, xlabel="$i", ylabel="frequency", titles=titles8, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[8]);
+    h_rh9 = plot_results("plot_hists", hists9, length(threshold_vals9), species=i, xlabel="$i", ylabel="frequency", titles=titles9, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[9]);
+
+end
+
 
 hists1 = load_hist_files(joinpath(mount_path, folders[1], "hists"))
 hists2 = load_hist_files(joinpath(mount_path, folders[2], "hists"))
@@ -84,10 +97,32 @@ hists8 = load_hist_files(joinpath(mount_path, folders[8], "hists"))
 hists9 = load_hist_files(joinpath(mount_path, folders[9], "hists"))
 
 
-rh_hist = plot_results("plot_hists", dfs, 2, 2, yscale=identity, species=:rh, xlabel="rh conc", ylabel="frequency", titles=titles)#, folder="thresh_plots2/hists")
+h_rh1 = plot_results("plot_hists", hists1, length(threshold_vals1), species=:rh, xlabel="rh conc", ylabel="frequency", titles=titles1, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[1])
+h_rh2 = plot_results("plot_hists", hists2, length(threshold_vals2), species=:rh, xlabel="rh conc", ylabel="frequency", titles=titles2, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[2])
+h_rh3 = plot_results("plot_hists", hists3, length(threshold_vals3), species=:rh, xlabel="rh conc", ylabel="frequency", titles=titles3, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[3])
+h_rh4 = plot_results("plot_hists", hists4, length(threshold_vals4), species=:rh, xlabel="rh conc", ylabel="frequency", titles=titles4, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[4])
+h_rh5 = plot_results("plot_hists", hists5, length(threshold_vals5), species=:rh, xlabel="rh conc", ylabel="frequency", titles=titles5, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[5])
+h_rh6 = plot_results("plot_hists", hists6, length(threshold_vals6), species=:rh, xlabel="rh conc", ylabel="frequency", titles=titles6, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[6])
+h_rh7 = plot_results("plot_hists", hists7, length(threshold_vals7), species=:rh, xlabel="rh conc", ylabel="frequency", titles=titles7, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[7])
+h_rh8 = plot_results("plot_hists", hists8, length(threshold_vals8), species=:rh, xlabel="rh conc", ylabel="frequency", titles=titles8, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[8])
+h_rh9 = plot_results("plot_hists", hists9, length(threshold_vals9), species=:rh, xlabel="rh conc", ylabel="frequency", titles=titles9, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[9])
 
 
-# need to finish this file so that for all files we also plot different reactions that happen stochastically and also propensities somehow
+
+
+
+p_totprop1 = plot_results("plot_results", df_results1, length(threshold_vals1), species=:totprop, xlabel="time", ylabel="tot prop", titles=titles1, size=(1000,650), folder=folders[1]);
+p_totprop2 = plot_results("plot_results", df_results2, length(threshold_vals2), species=:totprop, xlabel="time", ylabel="tot prop", titles=titles2, size=(1000,650), folder=folders[2]);
+p_totprop3 = plot_results("plot_results", df_results3, length(threshold_vals3), species=:totprop, xlabel="time", ylabel="tot prop", titles=titles3, size=(1000,650), folder=folders[3]);
+p_totprop4 = plot_results("plot_results", df_results4, length(threshold_vals4), species=:totprop, xlabel="time", ylabel="tot prop", titles=titles4, size=(1000,650), folder=folders[4]);
+p_totprop5 = plot_results("plot_results", df_results5, length(threshold_vals5), species=:totprop, xlabel="time", ylabel="tot prop", titles=titles5, size=(1000,650), folder=folders[5]);
+p_totprop6 = plot_results("plot_results", df_results6, length(threshold_vals6), species=:totprop, xlabel="time", ylabel="tot prop", titles=titles6, size=(1000,650), folder=folders[6]);
+p_totprop7 = plot_results("plot_results", df_results7, length(threshold_vals7), species=:totprop, xlabel="time", ylabel="tot prop", titles=titles7, size=(1000,650), folder=folders[7]);
+p_totprop8 = plot_results("plot_results", df_results8, length(threshold_vals8), species=:totprop, xlabel="time", ylabel="tot prop", titles=titles8, size=(1000,650), folder=folders[8]);
+p_totprop9 = plot_results("plot_results", df_results9, length(threshold_vals9), species=:totprop, xlabel="time", ylabel="tot prop", titles=titles9, size=(1000,650), folder=folders[9]);
+
+
+
 
 df_reacts
 f = Figure()

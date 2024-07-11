@@ -1,3 +1,5 @@
+all_species = [:rm_a, :rm_b, :rm_r, :rtca, :rtcb, :rtcr, :rh, :rd, :rt]
+
 function plotBIG(x, y; xtitle="", ytitle="", title="")
     xvals = range(minimum(x), maximum(x), length=length(x))
     f = Figure()
@@ -35,6 +37,7 @@ function plot_totstochcount(threshold_vals, tot_counts, title; folder="")
     end
     return f 
 end
+
 
 
 
@@ -136,7 +139,7 @@ function plot_results(plotting_func, df_results, num_plots; species=:rm_a, size=
         end
         
         save(joinpath(results_folder, "$species.png"), f)
-        return PlotWrapper(f)
+        # return PlotWrapper(f)
     else
         return f
     end
@@ -152,7 +155,7 @@ function plot_hist(df, loc)
     push!(bins, df.bin[end][2])
     bin_c = (bins[1:end-1] .+ bins[2:end]) ./ 2
     barplot!(loc, bin_c, df.freq, width=diff(bins), gap=0)
-    return f
+    # return f
 end
 function makiex(x)
     return range(minimum(x), maximum(x), length=length(x))

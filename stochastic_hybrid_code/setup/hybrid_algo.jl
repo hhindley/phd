@@ -79,7 +79,8 @@ function hybrid_algo(X0, options, prop, S; out=stdout)
 
     while ~division && (tf > s0)
         exp1 = Exponential(1)
-        global xi = rand(exp1, 1) # get random number from exp distribution
+        # global xi = rand(exp1, 1) # get random number from exp distribution
+        global xi = 1
         # @show xi, X0[vidx(:totProp)]
 
         X0[vidx(:totProp)] = 0 # set total propensities to zero 
