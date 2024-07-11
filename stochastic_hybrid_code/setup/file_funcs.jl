@@ -129,10 +129,12 @@ function LoadDataVars(folder; reacts=true, results=true, props=true, timefilepat
     if isfile(joinpath(filepath, replace(folder, "final_files" => "") * "times.csv"))
         df_times = CSV.File(joinpath(filepath, replace(folder, "final_files" => "") * "times.csv")) |> DataFrame
     else
-        df_times = CSV.File(joinpath(filepath, timefilepath)) |> DataFrame
+        df_times = CSV.File(timefilepath) |> DataFrame
     end
+
     threshold_vals = df_times.threshold
     titles = ["threshold: $(round(threshold_vals[i], digits=2))" for i in eachindex(threshold_vals)]
+
     if reacts && results && props
         df_reacts = load_files(joinpath(filepath, "reacts"))
         df_reacts = create_df_reacts(df_reacts)
@@ -143,7 +145,7 @@ function LoadDataVars(folder; reacts=true, results=true, props=true, timefilepat
         df_reacts = load_files(joinpath(filepath, "reacts"))
         df_reacts = create_df_reacts(df_reacts)
         df_results = load_files(joinpath(filepath, "results"))
-        return df_times, threshold_vals, titles, df_reacts, df_results
+        return df_times, threshold_vals, titles, df_results, df_reacts
     elseif reacts && props
         df_reacts = load_files(joinpath(filepath, "reacts"))
         df_reacts = create_df_reacts(df_reacts)

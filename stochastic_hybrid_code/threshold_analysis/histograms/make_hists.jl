@@ -52,20 +52,20 @@ end
 #     hist_freq[i, :freq] = (length(df.t)*tot_time_in_state)/total_time
 # end
 
-function create_histogram_files(mainpath, folder_to_convert, folder_to_store_hists)
+function create_histogram_files(mainpath, folder_to_convert)
     mainpath = mainpath
     folder = folder_to_convert # change this for different folders 
     folderpath = joinpath(joinpath(mainpath,folder), "results")
-    folder_to_store_hists = folder_to_store_hists # change this for different folders
+    folder_to_store_hists = joinpath(joinpath(mainpath, folder), "hists") # change this for different folders
     files = readdir(folderpath)
     for file in files
         filepath = joinpath(folderpath, file)
         res = Arrow.Table(filepath) |> DataFrame
-        if !isdir(joinpath(mainpath, folder_to_store_hists))
-            mkdir(joinpath(mainpath, folder_to_store_hists))
+        if !isdir(folder_to_store_hists)
+            mkdir(folder_to_store_hists)
         end
-        if !isdir(joinpath(joinpath(mainpath, folder_to_store_hists), "$(file[1:end-6])"))
-            mkdir(joinpath(joinpath(mainpath, folder_to_store_hists), "$(file[1:end-6])"))
+        if !isdir(joinpath(folder_to_store_hists, "$(file[1:end-6])"))
+            mkdir(joinpath(folder_to_store_hists, "$(file[1:end-6])"))
         end
         for i in [:rm_a, :rm_b, :rm_r, :rtca, :rtcb, :rtcr, :rh, :rt, :rd]
             grouped_df, hist_df, bin_edges = get_grouped_df(res, i)
@@ -76,10 +76,30 @@ function create_histogram_files(mainpath, folder_to_convert, folder_to_store_his
                 tot_time_in_state = vec_time_in_state(df)
                 hist_freq[i, :freq] = (length(df.t)*tot_time_in_state)/total_time
             end
-            CSV.write(joinpath(joinpath(joinpath(mainpath, folder_to_store_hists), "$(file[1:end-6])"), "$i.csv"), hist_freq)
+            CSV.write(joinpath(joinpath(folder_to_store_hists, "$(file[1:end-6])"), "$i.csv"), hist_freq)
         end
     end
 end
 
+folders = ["new_thresh_vals_0507_nofloor_final_files", #1
+           "run_individually_0407_final_files", #2
+           "LOW_thresh_0807_final_files", #3
+           "test_0307_5_values_from_original_range_final_files", #4
+           "new_thresh_vals_0507_final_files", #5
+           "thresh_0107_noround_final_files", #6
+           "thresh_0107_final_files", #7
+           "thresh_1906_final_files", #8
+           "thresh_test_arrow_files_14_06", #9
+           "thresh_test_last5" #10
+        ]
 
-create_histogram_files("/Users/s2257179", "new_thresh_vals_0507_final_files", "new_thresh_vals_0507_hists")
+create_histogram_files("/Users/s2257179/stoch_files", folders[1])
+create_histogram_files("/Users/s2257179/stoch_files", folders[2])
+create_histogram_files("/Users/s2257179/stoch_files", folders[3])
+create_histogram_files("/Users/s2257179/stoch_files", folders[4])
+create_histogram_files("/Users/s2257179/stoch_files", folders[5])
+create_histogram_files("/Users/s2257179/stoch_files", folders[6])
+create_histogram_files("/Users/s2257179/stoch_files", folders[7])
+create_histogram_files("/Users/s2257179/stoch_files", folders[8])
+create_histogram_files("/Users/s2257179/stoch_files", folders[9])
+

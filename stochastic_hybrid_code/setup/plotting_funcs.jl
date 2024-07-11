@@ -6,20 +6,33 @@ function plotBIG(x, y; xtitle="", ytitle="", title="")
 
     return f
 end
-function plot_times(df_times, title)
+function plot_times(df_times, title; folder="")
     threshold_vals = df_times.threshold
     title = "$title, thresh vals: $(minimum(threshold_vals)), $(maximum(threshold_vals)), step=$(threshold_vals[2]-threshold_vals[1]), length=$(length(threshold_vals))"
     f=Figure()
     ax=Axis(f[1,1],xlabel="threshold", ylabel="time (hours)", title=title)
     lines!(ax,df_times.threshold, df_times.time/60/60)
+    if folder != ""
+        plots_folder = joinpath(joinpath(mount_path, folder), "plots")
+        if !isdir(plots_folder)
+            mkdir(plots_folder)
+        end
+        save(joinpath(plots_folder, "times.png"), f)
+    end
     return f 
 end
-function plot_totstochcount(threshold_vals, tot_counts, title)
+function plot_totstochcount(threshold_vals, tot_counts, title; folder="")
     title = "$title, thresh vals: $(minimum(threshold_vals)), $(maximum(threshold_vals)), step=$(threshold_vals[2]-threshold_vals[1]), length=$(length(threshold_vals))"
     f = Figure()
     ax = Axis(f[1,1],xlabel="threshold", ylabel="total stochastic reaction count", title=title)
     barplot!(threshold_vals, tot_counts)
-
+    if folder != ""
+        plots_folder = joinpath(joinpath(mount_path, folder), "plots")
+        if !isdir(plots_folder)
+            mkdir(plots_folder)
+        end
+        save(joinpath(plots_folder, "tot_stoch_count.png"), f)
+    end
     return f 
 end
 
@@ -47,7 +60,7 @@ function create_subplots(plotting_func, num_plots; size=(600, 450), xlabel="", y
             if data_ind <= length(titles)
                 title = titles != [] ? titles[data_ind] : "Plot $data_ind"
                 if plotting_func == "plot_results" || plotting_func == "plot_hists" || plotting_func == "plot_individual_reacts"
-                    ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale)
+                    ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale, xticklabelrotation=45)
                 elseif plotting_func == "plot_stoch_reacts"
                     ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale, xticks=(1:13, react_names_str), xticklabelrotation=45)
     
@@ -114,14 +127,19 @@ end
 function plot_results(plotting_func, df_results, num_plots; species=:rm_a, size=(600, 450), xlabel="", ylabel="", titles=[], yscale=identity, hidelabels=[true,true], linkaxes=true, folder="")
     f = create_subplots(plotting_func, num_plots; size=size, xlabel=xlabel, ylabel=ylabel, titles=titles, hidelabels=hidelabels, yscale=yscale)
     f = add_subplots(f, plotting_func, df_results, num_plots; species=species, linkaxes=linkaxes)
+    
     if !isempty(folder)
-        folder_path = joinpath("/Users/s2257179/phd/stochastic_hybrid_code", folder)
-        save(joinpath(folder_path, "$species.png"), f)
+        plots_folder = joinpath(joinpath(mount_path, folder), "plots")
+        results_folder = joinpath(plots_folder, plotting_func)
+        if !isdir(results_folder)
+            mkdir(results_folder)
+        end
+        
+        save(joinpath(results_folder, "$species.png"), f)
         return PlotWrapper(f)
     else
         return f
     end
-    
 end
 
 
