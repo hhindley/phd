@@ -93,13 +93,16 @@ folders = ["new_thresh_vals_0507_nofloor_final_files", #1
            "thresh_test_last5" #10
         ]
 
-create_histogram_files("/Users/s2257179/stoch_files", folders[1])
-create_histogram_files("/Users/s2257179/stoch_files", folders[2])
-create_histogram_files("/Users/s2257179/stoch_files", folders[3])
-create_histogram_files("/Users/s2257179/stoch_files", folders[4])
-create_histogram_files("/Users/s2257179/stoch_files", folders[5])
-create_histogram_files("/Users/s2257179/stoch_files", folders[6])
-create_histogram_files("/Users/s2257179/stoch_files", folders[7])
-create_histogram_files("/Users/s2257179/stoch_files", folders[8])
-create_histogram_files("/Users/s2257179/stoch_files", folders[9])
+local_path = "/Users/s2257179/stoch_files"
+server_path = "/home/hollie_hindley/Documents/stochastic_hybrid"
+
+create_histogram_files(server_path, folders[1])
+create_histogram_files(server_path, folders[2])
+create_histogram_files(server_path, folders[3])
+create_histogram_files(server_path, folders[4])
+create_histogram_files(server_path, folders[5])
+create_histogram_files(server_path, folders[6])
+create_histogram_files(server_path, folders[7])
+create_histogram_files(server_path, folders[8])
+create_histogram_files(server_path, folders[9])
 
