@@ -73,7 +73,18 @@ f_rtca7 = plot_results("plot_results", df_results7, length(threshold_vals7), spe
 f_rtca8 = plot_results("plot_results", df_results8, length(threshold_vals8), species=:rtca, xlabel="time", ylabel="rtca", titles=titles8, size=(1000,650), folder=folders[8])
 f_rtca9 = plot_results("plot_results", df_results9, length(threshold_vals9), species=:rtca, xlabel="time", ylabel="rtca", titles=titles9, size=(1000,650), folder=folders[9])
 
+hists1 = load_hist_files(joinpath(mount_path, folders[1], "hists"))
+hists2 = load_hist_files(joinpath(mount_path, folders[2], "hists"))
+hists3 = load_hist_files(joinpath(mount_path, folders[3], "hists"))
+hists4 = load_hist_files(joinpath(mount_path, folders[4], "hists"))
+hists5 = load_hist_files(joinpath(mount_path, folders[5], "hists"))
+hists6 = load_hist_files(joinpath(mount_path, folders[6], "hists"))
+hists7 = load_hist_files(joinpath(mount_path, folders[7], "hists"))
+hists8 = load_hist_files(joinpath(mount_path, folders[8], "hists"))
+hists9 = load_hist_files(joinpath(mount_path, folders[9], "hists"))
 
+
+rh_hist = plot_results("plot_hists", dfs, 2, 2, yscale=identity, species=:rh, xlabel="rh conc", ylabel="frequency", titles=titles)#, folder="thresh_plots2/hists")
 
 
 # need to finish this file so that for all files we also plot different reactions that happen stochastically and also propensities somehow
