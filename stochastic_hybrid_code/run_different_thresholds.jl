@@ -63,13 +63,14 @@ for i in eachindex(threshold_vals)
 end
 
 
-CSV.write(joinpath(joinpath(mainpath, final_path), "$time_file"), df)
 
 println("total time = $(sum(df.time)/60/60) hours")
 
 println("starting file conversion")
 
 arrow_conv(joinpath(mainpath, dir), joinpath(mainpath, final_path))
+
+CSV.write(joinpath(joinpath(mainpath, final_path), "$time_file"), df)
 
 print("finished!")
 
