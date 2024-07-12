@@ -8,7 +8,7 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/stoch_model.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 
 
-n= 50 # number of cell cycles
+n= 10000 # number of cell cycles
 options = Dict(
 "threshold"  =>  0.,       # Threshold to decide between determinisitic or stochastic reaction
 "FixDetReact"=> [14],# [10,11,12,13,14,15,16,17,18],       # Reactions to be treated determinisitically
@@ -45,14 +45,14 @@ end
 time_file = dir * "_times.csv"
 final_path = dir * "_final_files"
 
-kdam_vals = [0.005, 0.01]
+# kdam_vals = [0.005, 0.01]
 
-# kdam_vals = [0.005, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6]
+kdam_vals = [0.005, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6]
 
 df = DataFrame(kdam=kdam_vals, time=zeros(length(kdam_vals)))
 for i in eachindex(kdam_vals)
     println("starting $i")
-    time_taken = @elapsed run_stoch(X0, 100, kdam_vals[i], joinpath(folderpath,"kdam_$(kdam_vals[i]).dat"))
+    time_taken = @elapsed run_stoch(X0, 500, kdam_vals[i], joinpath(folderpath,"kdam_$(kdam_vals[i]).dat"))
     df.time[i] = time_taken
     println("finished $i")
 end

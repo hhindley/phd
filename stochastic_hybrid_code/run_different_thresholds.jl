@@ -56,7 +56,6 @@ df = DataFrame(threshold=threshold_vals, time=zeros(length(threshold_vals)))
 # Threads.@threads :static for i in eachindex(threshold_vals_new)
 for i in eachindex(threshold_vals)
     println("starting $i")
-    # time_taken = i*100
     time_taken = @elapsed run_stoch(X0, threshold_vals[i], 0.05, joinpath(folderpath,"thresh_$(threshold_vals[i]).dat"))
     df.time[i] = time_taken
     println("finished $i")
