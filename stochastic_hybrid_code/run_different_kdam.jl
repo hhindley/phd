@@ -52,7 +52,7 @@ kdam_vals = [0.005, 0.01]
 df = DataFrame(kdam=kdam_vals, time=zeros(length(kdam_vals)))
 for i in eachindex(kdam_vals)
     println("starting $i")
-    time_taken = @elapsed run_stoch(X0, 10, kdam_vals[i], joinpath(folderpath,"kdam_$(kdam_vals[i]).dat"))
+    time_taken = @elapsed run_stoch(X0, 100, kdam_vals[i], joinpath(folderpath,"kdam_$(kdam_vals[i]).dat"))
     df.time[i] = time_taken
     println("finished $i")
 end
