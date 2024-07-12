@@ -51,17 +51,21 @@ function arrow_conv(folder_path, arrow_folder_path)
             end
             # println("finished chunk")
         end
-        df_react = combine(groupby(vcat(df_reacts...), [:reaction, :event]), :count => sum => :count)
-        Arrow.write(joinpath(joinpath(arrow_folder_path, "reacts"), splitext(basename(file))[1] * ".arrow"), df_react)
+
+        if !isempty(df_reacts)
+            df_react = combine(groupby(vcat(df_reacts...), [:reaction, :event]), :count => sum => :count)
+            Arrow.write(joinpath(joinpath(arrow_folder_path, "reacts"), splitext(basename(file))[1] * ".arrow"), df_react)
+        else
+            println("No stochastic reactions happened in $(basename(file))")
+        end
         # println("written to reacts file")
 
         close(results_writer)
         close(props_writer)
         println("finished $(basename(file))")
-        # close(reacts_writer)
     end
 
-    rm(folder_path, recursive=true, force=true)
+    # rm(folder_path, recursive=true, force=true)
 end
 
 function load_files(folder_path; dataframe=true)
