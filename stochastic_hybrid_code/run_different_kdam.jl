@@ -45,13 +45,14 @@ end
 time_file = dir * "_times.csv"
 final_path = dir * "_final_files"
 
+kdam_vals = [0.005, 0.01]
 
-kdam_vals = [0.005, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6]
+# kdam_vals = [0.005, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6]
 
 df = DataFrame(kdam=kdam_vals, time=zeros(length(kdam_vals)))
 for i in eachindex(kdam_vals)
     println("starting $i")
-    time_taken = @elapsed run_stoch(X0, 1, kdam_vals[i], joinpath(folderpath,"kdam_$(kdam_vals[i]).dat"))
+    time_taken = @elapsed run_stoch(X0, 10, kdam_vals[i], joinpath(folderpath,"kdam_$(kdam_vals[i]).dat"))
     df.time[i] = time_taken
     println("finished $i")
 end
