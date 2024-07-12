@@ -79,8 +79,8 @@ function hybrid_algo(X0, options, prop, S; out=stdout)
 
     while ~division && (tf > s0)
         exp1 = Exponential(1)
-        # global xi = rand(exp1, 1) # get random number from exp distribution
-        global xi = 1
+        global xi = rand(exp1, 1) # get random number from exp distribution
+        # global xi = 1
         # @show xi, X0[vidx(:totProp)]
 
         X0[vidx(:totProp)] = 0 # set total propensities to zero 
@@ -110,10 +110,10 @@ function hybrid_algo(X0, options, prop, S; out=stdout)
             X0[vidx(:V)] = X0[vidx(:V)]/2
             for j in 1:length(X0)-2
                 # Partition the molecules stochastically using a binomial distribution
-                # pDiv=rand(Beta(200.,200.))
-                pDiv=0.5
-                # X0[j] = X0[j] > 0. ? float(rand(Binomial(round(Int, X0[j]), pDiv))) : 0                
-                X0[j] = X0[j] / 2
+                pDiv=rand(Beta(200.,200.))
+                # pDiv=0.5
+                X0[j] = X0[j] > 0. ? float(rand(Binomial(round(Int, X0[j]), pDiv))) : 0                
+                # X0[j] = X0[j] / 2
             end
             # dump(20,ss[end],X0;output=out)
             division = false

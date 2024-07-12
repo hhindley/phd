@@ -43,11 +43,13 @@ threshold_vals = range(10,500,length=5)
 
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/"
-dir = "thresh_analysis_fixed_xi" # change this! 
+dir = "stoch_division_thresh_analysis" # change this! 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
 end
+time_file = dir * "_times.csv"
+final_path = dir * "_final_files"
 
 
 df = DataFrame(threshold=threshold_vals, time=zeros(length(threshold_vals)))
@@ -60,14 +62,13 @@ for i in eachindex(threshold_vals)
     println("finished $i")
 end
 
-time_file = dir * "_times.csv"
-CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/$time_file", df)
+
+CSV.write(joinpath(joinpath(mainpath, final_path), "$time_file"), df)
 
 println("total time = $(sum(df.time)/60/60) hours")
 
 println("starting file conversion")
 
-final_path = dir * "_final_files"
 arrow_conv(joinpath(mainpath, dir), joinpath(mainpath, final_path))
 
 print("finished!")
