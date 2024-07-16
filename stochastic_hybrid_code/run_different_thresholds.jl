@@ -43,7 +43,7 @@ threshold_vals = range(100,250,length=10)
 
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/"
-dir = "stoch_division_thresh_analysis" # change this! 
+dir = "1607_tests" # change this! 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
