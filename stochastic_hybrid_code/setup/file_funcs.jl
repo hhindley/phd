@@ -65,7 +65,7 @@ function arrow_conv(folder_path, arrow_folder_path)
         println("finished $(basename(file))")
     end
 
-    # rm(folder_path, recursive=true, force=true)
+    rm(folder_path, recursive=true, force=true)
 end
 
 function load_files(folder_path; dataframe=true)

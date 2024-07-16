@@ -57,10 +57,10 @@ function create_subplots(plotting_func, num_plots; size=(600, 450), xlabel="", y
     for j in 1:columns
         for i in 1:rows
             data_ind = i + rows * (j - 1)
-            if length(titles) % 2 == 1
-                titles = push!(titles, "empty")
-            end
-            if data_ind <= length(titles)
+            # if length(titles) % 2 == 1
+            #     titles = push!(titles, "empty")
+            # end
+            if data_ind <= num_plots
                 title = titles != [] ? titles[data_ind] : "Plot $data_ind"
                 if plotting_func == "plot_results" || plotting_func == "plot_hists" || plotting_func == "plot_individual_reacts"
                     ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale, xticklabelrotation=45)
@@ -133,12 +133,16 @@ function plot_results(plotting_func, df_results, num_plots; species=:rm_a, size=
     
     if !isempty(folder)
         plots_folder = joinpath(joinpath(mount_path, folder), "plots")
-        results_folder = joinpath(plots_folder, plotting_func)
-        if !isdir(results_folder)
-            mkdir(results_folder)
+        if plotting_func == "plot_stoch_reacts"
+            save(joinpath(plots_folder, "stoch_reacts.png"), f)
+        else
+            results_folder = joinpath(plots_folder, plotting_func)
+            if !isdir(results_folder)
+                mkdir(results_folder)
+            end
+            save(joinpath(results_folder, "$species.png"), f)
         end
-        
-        save(joinpath(results_folder, "$species.png"), f)
+            
         # return PlotWrapper(f)
     else
         return f
@@ -173,57 +177,30 @@ function build_reaction_count_df(df_reacts, react, threshold_vals)
 end
 
 
-
-function plot_props(df_results, df_props, num_plots, threshold_vals; max_value=31856.296174439733)
-    f = Figure(size=(1200, 850))
-    base = ceil(sqrt(num_plots))
-    columns = Int(base)
-    rows = Int(ceil(num_plots / columns))
-
-    for j in 1:columns
-        for i in 1:rows
-            data_ind = i + rows * (j - 1)
-            if data_ind <= num_plots
-                time_data = df_results[data_ind].time
-                prop_data = [df_props[data_ind][i] for i in eachindex(react_names[1:end-1])]
-        
-                ax = Axis(f[i,j], xlabel = "time", ylabel = "propensity", limits=(nothing,(0, max_value)))
-                for i in eachindex(react_names[1:end-1])
-                    iscatter!(ax, time_data, prop_data[i], label="$(react_names[i])", color=color_list[i])
-                end    
-                axislegend(ax, framevisible=true)
-                lines!(ax, range(minimum(time_data), maximum(time_data), length = 2), [threshold_vals[data_ind], threshold_vals[data_ind]], linewidth = 4, color = :black)
-                # Hide x-axis decorations for axes not in the bottom row
-                if i != rows
-                    hidexdecorations!(ax, grid=false)
-                end
-
-                # Hide y-axis decorations for axes not in the first column
-                if j > 1
-                    hideydecorations!(ax, grid=false)
-                end
-            end
-        end
-    end
-    linkaxes!(filter(x -> x isa Axis, f.content)...)
-    return f
-    
-end
-
-
-function plot_prop(df_results, df_props, res_ind, savein, title, threshold_vals, max_val)
+function plot_prop(df_results, df_props, res_ind, title, threshold_vals; maxval=31856, folder="")
     time_data = df_results[res_ind].time
     prop_data = [df_props[res_ind][i] for i in eachindex(react_names[1:end-1])]
     
     f = Figure()
-    ax = Axis(f[1,1], xlabel = "time", ylabel = "propensity", title=title, limits=(nothing,(0, max_val)))
+    ax = Axis(f[1,1], xlabel = "time", ylabel = "propensity", title=title, limits=((2.2e5, 2.6e5),(0, maxval)))
     for i in eachindex(react_names[1:end-1])
         iscatter!(ax, time_data, prop_data[i], label="$(react_names[i])", color=color_list[i])
     end    
     axislegend(ax, framevisible=true)
     lines!(ax, range(minimum(time_data), maximum(time_data), length = 2), [threshold_vals[res_ind], threshold_vals[res_ind]], linewidth = 4, color = :black)
-    return f
-    # save("/Users/s2257179/phd/stochastic_hybrid_code/$savein/$title.html", f)
+    
+    if !isempty(folder)
+        plots_folder = joinpath(joinpath(mount_path, folder), "plots")
+        results_folder = joinpath(plots_folder, "propensities")
+        if !isdir(results_folder)
+            mkdir(results_folder)
+        end
+        
+        save(joinpath(results_folder, "$title.png"), f)
+        # return PlotWrapper(f)
+    else
+        return f
+    end
 end
 
 color_list = [

@@ -39,7 +39,7 @@ println("finished X0 calc")
 # threshold_vals_new = collect(range(threshold_vals[10], threshold_vals[14], length=5))
 # pushfirst!(threshold_vals_new, 160)
 # push!(threshold_vals_new, 210)
-threshold_vals = range(10,500,length=5)
+threshold_vals = range(100,250,length=10)
 
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/"
@@ -61,15 +61,13 @@ for i in eachindex(threshold_vals)
     println("finished $i")
 end
 
-
+CSV.write(joinpath(joinpath(mainpath, final_path), "$time_file"), df)
 
 println("total time = $(sum(df.time)/60/60) hours")
 
 println("starting file conversion")
 
 arrow_conv(joinpath(mainpath, dir), joinpath(mainpath, final_path))
-
-CSV.write(joinpath(joinpath(mainpath, final_path), "$time_file"), df)
 
 print("finished!")
 

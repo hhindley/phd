@@ -18,7 +18,8 @@ folders = ["new_thresh_vals_0507_nofloor_final_files", #1
            "thresh_0107_final_files", #7
            "thresh_1906_final_files", #8
            "thresh_test_arrow_files_14_06", #9
-           "thresh_analysis_fixed_xi_final_files" #10
+           "thresh_analysis_fixed_xi_final_files", #10
+           "stoch_division_thresh_analysis_final_files" #11
         ]
 
 df_times1, threshold_vals1, titles1, df_results1, df_reacts1 = LoadDataVars(folders[1], props=false);
@@ -30,7 +31,8 @@ df_times6, threshold_vals6, titles6, df_results6, df_reacts6 = LoadDataVars(fold
 df_times7, threshold_vals7, titles7, df_results7, df_reacts7 = LoadDataVars(folders[7], props=false);
 df_times8, threshold_vals8, titles8, df_results8, df_reacts8 = LoadDataVars(folders[8], props=false); 
 df_times9, threshold_vals9, titles9, df_results9, df_reacts9 = LoadDataVars(folders[9], props=false, timefilepath="/Users/s2257179/stoch_files/thresh_1906_final_files/thresh_1906_times.csv");
-df_times10, threshold_vals10, titles10, df_results10, df_reacts10, df_props10 = LoadDataVars(folders[10]);
+df_times10, threshold_vals10, titles10, df_results10, df_reacts10 = LoadDataVars(folders[10], props=false);
+df_times11, threshold_vals11, titles11, df_results11, df_reacts11 = LoadDataVars(folders[11], props=false);
 
 f_times1 = plot_times(df_times1, "05/07 no flooring", folder=folders[1])
 f_times2 = plot_times(df_times2, "04/07", folder=folders[2])
@@ -42,6 +44,7 @@ f_times7 = plot_times(df_times7, "01/07 no flooring", folder=folders[7])
 f_times8 = plot_times(df_times8, "01/07 with flooring", folder=folders[8])
 f_times9 = plot_times(df_times9, "19/06 no time file", folder=folders[9])
 f_times10 = plot_times(df_times10, "12/07 xi fixed", folder=folders[10])
+f_times11 = plot_times(df_times11, "stoch_division_thresh_analysis", folder=folders[11])
 
 tot_counts1 = prod_tot_count(df_reacts1)
 tot_counts2 = prod_tot_count(df_reacts2)
@@ -53,6 +56,7 @@ tot_counts7 = prod_tot_count(df_reacts7)
 tot_counts8 = prod_tot_count(df_reacts8)
 tot_counts9 = prod_tot_count(df_reacts9)
 tot_counts10 = prod_tot_count(df_reacts10)
+tot_counts11 = prod_tot_count(df_reacts11)
 
 f_tsc1 = plot_totstochcount(threshold_vals1, tot_counts1, "05/07 no flooring", folder=folders[1])
 f_tsc2 = plot_totstochcount(threshold_vals2, tot_counts2, "04/07", folder=folders[2])
@@ -64,6 +68,7 @@ f_tsc7 = plot_totstochcount(threshold_vals7, tot_counts7, "01/07 no flooring", f
 f_tsc8 = plot_totstochcount(threshold_vals8, tot_counts8, "01/07 with flooring", folder=folders[8])
 f_tsc9 = plot_totstochcount(threshold_vals9, tot_counts9, "19/06", folder=folders[9])
 f_tsc10 = plot_totstochcount(threshold_vals10, tot_counts10, "12/07 xi fixed", folder=folders[10])
+f_tsc11 = plot_totstochcount(threshold_vals11, tot_counts11, "stoch division thresh analysis", folder=folders[11])
 
 hists1 = load_hist_files(joinpath(mount_path, folders[1], "hists"))
 hists2 = load_hist_files(joinpath(mount_path, folders[2], "hists"))
@@ -75,58 +80,55 @@ hists7 = load_hist_files(joinpath(mount_path, folders[7], "hists"))
 hists8 = load_hist_files(joinpath(mount_path, folders[8], "hists"))
 hists9 = load_hist_files(joinpath(mount_path, folders[9], "hists"))
 hists10 = load_hist_files(joinpath(mount_path, folders[10], "hists"))
+hists11 = load_hist_files(joinpath(mount_path, folders[11], "hists"))
+
 
 # here put the folders you want to plot/save
 for i in all_species
-    f_rtca1 = plot_results("plot_results", df_results10, length(threshold_vals10), species=i, xlabel="time", ylabel="$i", titles=titles10, size=(1000,650), folder=folders[10]);
-    h_rh1 = plot_results("plot_hists", hists10, length(threshold_vals10), species=i, xlabel="$i", ylabel="frequency", titles=titles10, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[10]);
+    f_rtca1 = plot_results("plot_results", df_results11, length(threshold_vals11), species=i, xlabel="time", ylabel="$i", titles=titles11, size=(1000,650), folder=folders[11]);
+    h_rh1 = plot_results("plot_hists", hists11, length(threshold_vals11), species=i, xlabel="$i", ylabel="frequency", titles=titles11, hidelabels=[false, false], linkaxes=false, size=(1000,650), folder=folders[11]);
 
 end
 
+f_rtca1 = plot_results("plot_results", df_results11, length(threshold_vals11), species=:rtca, xlabel="time", ylabel="rtca", titles=titles11, size=(1000,650), folder=folders[11], hidelabels=[false, false], linkaxes=false);
+
+
+f_sr1 = plot_results("plot_stoch_reacts", df_reacts1, length(threshold_vals1), xlabel="reaction", ylabel="count", titles=titles1, folder=folders[1], size=(1000,650))
+f_sr2 = plot_results("plot_stoch_reacts", df_reacts2, length(threshold_vals2), xlabel="reaction", ylabel="count", titles=titles2, folder=folders[2], size=(1000,650))
+f_sr3 = plot_results("plot_stoch_reacts", df_reacts3, length(threshold_vals3), xlabel="reaction", ylabel="count", titles=titles3, folder=folders[3], size=(1000,650))
+f_sr4 = plot_results("plot_stoch_reacts", df_reacts4, length(threshold_vals4), xlabel="reaction", ylabel="count", titles=titles4, folder=folders[4], size=(1000,650))
+f_sr5 = plot_results("plot_stoch_reacts", df_reacts5, length(threshold_vals5), xlabel="reaction", ylabel="count", titles=titles5, folder=folders[5], size=(1000,650))
+f_sr6 = plot_results("plot_stoch_reacts", df_reacts6, length(threshold_vals6), xlabel="reaction", ylabel="count", titles=titles6, folder=folders[6], size=(1000,650))
+f_sr7 = plot_results("plot_stoch_reacts", df_reacts7, length(threshold_vals7), xlabel="reaction", ylabel="count", titles=titles7, folder=folders[7], size=(1000,650))
+f_sr8 = plot_results("plot_stoch_reacts", df_reacts8, length(threshold_vals8), xlabel="reaction", ylabel="count", titles=titles8, folder=folders[8], size=(1000,650))
+f_sr9 = plot_results("plot_stoch_reacts", df_reacts9, length(threshold_vals9), xlabel="reaction", ylabel="count", titles=titles9, folder=folders[9], size=(1000,650))
+f_sr10 = plot_results("plot_stoch_reacts", df_reacts10, length(threshold_vals10), xlabel="reaction", ylabel="count", titles=titles10, folder=folders[10], size=(1000,650))
+f_sr11 = plot_results("plot_stoch_reacts", df_reacts11, length(threshold_vals11), xlabel="reaction", ylabel="count", titles=titles11, folder=folders[11], size=(1000,650))
 
 
 
+f1 = plot_prop(df_results11, df_props11, 1, "threshold_$(threshold_vals11[1])", threshold_vals11, maxval=3000, folder=folders[11])
+f2 = plot_prop(df_results11, df_props11, 2, "threshold_$(threshold_vals11[2])", threshold_vals11, maxval=3000, folder=folders[11])
+f3 = plot_prop(df_results11, df_props11, 3, "threshold_$(threshold_vals11[3])", threshold_vals11, maxval=3000, folder=folders[11])
+f4 = plot_prop(df_results11, df_props11, 4, "threshold_$(threshold_vals11[4])", threshold_vals11, maxval=3000, folder=folders[11])
+f5 = plot_prop(df_results11, df_props11, 5, "threshold_$(threshold_vals11[5])", threshold_vals11, maxval=3000, folder=folders[11])
+
+
+display(f1)
+
+
+df_results11[1].rm_a
+
+h2 = hist(df_results11[2].rtca[100000:200000])
+h3 = hist!(df_results11[2].rtca[200000:300000])
+h4 = hist!(df_results11[2].rtca[300000:400000])
+h5 = hist!(df_results11[2].rtca[400000:500000])
+h6 = hist!(df_results11[2].rtca[500000:600000])
+h7 = hist!(df_results11[2].rtca[700000:800000])
+h8 = hist!(df_results11[2].rtca[800000:end])
 
 
 
-df_reacts
-f = Figure()
-ax = Axis(f[1,1],xlabel="reactions", ylabel="reaction count", title="thresh_val", xticks=(1:13, react_names_str), xticklabelrotation=45)
-barplot!(df_reacts[1].event, df_reacts[1].count)
+10000*log(2)/lam_val
 
-
-f = plot_results("plot_stoch_reacts", df_reacts, 5, xlabel="reaction", ylabel="count", titles=titles, hidelabels=[true, true], linkaxes=true, species="stoch_reacts")#, folder="thresh_plots")
-display(f)
-
-
-dfs = Dict{Symbol, DataFrame}()
-for rn in react_names[1:end-1]
-    df = build_reaction_count_df(df_reacts, rn, threshold_vals)
-    if !haskey(dfs, rn)
-        dfs[rn] = df
-    end
-end
-
-titles_reacts = ["$i" for i in react_names[1:end-1]]
-
-p1 = plot_results("plot_individual_reacts", dfs, 12, titles=titles_reacts, xlabel="threshold", ylabel="count", hidelabels=[true, false], linkaxes=false, folder="thresh_plots", species="individual_reacts")
-
-
-
-
-
-f_rtca = plot_results("plot_results", df_results, 5, species=:rtca, xlabel="time", ylabel="rtca", titles=titles, folder="testing_figs")
-
-
-
-f1 = plot_prop(df_results10, df_props10, 1, "thresh_plots2/props", "threshold_$(threshold_vals10[1])", threshold_vals10, 31856.296174439733)
-f2 = plot_prop(df_results, df_props, 2, "thresh_plots2/props", "threshold_$(threshold_vals[2])", threshold_vals, 31856.296174439733)
-f3 = plot_prop(df_results, df_props, 3, "thresh_plots2/props", "threshold_$(threshold_vals[3])", threshold_vals, 31856.296174439733)
-f4 = plot_prop(df_results, df_props, 4, "thresh_plots2/props", "threshold_$(threshold_vals[4])", threshold_vals, 31856.296174439733)
-f5 = plot_prop(df_results10, df_props10, 5, "thresh_plots2/props", "threshold_$(threshold_vals10[5])", threshold_vals10, 31856.296174439733)
-
-
-f = plot_props(df_results, df_props, 5, threshold_vals)
-
-
-
+df_results11[2][1:end,:rm_a]

@@ -96,7 +96,7 @@ folders = ["new_thresh_vals_0507_nofloor_final_files", #1
 local_path = "/Users/s2257179/stoch_files"
 server_path = "/home/hollie_hindley/Documents/stochastic_hybrid"
 
-create_histogram_files(local_path, "thresh_analysis_fixed_xi_final_files")
+create_histogram_files(local_path, "stoch_division_thresh_analysis_final_files")
 # create_histogram_files(server_path, folders[1])
 # create_histogram_files(server_path, folders[2])
 create_histogram_files(server_path, folders[3])
