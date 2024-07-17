@@ -23,20 +23,6 @@ function run_stoch(X0, thresh, kdam, file)
     close(fout)
 end
 
-# function flooring(X0)
-#     X0_new = deepcopy(X0)
-#     for i in 1:9
-#         if X0_new[i] < floor(X0_new[i]) + 0.99
-#             X0_new[i] = floor(X0_new[i])
-#             # X0_new[end] = floor(X0_new[end])
-#         else
-#             X0_new[i] = ceil(X0_new[i])
-#             # X0_new[end] = ceil(X0_new[end])
-#         end
-#     end
-    
-#     return X0_new
-# end
 function flooring(X0)
     X0_new = X0 < floor.(X0) + 0.99 ? floor.(X0) : ceil.(X0)
     return X0_new
