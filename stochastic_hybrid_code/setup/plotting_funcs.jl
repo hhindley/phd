@@ -98,8 +98,6 @@ function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, li
             data_ind = i + rows * (j - 1)
             if data_ind <= num_plots
                 if plotting_func == "plot_results"
-                    # x = makiex(preprocessed_times[data_ind])
-                    # ilines!(f[i,j], x, preprocessed_results[data_ind])
                     plot_timeres(preprocessed_times[data_ind], preprocessed_results[data_ind], f[i,j])
                 elseif plotting_func == "plot_hists"
                     plot_hist(dfs[data_ind], f[i,j])

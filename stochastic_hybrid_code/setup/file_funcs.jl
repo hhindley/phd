@@ -144,30 +144,33 @@ function LoadDataVars(folder; reacts=true, results=true, props=true, timefilepat
         df_reacts = create_df_reacts(df_reacts)
         df_results = load_files(joinpath(filepath, "results"))
         df_props = load_files(joinpath(filepath, "props"), dataframe=false)
-        return df_times, threshold_vals, titles, df_results, df_reacts, df_props
     elseif reacts && results
         df_reacts = load_files(joinpath(filepath, "reacts"))
         df_reacts = create_df_reacts(df_reacts)
         df_results = load_files(joinpath(filepath, "results"))
-        return df_times, threshold_vals, titles, df_results, df_reacts
+        df_props = []
     elseif reacts && props
         df_reacts = load_files(joinpath(filepath, "reacts"))
         df_reacts = create_df_reacts(df_reacts)
         df_props = load_files(joinpath(filepath, "props"), dataframe=false)
-        return df_times, threshold_vals, titles, df_reacts, df_props
+        df_results = []
     elseif results && props
         df_results = load_files(joinpath(filepath, "results"))
         df_props = load_files(joinpath(filepath, "props"), dataframe=false)
-        return df_times, threshold_vals, titles, df_results, df_props
+        df_reacts = []
     elseif results
         df_results = load_files(joinpath(filepath, "results"))
-        return df_times, threshold_vals, titles, df_results
+        df_props = []
+        df_reacts = []
     elseif props
         df_props = load_files(joinpath(filepath, "props"), dataframe=false)
-        return df_times, threshold_vals, titles, df_props
+        df_results = []
+        df_reacts = []
     elseif reacts
         df_reacts = load_files(joinpath(filepath, "reacts"))
         df_reacts = create_df_reacts(df_reacts)
-        return df_times, threshold_vals, titles, df_reacts
+        df_results = []
+        df_props = []
     end
+    return df_times, threshold_vals, titles, df_results, df_reacts, df_props
 end

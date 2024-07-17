@@ -22,17 +22,17 @@ folders = ["new_thresh_vals_0507_nofloor_final_files", #1
            "stoch_division_thresh_analysis_final_files" #11
         ]
 
-df_times1, threshold_vals1, titles1, df_results1, df_reacts1 = LoadDataVars(folders[1], props=false);
-df_times2, threshold_vals2, titles2, df_results2, df_reacts2 = LoadDataVars(folders[2], props=false);
-df_times3, threshold_vals3, titles3, df_results3, df_reacts3 = LoadDataVars(folders[3], props=false);
-df_times4, threshold_vals4, titles4, df_results4, df_reacts4 = LoadDataVars(folders[4], props=false);
-df_times5, threshold_vals5, titles5, df_results5, df_reacts5 = LoadDataVars(folders[5], props=false);
-df_times6, threshold_vals6, titles6, df_results6, df_reacts6 = LoadDataVars(folders[6], props=false);
-df_times7, threshold_vals7, titles7, df_results7, df_reacts7 = LoadDataVars(folders[7], props=false);
-df_times8, threshold_vals8, titles8, df_results8, df_reacts8 = LoadDataVars(folders[8], props=false); 
-df_times9, threshold_vals9, titles9, df_results9, df_reacts9 = LoadDataVars(folders[9], props=false, timefilepath="/Users/s2257179/stoch_files/thresh_1906_final_files/thresh_1906_times.csv");
-df_times10, threshold_vals10, titles10, df_results10, df_reacts10 = LoadDataVars(folders[10], props=false);
-df_times11, threshold_vals11, titles11, df_results11, df_reacts11 = LoadDataVars(folders[11], props=false);
+df_times1, threshold_vals1, titles1, df_results1, df_reacts1, df_props1 = LoadDataVars(folders[1], props=false);
+df_times2, threshold_vals2, titles2, df_results2, df_reacts2, df_props2 = LoadDataVars(folders[2], props=false);
+df_times3, threshold_vals3, titles3, df_results3, df_reacts3, df_props3 = LoadDataVars(folders[3], props=true);
+df_times4, threshold_vals4, titles4, df_results4, df_reacts4, df_props4 = LoadDataVars(folders[4], props=false);
+df_times5, threshold_vals5, titles5, df_results5, df_reacts5, df_props5 = LoadDataVars(folders[5], props=false);
+df_times6, threshold_vals6, titles6, df_results6, df_reacts6, df_props6 = LoadDataVars(folders[6], props=false);
+df_times7, threshold_vals7, titles7, df_results7, df_reacts7, df_props7 = LoadDataVars(folders[7], props=false);
+df_times8, threshold_vals8, titles8, df_results8, df_reacts8, df_props8 = LoadDataVars(folders[8], props=false); 
+df_times9, threshold_vals9, titles9, df_results9, df_reacts9, df_props9 = LoadDataVars(folders[9], props=false, timefilepath="/Users/s2257179/stoch_files/thresh_1906_final_files/thresh_1906_times.csv");
+df_times10, threshold_vals10, titles10, df_results10, df_reacts10, df_props10 = LoadDataVars(folders[10], props=false);
+df_times11, threshold_vals11, titles11, df_results11, df_reacts11, df_props11 = LoadDataVars(folders[11], props=true);
 
 f_times1 = plot_times(df_times1, "05/07 no flooring", folder=folders[1])
 f_times2 = plot_times(df_times2, "04/07", folder=folders[2])
@@ -108,13 +108,14 @@ f_sr11 = plot_results("plot_stoch_reacts", df_reacts11, length(threshold_vals11)
 
 
 f1 = plot_prop(df_results11, df_props11, 1, "threshold_$(threshold_vals11[1])", threshold_vals11, maxval=3000, folder=folders[11])
-f2 = plot_prop(df_results11, df_props11, 2, "threshold_$(threshold_vals11[2])", threshold_vals11, maxval=3000, folder=folders[11])
-f3 = plot_prop(df_results11, df_props11, 3, "threshold_$(threshold_vals11[3])", threshold_vals11, maxval=3000, folder=folders[11])
+f2 = plot_prop(df_results11, df_props11, 2, "threshold_$(threshold_vals11[2])", threshold_vals11, folder=folders[11])
+f3 = plot_prop(df_results11, df_props11, 3, "threshold_$(threshold_vals11[3])", threshold_vals11, folder=folders[11])
 f4 = plot_prop(df_results11, df_props11, 4, "threshold_$(threshold_vals11[4])", threshold_vals11, maxval=3000, folder=folders[11])
 f5 = plot_prop(df_results11, df_props11, 5, "threshold_$(threshold_vals11[5])", threshold_vals11, maxval=3000, folder=folders[11])
 
 
 display(f1)
+f3_3 = plot_prop(df_results3, df_props3, 2, "threshold_$(threshold_vals3[2])", threshold_vals3)
 
 
 df_results11[1].rm_a
