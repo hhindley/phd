@@ -91,7 +91,7 @@ folders = ["new_thresh_vals_0507_nofloor_final_files", #1
            "thresh_1906_final_files", #8
            "thresh_test_arrow_files_14_06", #9
            "thresh_analysis_fixed_xi_final_files", #10
-           "stoch_division_thresh_analysis_final_files" #11
+           "stoch_division_thresh_analysis_final_files", #11
            "1607_tests_final_files" #12
         ]
 
