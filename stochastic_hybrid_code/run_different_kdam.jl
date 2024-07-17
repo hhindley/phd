@@ -36,8 +36,8 @@ end
 println("finished X0 calc")
 
 
-mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/"
-dir = "kdam_testing_stoch_div_1207" # change this! 
+mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing"
+dir = "kdam_test_thresh_150_1707" # change this! 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
@@ -47,17 +47,17 @@ final_path = dir * "_final_files"
 
 # kdam_vals = [0.005, 0.01]
 
-kdam_vals = [0.005, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6]
+kdam_vals = [0, 0.005, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6]
 
 df = DataFrame(kdam=kdam_vals, time=zeros(length(kdam_vals)))
 for i in eachindex(kdam_vals)
     println("starting $i")
-    time_taken = @elapsed run_stoch(X0, 500, kdam_vals[i], joinpath(folderpath,"kdam_$(kdam_vals[i]).dat"))
+    time_taken = @elapsed run_stoch(X0, 150, kdam_vals[i], joinpath(folderpath,"kdam_$(kdam_vals[i]).dat"))
     df.time[i] = time_taken
     println("finished $i")
 end
 
-
+CSV.write(joinpath(mainpath, "$time_file"), df)
 
 println("total time = $(sum(df.time)/60/60) hours")
 
@@ -65,7 +65,6 @@ println("starting file conversion")
 
 arrow_conv(joinpath(mainpath, dir), joinpath(mainpath, final_path))
 
-CSV.write(joinpath(joinpath(mainpath, final_path), "$time_file"), df)
 
 print("finished!")
 
