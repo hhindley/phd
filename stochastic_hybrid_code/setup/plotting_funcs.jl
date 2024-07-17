@@ -10,7 +10,7 @@ function plotBIG(x, y; xtitle="", ytitle="", title="")
 end
 function plot_times(df_times, title; folder="")
     threshold_vals = df_times.threshold
-    title = "$title, thresh vals: $(minimum(threshold_vals)), $(maximum(threshold_vals)), step=$(threshold_vals[2]-threshold_vals[1]), length=$(length(threshold_vals))"
+    title = "$title, \n thresh vals: $(minimum(threshold_vals)), $(maximum(threshold_vals)), step=$(threshold_vals[2]-threshold_vals[1]), length=$(length(threshold_vals))"
     f=Figure()
     ax=Axis(f[1,1],xlabel="threshold", ylabel="time (hours)", title=title)
     lines!(ax,df_times.threshold, df_times.time/60/60)
@@ -23,8 +23,9 @@ function plot_times(df_times, title; folder="")
     end
     return f 
 end
+
 function plot_totstochcount(threshold_vals, tot_counts, title; folder="")
-    title = "$title, thresh vals: $(minimum(threshold_vals)), $(maximum(threshold_vals)), step=$(threshold_vals[2]-threshold_vals[1]), length=$(length(threshold_vals))"
+    title = "$title, \n thresh vals: $(minimum(threshold_vals)), $(maximum(threshold_vals)), step=$(threshold_vals[2]-threshold_vals[1]), length=$(length(threshold_vals))"
     f = Figure()
     ax = Axis(f[1,1],xlabel="threshold", ylabel="total stochastic reaction count", title=title)
     barplot!(threshold_vals, tot_counts)
@@ -44,16 +45,17 @@ end
 struct PlotWrapper
     plot::Any
 end
+
 function get_column(df::DataFrame, column_name::Union{Symbol, String})
     return getproperty(df, column_name)
 end
 
-function create_subplots(plotting_func, num_plots; size=(600, 450), xlabel="", ylabel="", titles=[], hidelabels=[true, true], yscale=identity)
+function create_subplots(plotting_func, num_plots, folder; size=(600, 450), xlabel="", ylabel="", titles=[], hidelabels=[true, true], yscale=identity)
     f = Figure(size=size)
     base = ceil(sqrt(num_plots))
     columns = Int(base)
     rows = Int(ceil(num_plots / columns))
-    
+    f[0, :] = Label(f, "$folder", fontsize=14)
     for j in 1:columns
         for i in 1:rows
             data_ind = i + rows * (j - 1)
@@ -125,11 +127,11 @@ function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, li
     end
     return f
 end
-function plot_results(plotting_func, df_results, num_plots; species=:rm_a, size=(600, 450), xlabel="", ylabel="", titles=[], yscale=identity, hidelabels=[true,true], linkaxes=true, folder="")
-    f = create_subplots(plotting_func, num_plots; size=size, xlabel=xlabel, ylabel=ylabel, titles=titles, hidelabels=hidelabels, yscale=yscale)
+function plot_results(plotting_func, df_results, num_plots, folder; species=:rm_a, size=(600, 450), xlabel="", ylabel="", titles=[], yscale=identity, hidelabels=[true,true], linkaxes=true, save=false)
+    f = create_subplots(plotting_func, num_plots, folder; size=size, xlabel=xlabel, ylabel=ylabel, titles=titles, hidelabels=hidelabels, yscale=yscale)
     f = add_subplots(f, plotting_func, df_results, num_plots; species=species, linkaxes=linkaxes)
     
-    if !isempty(folder)
+    if save
         plots_folder = joinpath(joinpath(mount_path, folder), "plots")
         if plotting_func == "plot_stoch_reacts"
             save(joinpath(plots_folder, "stoch_reacts.png"), f)

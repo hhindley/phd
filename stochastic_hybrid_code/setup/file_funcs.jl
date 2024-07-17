@@ -127,13 +127,13 @@ function prod_tot_count(df_reacts)
 end
 
 
-function LoadDataVars(folder; reacts=true, results=true, props=true, timefilepath="times.csv")
+function LoadDataVars(folder; reacts=true, results=true, props=true)
     folder = folder
     filepath = joinpath(mount_path, folder)
     if isfile(joinpath(filepath, replace(folder, "final_files" => "") * "times.csv"))
         df_times = CSV.File(joinpath(filepath, replace(folder, "final_files" => "") * "times.csv")) |> DataFrame
     else
-        df_times = CSV.File(timefilepath) |> DataFrame
+        df_times = []#CSV.File(timefilepath) |> DataFrame
     end
 
     threshold_vals = df_times.threshold
@@ -173,4 +173,26 @@ function LoadDataVars(folder; reacts=true, results=true, props=true, timefilepat
         df_props = []
     end
     return df_times, threshold_vals, titles, df_results, df_reacts, df_props
+end
+
+function setup_dicts(folders)
+    dict_times = Dict(i => DataFrame() for i in 1:length(folders))
+    dict_threshvals = Dict(i => Float64[] for i in 1:length(folders))
+    dict_titles = Dict(i => String[] for i in 1:length(folders))
+    dict_results = Dict(i => [] for i in 1:length(folders))
+    dict_reacts = Dict(i => [] for i in 1:length(folders))
+    dict_props = Dict(i => [] for i in 1:length(folders))
+    dict_counts = Dict(i => [] for i in 1:length(folders))
+    dict_hists = Dict{Int, Any}()
+    return dict_times, dict_threshvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists
+end
+
+function setup_plot_dicts()
+    dict_plot_times = Dict{Int, Any}()
+    dict_plot_counts = Dict{Int, Any}()
+    dict_plot_results = Dict{Tuple{Int64, Symbol}, Any}()
+    dict_plot_hists = Dict{Tuple{Int64, Symbol}, Any}()
+    dict_stoch_reacts = Dict{Int, Any}()
+
+    return dict_plot_times, dict_plot_counts, dict_plot_results, dict_plot_hists, dict_stoch_reacts
 end

@@ -52,7 +52,7 @@ time_file = dir * "_times.csv"
 final_path = dir * "_final_files"
 
 
-# df = DataFrame(threshold=threshold_vals, time=zeros(length(threshold_vals)))
+df = DataFrame(threshold=threshold_vals, time=zeros(length(threshold_vals)))
 # # Threads.@threads :static for i in eachindex(threshold_vals_new)
 # for i in eachindex(threshold_vals)
 #     println("starting $i")
