@@ -55,7 +55,7 @@ function create_subplots(plotting_func, num_plots, folder; size=(600, 450), xlab
     base = ceil(sqrt(num_plots))
     columns = Int(base)
     rows = Int(ceil(num_plots / columns))
-    f[0, :] = Label(f, "$folder", fontsize=14)
+    f[0, :] = Label(f, "$folder", fontsize=20)
     for j in 1:columns
         for i in 1:rows
             data_ind = i + rows * (j - 1)
@@ -177,19 +177,19 @@ function build_reaction_count_df(df_reacts, react, threshold_vals)
 end
 
 
-function plot_prop(df_results, df_props, res_ind, title, threshold_vals; maxval=31856, folder="")
+function plot_prop(df_results, df_props, res_ind, title, threshold_vals, folder; maxval=31856, save=false)
     time_data = df_results[res_ind].time
     prop_data = [df_props[res_ind][i] for i in eachindex(react_names[1:end-1])]
     
     f = Figure()
-    ax = Axis(f[1,1], xlabel = "time", ylabel = "propensity", title=title, limits=((2.2e5, 2.6e5),(0, maxval)))
+    ax = Axis(f[1,1], xlabel = "time", ylabel = "propensity", title="$folder, \n $title", limits=((2.2e5, 2.6e5),(0, maxval)))
     for i in eachindex(react_names[1:end-1])
         iscatter!(ax, time_data, prop_data[i], label="$(react_names[i])", color=color_list[i])
     end    
     axislegend(ax, framevisible=true)
     lines!(ax, range(minimum(time_data), maximum(time_data), length = 2), [threshold_vals[res_ind], threshold_vals[res_ind]], linewidth = 4, color = :black)
     
-    if !isempty(folder)
+    if save
         plots_folder = joinpath(joinpath(mount_path, folder), "plots")
         results_folder = joinpath(plots_folder, "propensities")
         if !isdir(results_folder)

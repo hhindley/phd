@@ -13,11 +13,13 @@ all_items = readdir(mount_path)
 folders = [item for item in all_items if isdir(joinpath(mount_path, item)) && !occursin("DS", item)]
 folders_dict = Dict(i => folder for (i, folder) in enumerate(folders))
 
+delete!(folders_dict, 12)
+
 dict_times, dict_threshvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = setup_dicts(folders_dict)
 
 for i in eachindex(folders_dict)
     println(i)
-    dict_times[i], dict_threshvals[i], dict_titles[i], dict_results[i], dict_reacts[i], dict_props[i] = LoadDataVars(folders[i], props=false);
+    dict_times[i], dict_threshvals[i], dict_titles[i], dict_results[i], dict_reacts[i], dict_props[i] = LoadDataVars(folders[i]);
     dict_hists[i] = load_hist_files(joinpath(mount_path, folders_dict[i], "hists"))
     # calculate total counts
     dict_counts[i] = prod_tot_count(dict_reacts[i])
@@ -27,6 +29,7 @@ end
 dict_plot_times, dict_plot_counts, dict_plot_results, dict_plot_hists, dict_stoch_reacts = setup_plot_dicts()
 
 for i in eachindex(folders_dict)
+    println(i)
     # plot times
     dict_plot_times[i] = plot_times(dict_times[i], "$(folders_dict[i])")#, folder=folders_dict[i])
     
@@ -36,13 +39,15 @@ for i in eachindex(folders_dict)
 
 end
 
-i = 12; specie=:rtca
+
+i = 1; specie=:rtca
 dict_plot_results[i, specie] = plot_results("plot_results", dict_results[i], length(dict_threshvals[i]), folders_dict[i], species=specie, xlabel="time", ylabel="$specie", titles=dict_titles[i], size=(1000,650))#, folder=folders_dict[i]);
 dict_plot_hists[i,specie] = plot_results("plot_hists", dict_hists[i], length(dict_threshvals[i]), folders_dict[i], species=specie, xlabel="$specie", ylabel="frequency", titles=dict_titles[i], hidelabels=[false, false], linkaxes=false, size=(1000,650))#, folder=folders_dict[i]);
 
-display(dict_plot_results[12, :rtca])
-display(dict_plot_counts[12])
-display(dict_stoch_reacts[12])
+display(dict_plot_times[6])
+display(dict_plot_results[i, :rtca])
+display(dict_plot_counts[6])
+display(dict_stoch_reacts[6])
 
 
 
@@ -58,12 +63,9 @@ end
 
 
 
+f1 = plot_prop(dict_results[i], dict_props[i], 4, "threshold_$(dict_threshvals[i][4])", dict_threshvals[i], folders_dict[i])
 
-f1 = plot_prop(df_results11, df_props11, 1, "threshold_$(threshold_vals11[1])", threshold_vals11, maxval=3000, folder=folders[11])
-f2 = plot_prop(df_results11, df_props11, 2, "threshold_$(threshold_vals11[2])", threshold_vals11, folder=folders[11])
-f3 = plot_prop(df_results11, df_props11, 3, "threshold_$(threshold_vals11[3])", threshold_vals11, folder=folders[11])
-f4 = plot_prop(df_results11, df_props11, 4, "threshold_$(threshold_vals11[4])", threshold_vals11, maxval=3000, folder=folders[11])
-f5 = plot_prop(df_results11, df_props11, 5, "threshold_$(threshold_vals11[5])", threshold_vals11, maxval=3000, folder=folders[11])
+
 
 
 display(f1)
