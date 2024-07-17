@@ -20,6 +20,7 @@ folders = ["new_thresh_vals_0507_nofloor_final_files", #1
            "thresh_test_arrow_files_14_06", #9
            "thresh_analysis_fixed_xi_final_files", #10
            "stoch_division_thresh_analysis_final_files" #11
+           "1607_tests_final_files" #12
         ]
 
 df_times1, threshold_vals1, titles1, df_results1, df_reacts1, df_props1 = LoadDataVars(folders[1], props=false);

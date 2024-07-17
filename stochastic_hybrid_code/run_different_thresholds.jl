@@ -61,7 +61,7 @@ final_path = dir * "_final_files"
 #     println("finished $i")
 # end
 
-# CSV.write(joinpath(joinpath(mainpath, final_path), "$time_file"), df)
+CSV.write(joinpath(mainpath, "$time_file"), df)
 
 # println("total time = $(sum(df.time)/60/60) hours")
 
