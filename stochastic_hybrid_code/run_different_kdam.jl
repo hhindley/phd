@@ -6,6 +6,7 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/indexing.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/hybrid_algo.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/stoch_model.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/threshold_analysis/histograms/make_hists.jl"))
 
 
 n= 10000 # number of cell cycles
@@ -65,10 +66,13 @@ println("starting file conversion")
 
 arrow_conv(joinpath(mainpath, dir), joinpath(mainpath, final_path))
 
+print("finished file conversion!")
 
-print("finished!")
+println("making histograms")
 
+create_histogram_files(joinpath(mainpath, final_path))
 
+print("finished making histograms!")
 
 
 

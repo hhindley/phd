@@ -81,24 +81,24 @@ function create_histogram_files(mainpath, folder_to_convert)
     end
 end
 
-folders = ["new_thresh_vals_0507_nofloor_final_files", #1
-           "run_individually_0407_final_files", #2
-           "LOW_thresh_0807_final_files", #3
-           "test_0307_5_values_from_original_range_final_files", #4
-           "new_thresh_vals_0507_final_files", #5
-           "thresh_0107_noround_final_files", #6
-           "thresh_0107_final_files", #7
-           "thresh_1906_final_files", #8
-           "thresh_test_arrow_files_14_06", #9
-           "thresh_analysis_fixed_xi_final_files", #10
-           "stoch_division_thresh_analysis_final_files", #11
-           "1607_tests_final_files" #12
-        ]
+# folders = ["new_thresh_vals_0507_nofloor_final_files", #1
+#            "run_individually_0407_final_files", #2
+#            "LOW_thresh_0807_final_files", #3
+#            "test_0307_5_values_from_original_range_final_files", #4
+#            "new_thresh_vals_0507_final_files", #5
+#            "thresh_0107_noround_final_files", #6
+#            "thresh_0107_final_files", #7
+#            "thresh_1906_final_files", #8
+#            "thresh_test_arrow_files_14_06", #9
+#            "thresh_analysis_fixed_xi_final_files", #10
+#            "stoch_division_thresh_analysis_final_files", #11
+#            "1607_tests_final_files" #12
+#         ]
 
-local_path = "/Users/s2257179/stoch_files"
-server_path = "/home/hollie_hindley/Documents/stochastic_hybrid"
+# local_path = "/Users/s2257179/stoch_files"
+# server_path = "/home/hollie_hindley/Documents/stochastic_hybrid"
 
-# create_histogram_files(local_path, "stoch_division_thresh_analysis_final_files")
+# create_histogram_files(server_path, "kdam_testing/kdam_test_thresh_150_1707_final_files")
 # create_histogram_files(server_path, folders[1])
 # create_histogram_files(server_path, folders[2])
 # create_histogram_files(server_path, folders[3])
@@ -107,5 +107,5 @@ server_path = "/home/hollie_hindley/Documents/stochastic_hybrid"
 # create_histogram_files(server_path, folders[6])
 # create_histogram_files(server_path, folders[7])
 # create_histogram_files(server_path, folders[8])
-create_histogram_files(server_path, folders[12])
+# create_histogram_files(server_path, folders[12])
 
