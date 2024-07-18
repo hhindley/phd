@@ -55,6 +55,7 @@ function create_subplots(plotting_func, num_plots, folder; size=(600, 450), xlab
     base = ceil(sqrt(num_plots))
     columns = Int(base)
     rows = Int(ceil(num_plots / columns))
+
     f[0, :] = Label(f, "$folder", fontsize=20)
     for j in 1:columns
         for i in 1:rows
@@ -70,6 +71,7 @@ function create_subplots(plotting_func, num_plots, folder; size=(600, 450), xlab
                     ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale, xticks=(1:13, react_names_str), xticklabelrotation=45)
     
                 end
+                colsize!(f.layout, j, Relative(1/columns))
                 # Hide x-axis decorations for axes not in the bottom row
                 if i != rows && (hidelabels == [true, true] || hidelabels == [true, false])
                     hidexdecorations!(ax, grid=false)
@@ -127,11 +129,11 @@ function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, li
     end
     return f
 end
-function plot_results(plotting_func, df_results, num_plots, folder; species=:rm_a, size=(600, 450), xlabel="", ylabel="", titles=[], yscale=identity, hidelabels=[true,true], linkaxes=true, save=false)
+function plot_results(plotting_func, df_results, num_plots, folder; species=:rm_a, size=(600, 450), xlabel="", ylabel="", titles=[], yscale=identity, hidelabels=[true,true], linkaxes=true, tosave=false)
     f = create_subplots(plotting_func, num_plots, folder; size=size, xlabel=xlabel, ylabel=ylabel, titles=titles, hidelabels=hidelabels, yscale=yscale)
     f = add_subplots(f, plotting_func, df_results, num_plots; species=species, linkaxes=linkaxes)
     
-    if save
+    if tosave
         plots_folder = joinpath(joinpath(mount_path, folder), "plots")
         if plotting_func == "plot_stoch_reacts"
             save(joinpath(plots_folder, "stoch_reacts.png"), f)
@@ -142,11 +144,9 @@ function plot_results(plotting_func, df_results, num_plots, folder; species=:rm_
             end
             save(joinpath(results_folder, "$species.png"), f)
         end
-            
-        # return PlotWrapper(f)
-    else
-        return f
     end
+
+    return f
 end
 
 
@@ -177,19 +177,19 @@ function build_reaction_count_df(df_reacts, react, threshold_vals)
 end
 
 
-function plot_prop(df_results, df_props, res_ind, title, threshold_vals, folder; maxval=31856, save=false)
+function plot_prop(df_results, df_props, res_ind, title, threshold_vals, folder; maxval=31856, size=(600, 450), tosave=false)
     time_data = df_results[res_ind].time
     prop_data = [df_props[res_ind][i] for i in eachindex(react_names[1:end-1])]
     
-    f = Figure()
-    ax = Axis(f[1,1], xlabel = "time", ylabel = "propensity", title="$folder, \n $title", limits=((2.2e5, 2.6e5),(0, maxval)))
+    f = Figure(size=size)
+    ax = Axis(f[1,1], xlabel = "time", ylabel = "propensity", title="$folder, \n $title", limits=((nothing, nothing), (0, maxval)))#, limits=((2.2e5, 2.6e5),(0, maxval)))
     for i in eachindex(react_names[1:end-1])
         iscatter!(ax, time_data, prop_data[i], label="$(react_names[i])", color=color_list[i])
     end    
     axislegend(ax, framevisible=true)
     lines!(ax, range(minimum(time_data), maximum(time_data), length = 2), [threshold_vals[res_ind], threshold_vals[res_ind]], linewidth = 4, color = :black)
     
-    if save
+    if tosave
         plots_folder = joinpath(joinpath(mount_path, folder), "plots")
         results_folder = joinpath(plots_folder, "propensities")
         if !isdir(results_folder)
@@ -198,9 +198,9 @@ function plot_prop(df_results, df_props, res_ind, title, threshold_vals, folder;
         
         save(joinpath(results_folder, "$title.png"), f)
         # return PlotWrapper(f)
-    else
-        return f
     end
+
+    return f
 end
 
 color_list = [
@@ -220,3 +220,15 @@ color_list = [
 ];
 
 react_names_str = [string(i) for i in react_names]
+
+
+function setup_plot_dicts()
+    dict_plot_times = Dict{Int, Any}()
+    dict_plot_counts = Dict{Int, Any}()
+    dict_plot_results = Dict{Tuple{Int64, Symbol}, Any}()
+    dict_plot_hists = Dict{Tuple{Int64, Symbol}, Any}()
+    dict_stoch_reacts = Dict{Int, Any}()
+    dict_plot_props = Dict{Any, Any}()
+
+    return dict_plot_times, dict_plot_counts, dict_plot_results, dict_plot_hists, dict_stoch_reacts, dict_plot_props
+end

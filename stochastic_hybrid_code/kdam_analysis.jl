@@ -1,116 +1,69 @@
-using StatsBase, Distributions, Random, DataFrames, CSV, PlotlyJS, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics
+using StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase, Distributed, TableOperations, JSON, Query, FindFirstFunctions, CategoricalArrays, Colors
 
-include("/home/hollie_hindley/Documents/stochastic_hybrid/analysis_funcs.jl")
+# using PlotlyJS
+using InteractiveViz, WGLMakie
 
-kdam_vals = range(0,2,length=21) # vals for kdam_test
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/analysis_funcs.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_funcs.jl"))
 
-kdam_vals = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4] # vals for kdam_test1
+mount_path = "/Users/s2257179/stoch_files/kdam_testing/"
 
-df_times = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/times.csv")) # times for kdam_test1
+all_items = readdir(mount_path)
+folders = [item for item in all_items if isdir(joinpath(mount_path, item)) && !occursin("DS", item)]
+folders_dict = Dict(i => folder for (i, folder) in enumerate(folders))
 
-plot(scatter(x=df_times.kdam, y=df_times.time/60))
+dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = setup_dicts(folders_dict)
 
-# load all dataframes
-dfs = [DataFrame(CSV.File(joinpath("/home/hollie_hindley/Documents/stochastic_hybrid/kdam_test1", file), header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"])) for file in readdir("/home/hollie_hindley/Documents/stochastic_hybrid/kdam_test1")]
-
-
-# sort dataframes
-props, df_rs, df_ps = df_sort_all(dfs)
-
-
-# stochastic reactions
-df_reacts, tot_stoch = all_react_dfs(dfs, df_rs)
-
-p_stochreacts = plot([bar(x=df_reacts[i].reaction, y=df_reacts[i].count, name="$(kdam_vals[i])") for i in eachindex(kdam_vals)], Layout(barmode="group", yaxis_type="log"))
-p_totstoch = plot(bar(x=kdam_vals, y=tot_stoch))
-
-# histograms 
-groups, bins = all_hists(df_ps, kdam_vals, 1000)
-for specie in species_rtc
-    display(plot([histogram(x=groups[i][:,specie], nbins=bins[i], opacity=0.6, name="$(kdam_vals[i])") for i in eachindex(kdam_vals)], Layout(barmode="overlay", title="$specie", yaxis_type="log")))
+for i in eachindex(folders_dict)
+    println(i)
+    dict_times[i], dict_threshvals[i], dict_titles[i], dict_results[i], dict_reacts[i], dict_props[i] = LoadDataVars(folders[i]);
+    dict_hists[i] = load_hist_files(joinpath(mount_path, folders_dict[i], "hists"))
+    dict_counts[i] = prod_tot_count(dict_reacts[i])
 end
 
-# plotting individual species
-x = 8
-plot(scatter(x=df_ps[x].time, y=df_ps[x].rm_a))
-plot(scatter(x=df_ps[x].time, y=df_ps[x].rm_b))
-plot(scatter(x=df_ps[x].time, y=df_ps[x].rm_r))
-plot(scatter(x=df_ps[x].time, y=df_ps[x].rtca))
-plot(scatter(x=df_ps[x].time, y=df_ps[x].rtcb))
-plot(scatter(x=df_ps[x].time, y=df_ps[x].rtcr))
-plot(scatter(x=df_ps[x].time, y=df_ps[x].rh))#./df_ps[x].volume))
-plot(scatter(x=df_ps[x].time, y=df_ps[x].rd))#./df_ps[x].volume))
-plot(scatter(x=df_ps[x].time, y=df_ps[x].rt))#./df_ps[x].volume))
+dict_plot_times, dict_plot_counts, dict_plot_results, dict_plot_hists, dict_stoch_reacts, dict_plot_props = setup_plot_dicts()
 
-plot([scatter(x=df_ps[x].time, y=df_ps[x][:,i]./df_ps[x].volume, name="$i") for i in [:rh, :rd, :rt]])
-plot([scatter(x=df_ps[x].time, y=df_ps[x][:,i]./df_ps[x].volume, name="$i") for i in [:rm_a, :rtca]])
-plot([scatter(x=df_ps[x].time, y=df_ps[x][:,i]./df_ps[x].volume, name="$i") for i in [:rm_b, :rtcb]])
-plot([scatter(x=df_ps[x].time, y=df_ps[x][:,i]./df_ps[x].volume, name="$i") for i in [:rm_r, :rtcr]])
+for i in eachindex(folders_dict)
+    println(i)
+    dict_plot_times[i] = plot_times(dict_times[i], "$(folders_dict[i])", folder=folders_dict[i])    
+    dict_plot_counts[i] = plot_totstochcount(dict_threshvals[i], dict_counts[i], "$(folders_dict[i])", folder=folders_dict[i])
+    dict_stoch_reacts[i] = plot_results("plot_stoch_reacts", dict_reacts[i], length(dict_threshvals[i]), folders_dict[i], xlabel="reaction", ylabel="count", titles=dict_titles[i], size=(1000,650), tosave=true)
+end
 
-# % of expression
-exp_df = all_exp(df_ps, kdam_vals)
 
-p_exp = plot([scatter(x=exp_df.kdam, y=exp_df[:,i], name="$(names(exp_df)[i])") for i in 2:7], Layout(xaxis_title="kdam", yaxis_title="% of expression (when species > 1)"))
+# to get all plots (probably not needed often)
+for specie in all_species
+    println(specie)
+    for i in eachindex(folders_dict)
+        println(i)
+        dict_plot_results[i, specie] = plot_results("plot_results", dict_results[i], length(dict_threshvals[i]), folders_dict[i], species=specie, xlabel="time", ylabel="$specie", titles=dict_titles[i], size=(1000,650), tosave=true);
+        dict_plot_hists[i,specie] = plot_results("plot_hists", dict_hists[i], length(dict_threshvals[i]), folders_dict[i], species=specie, xlabel="$specie", ylabel="frequency", titles=dict_titles[i], hidelabels=[false, false], linkaxes=false, size=(1000,650), tosave=true);
+    end
+end
 
-# mean values
-df_av = mean_vals(df_ps, kdam_vals, 5000)
+# all propensities 
+for folder in eachindex(folders_dict)
+    println(folder)
+    for i in eachindex(dict_props[folder])
+        println(dict_threshvals[folder][i])
+        dict_plot_props[folder, dict_threshvals[folder][i]] = plot_prop(dict_results[folder], dict_props[folder], i, "threshold_$(dict_threshvals[folder][i])", dict_threshvals[folder], folders_dict[folder], maxval=500, tosave=false, size=(800,650))
+    end
+end
+keys(dict_plot_props)
+display(dict_plot_props[1, 216.66666666666666])
 
-p_av = plot([scatter(x=df_av.kdam, y=df_av[:,i], name="$(names(df_av)[i])") for i in 2:10], Layout(xaxis_title="kdam", yaxis_title="mean molecule number"))
-
-# expression + stoch reactions 
-plot([scatter(x=df_ps[x].time, y=df_ps[x].rm_r, name="rm_r"), 
-scatter(x=filter(row -> row[:event] == 2, df_rs[x]).time, y=repeat([maximum(filter(row -> row[:event] == 2, df_rs[x]).rm_r)*1.1], length(df_rs[x].time)), name="$(react_names[2])", mode="markers"),
-scatter(x=filter(row -> row[:event] == 13, df_rs[x]).time, y=repeat([maximum(filter(row -> row[:event] == 13, df_rs[x]).rm_r)*10.1], length(df_rs[x].time)), name="$(react_names[13])", mode="markers")])
-
-plot([scatter(x=df_ps[x].time, y=df_ps[x].rm_a, name="rm_a"), 
-scatter(x=filter(row -> row[:event] == 1, df_rs[x]).time, y=repeat([maximum(filter(row -> row[:event] == 1, df_rs[x]).rm_a)*1.1], length(df_rs[x].time)), name="$(react_names[1])", mode="markers"),
-scatter(x=filter(row -> row[:event] == 11, df_rs[x]).time, y=repeat([maximum(filter(row -> row[:event] == 11, df_rs[x]).rm_a)*1.2], length(df_rs[x].time)), name="$(react_names[11])", mode="markers")])
-
-plot([scatter(x=df_ps[x].time, y=df_ps[x].rm_b, name="rm_b"), 
-scatter(x=filter(row -> row[:event] == 1, df_rs[x]).time, y=repeat([maximum(filter(row -> row[:event] == 1, df_rs[x]).rm_b)*1.1], length(df_rs[x].time)), name="$(react_names[1])", mode="markers"),
-scatter(x=filter(row -> row[:event] == 12, df_rs[x]).time, y=repeat([maximum(filter(row -> row[:event] == 12, df_rs[x]).rm_b)*1.25], length(df_rs[x].time)), name="$(react_names[12])", mode="markers")])
-
-plot([scatter(x=df_ps[x].time, y=df_ps[x].rtcr, name="rtcr"), 
-scatter(x=filter(row -> row[:event] == 5, df_rs[x]).time, y=repeat([maximum(filter(row -> row[:event] == 5, df_rs[x]).rtcr)*1.1], length(df_rs[x].time)), name="$(react_names[5])", mode="markers")])
-
-plot([scatter(x=df_ps[x].time, y=df_ps[x].rtca, name="rtca"), 
-scatter(x=filter(row -> row[:event] == 3, df_rs[x]).time, y=repeat([maximum(filter(row -> row[:event] == 3, df_rs[x]).rtca)*50.1], length(df_rs[x].time)), name="$(react_names[3])", mode="markers")])
-
-plot([scatter(x=df_ps[x].time, y=df_ps[x].rtcb, name="rtcb"), 
-scatter(x=filter(row -> row[:event] == 4, df_rs[x]).time, y=repeat([maximum(filter(row -> row[:event] == 4, df_rs[x]).rtcb)*38.1], length(df_rs[x].time)), name="$(react_names[4])", mode="markers")])
-
-plot([scatter(x=df_ps[x].time, y=df_ps[x].rh, name="rh"), 
-# scatter(x=filter(row -> row[:event] == 6, df_rs[x]).time, y=repeat([maximum(filter(row -> row[:event] == 6, df_rs[x]).rh)*1.1], length(df_rs[x].time)), name="$(react_names[6])", mode="markers"),
-# scatter(x=filter(row -> row[:event] == 7, df_rs[x]).time, y=repeat([maximum(filter(row -> row[:event] == 7, df_rs[x]).rh)*1.1], length(df_rs[x].time)), name="$(react_names[7])", mode="markers"),
-scatter(x=filter(row -> row[:event] == 8, df_rs[x]).time, y=repeat([maximum(filter(row -> row[:event] == 8, df_rs[x]).rh)*1.2], length(df_rs[x].time)), name="$(react_names[8])", mode="markers")])
-
-plot([scatter(x=df_ps[x].time, y=df_ps[x].rt, name="rt"), 
-# scatter(x=filter(row -> row[:event] == 6, df_rs[x]).time, y=repeat([maximum(filter(row -> row[:event] == 6, df_rs[x]).rh)*1.1], length(df_rs[x].time)), name="$(react_names[6])", mode="markers"),
-scatter(x=filter(row -> row[:event] == 9, df_rs[x]).time, y=repeat([maximum(filter(row -> row[:event] == 9, df_rs[x]).rt)*7.7], length(df_rs[x].time)), name="$(react_names[9])", mode="markers"),
-scatter(x=filter(row -> row[:event] == 8, df_rs[x]).time, y=repeat([maximum(filter(row -> row[:event] == 8, df_rs[x]).rt)*180.2], length(df_rs[x].time)), name="$(react_names[8])", mode="markers")])
-
-plot([scatter(x=df_ps[x].time, y=df_ps[x].rd, name="rd"), 
-# scatter(x=filter(row -> row[:event] == 6, df_rs[x]).time, y=repeat([maximum(filter(row -> row[:event] == 6, df_rs[x]).rh)*1.1], length(df_rs[x].time)), name="$(react_names[6])", mode="markers"),
-scatter(x=filter(row -> row[:event] == 10, df_rs[x]).time, y=repeat([maximum(filter(row -> row[:event] == 10, df_rs[x]).rd)*1.7], length(df_rs[x].time)), name="$(react_names[10])", mode="markers"),
-scatter(x=filter(row -> row[:event] == 8, df_rs[x]).time, y=repeat([maximum(filter(row -> row[:event] == 8, df_rs[x]).rd)*1.2], length(df_rs[x].time)), name="$(react_names[8])", mode="markers")])
+# testing if at steady state
+h2 = hist(df_results11[2].rtca[100000:200000])
+h3 = hist!(df_results11[2].rtca[200000:300000])
+h4 = hist!(df_results11[2].rtca[300000:400000])
+h5 = hist!(df_results11[2].rtca[400000:500000])
+h6 = hist!(df_results11[2].rtca[500000:600000])
+h7 = hist!(df_results11[2].rtca[700000:800000])
+h8 = hist!(df_results11[2].rtca[800000:end])
 
 
 
+10000*log(2)/lam_val
 
-
-df = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/kdam_test1/kdam_0.05.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"]))
-
-df_props, df_r, df_p = df_sort(df)
-
-plot(scatter(x=df_p.time, y=df_p.rtca))
-
-plot(scatter(y=df_p.rm_a))
-
-
-p_props = plot([scatter(x=df_p.time[1:1000:end], y=df_props[1:1000:end,col], name="$col", mode="markers") for col in names(eachcol(df_props[:,1:end-1]))])
-
-display(p_props)
-
-plot(scatter(x=[1,2,3,4,],y=[2,2,2,2]))
-
-
+df_results11[2][1:end,:rm_a]

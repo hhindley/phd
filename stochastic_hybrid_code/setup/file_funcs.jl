@@ -136,8 +136,13 @@ function LoadDataVars(folder; reacts=true, results=true, props=true)
         df_times = []#CSV.File(timefilepath) |> DataFrame
     end
 
-    threshold_vals = df_times.threshold
-    titles = ["threshold: $(round(threshold_vals[i], digits=2))" for i in eachindex(threshold_vals)]
+    if mount_path == "/Users/s2257179/stoch_files/threshold_testing/"
+        threshold_vals = df_times.threshold
+        titles = ["threshold: $(round(threshold_vals[i], digits=2))" for i in eachindex(threshold_vals)]
+    elseif mount_path == "/Users/s2257179/stoch_files/kdam_testing/"
+        kdam_vals = df_times.kdam
+        titles = ["kdam: $(round(kdam_vals[i], digits=2))" for i in eachindex(kdam_vals)]
+    end
 
     if reacts && results && props
         df_reacts = load_files(joinpath(filepath, "reacts"))
@@ -187,12 +192,3 @@ function setup_dicts(folders)
     return dict_times, dict_threshvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists
 end
 
-function setup_plot_dicts()
-    dict_plot_times = Dict{Int, Any}()
-    dict_plot_counts = Dict{Int, Any}()
-    dict_plot_results = Dict{Tuple{Int64, Symbol}, Any}()
-    dict_plot_hists = Dict{Tuple{Int64, Symbol}, Any}()
-    dict_stoch_reacts = Dict{Int, Any}()
-
-    return dict_plot_times, dict_plot_counts, dict_plot_results, dict_plot_hists, dict_stoch_reacts
-end
