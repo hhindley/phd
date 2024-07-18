@@ -9,11 +9,21 @@ function plotBIG(x, y; xtitle="", ytitle="", title="")
     return f
 end
 function plot_times(df_times, title; folder="")
-    threshold_vals = df_times.threshold
-    title = "$title, \n thresh vals: $(minimum(threshold_vals)), $(maximum(threshold_vals)), step=$(threshold_vals[2]-threshold_vals[1]), length=$(length(threshold_vals))"
-    f=Figure()
-    ax=Axis(f[1,1],xlabel="threshold", ylabel="time (hours)", title=title)
-    lines!(ax,df_times.threshold, df_times.time/60/60)
+    if mount_path == "/Users/s2257179/stoch_files/threshold_testing/"
+        threshold_vals = df_times.threshold
+        title = "$title, \n thresh vals: $(minimum(threshold_vals)), $(maximum(threshold_vals)), step=$(threshold_vals[2]-threshold_vals[1]), length=$(length(threshold_vals))"
+        f=Figure()
+        ax=Axis(f[1,1],xlabel="threshold", ylabel="time (hours)", title=title)
+        lines!(ax,df_times.threshold, df_times.time/60/60)
+    elseif mount_path == "/Users/s2257179/stoch_files/kdam_testing/"
+        threshold_vals = df_times.kdam
+        title = "$title, \n kdam vals: $(minimum(threshold_vals)), $(maximum(threshold_vals)), step=$(threshold_vals[2]-threshold_vals[1]), length=$(length(threshold_vals))"
+        f=Figure()
+        ax=Axis(f[1,1],xlabel="kdam", ylabel="time (hours)", title=title)
+        lines!(ax,df_times.kdam, df_times.time/60/60)
+    end
+    
+    
     if folder != ""
         plots_folder = joinpath(joinpath(mount_path, folder), "plots")
         if !isdir(plots_folder)
@@ -27,8 +37,8 @@ end
 function plot_totstochcount(threshold_vals, tot_counts, title; folder="")
     title = "$title, \n thresh vals: $(minimum(threshold_vals)), $(maximum(threshold_vals)), step=$(threshold_vals[2]-threshold_vals[1]), length=$(length(threshold_vals))"
     f = Figure()
-    ax = Axis(f[1,1],xlabel="threshold", ylabel="total stochastic reaction count", title=title)
-    barplot!(threshold_vals, tot_counts)
+    ax = Axis(f[1,1],xlabel="threshold", ylabel="total stochastic reaction count", title=title, xticks=(1:length(threshold_vals), [string(i) for i in threshold_vals]), xticklabelrotation=45)
+    barplot!(f[1,1], eachindex(threshold_vals), tot_counts)
     if folder != ""
         plots_folder = joinpath(joinpath(mount_path, folder), "plots")
         if !isdir(plots_folder)
@@ -56,7 +66,7 @@ function create_subplots(plotting_func, num_plots, folder; size=(600, 450), xlab
     columns = Int(base)
     rows = Int(ceil(num_plots / columns))
 
-    f[0, :] = Label(f, "$folder", fontsize=20)
+    f[0, :] = Label(f, "$folder", fontsize=14)
     for j in 1:columns
         for i in 1:rows
             data_ind = i + rows * (j - 1)
@@ -66,9 +76,9 @@ function create_subplots(plotting_func, num_plots, folder; size=(600, 450), xlab
             if data_ind <= num_plots
                 title = titles != [] ? titles[data_ind] : "Plot $data_ind"
                 if plotting_func == "plot_results" || plotting_func == "plot_hists" || plotting_func == "plot_individual_reacts"
-                    ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale, xticklabelrotation=45)
+                    ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale, xticklabelrotation=45, xlabelsize=10, ylabelsize=10, xticklabelsize=10, yticklabelsize=10, titlesize=12)
                 elseif plotting_func == "plot_stoch_reacts"
-                    ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale, xticks=(1:13, react_names_str), xticklabelrotation=45)
+                    ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale, xticks=(1:13, react_names_str), xticklabelrotation=45, xlabelsize=10, ylabelsize=10, xticklabelsize=10, yticklabelsize=10, titlesize=12)
     
                 end
                 colsize!(f.layout, j, Relative(1/columns))
@@ -104,7 +114,7 @@ function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, li
                 if plotting_func == "plot_results"
                     plot_timeres(preprocessed_times[data_ind], preprocessed_results[data_ind], f[i,j])
                 elseif plotting_func == "plot_hists"
-                    plot_hist(dfs[data_ind], f[i,j])
+                    plot_hist(dfs[data_ind], loc=f[i,j])
                 elseif plotting_func == "plot_stoch_reacts" 
                     barplot!(f[i,j], df_results[data_ind].event, df_results[data_ind].count)
                 elseif plotting_func == "plot_individual_reacts"
@@ -154,13 +164,57 @@ function plot_timeres(time, res, loc)
     x = makiex(time)
     ilines!(loc, x, res)
 end
-function plot_hist(df, loc)
+function plot_hist(df; loc=nothing, label="", specie="", maxval=8e4)
     bins = [i[1] for i in df.bin]
     push!(bins, df.bin[end][2])
     bin_c = (bins[1:end-1] .+ bins[2:end]) ./ 2
-    barplot!(loc, bin_c, df.freq, width=diff(bins), gap=0)
-    # return f
+    
+    if isnothing(loc)
+        f = Figure()
+        ax = Axis(f[1,1], xlabel="bin", ylabel="frequency", title="$specie", limits=((nothing, nothing), (0, maxval)))
+        barplot!(ax, bin_c, df.freq, width=diff(bins), gap=0, label=label)
+        return f, ax
+    else
+        barplot!(loc, bin_c, df.freq, width=diff(bins), gap=0, label=label)
+        ax = loc
+        return ax
+    end
 end
+function hists_with_less_bins(df, num_groups)
+    df.group_id = ceil.(Int, (1:length(df.bin)) / (length(df.bin) / num_groups))
+    agg_df = combine(groupby(df, :group_id), :freq => sum, :bin => (x -> (first(x)[1], last(x)[end])))
+    rename!(agg_df, :freq_sum => :freq, :bin_function => :bin)
+    agg_df.bin = [[x[1], x[2]] for x in agg_df.bin]
+    return agg_df
+end
+
+function plot_hists_overlay(folder_num, specie, start; last=[], folder="", maxval=8e4)
+    data = dict_hists[folder_num]["$specie"]
+    data_start = data[start]
+    f, ax = plot_hist(data_start, label="$(dict_kdamvals[folder_num][start])", specie="$specie", maxval=maxval)
+    if isempty(last)
+        theend = length(data)
+    else
+        theend = last[1]
+    end
+    for i in start+1:theend
+        ax = plot_hist(data[i], loc=ax, label="$(dict_kdamvals[folder_num][i])")
+    end
+    axislegend(ax, framevisible=true)
+    display(f)
+    if folder != ""
+        plots_folder = joinpath(joinpath(mount_path, folder), "plots")
+        if !isdir(plots_folder)
+            mkdir(plots_folder)
+        end
+        hists_folder = joinpath(plots_folder, "plot_hists")
+        if !isdir(hists_folder)
+            mkdir(hists_folder)
+        end
+        save(joinpath(hists_folder, "hists_$specie.png"), f)
+    end
+end
+
 function makiex(x)
     return range(minimum(x), maximum(x), length=length(x))
 end
@@ -177,7 +231,7 @@ function build_reaction_count_df(df_reacts, react, threshold_vals)
 end
 
 
-function plot_prop(df_results, df_props, res_ind, title, threshold_vals, folder; maxval=31856, size=(600, 450), tosave=false)
+function plot_prop(df_results, df_props, res_ind, title, threshold_vals, folder; maxval=31856, size=(600, 450), set_thresh=150, tosave=false)
     time_data = df_results[res_ind].time
     prop_data = [df_props[res_ind][i] for i in eachindex(react_names[1:end-1])]
     
@@ -187,7 +241,11 @@ function plot_prop(df_results, df_props, res_ind, title, threshold_vals, folder;
         iscatter!(ax, time_data, prop_data[i], label="$(react_names[i])", color=color_list[i])
     end    
     axislegend(ax, framevisible=true)
-    lines!(ax, range(minimum(time_data), maximum(time_data), length = 2), [threshold_vals[res_ind], threshold_vals[res_ind]], linewidth = 4, color = :black)
+    if mount_path == "/Users/s2257179/stoch_files/threshold_testing/"
+        lines!(ax, range(minimum(time_data), maximum(time_data), length = 2), [threshold_vals[res_ind], threshold_vals[res_ind]], linewidth = 4, color = :black)
+    elseif mount_path == "/Users/s2257179/stoch_files/kdam_testing/"
+        lines!(ax, range(minimum(time_data), maximum(time_data), length = 2), [set_thresh, set_thresh], linewidth = 4, color = :black)
+    end
     
     if tosave
         plots_folder = joinpath(joinpath(mount_path, folder), "plots")
@@ -202,6 +260,7 @@ function plot_prop(df_results, df_props, res_ind, title, threshold_vals, folder;
 
     return f
 end
+
 
 color_list = [
     RGB(0.121, 0.466, 0.705),  # Blue

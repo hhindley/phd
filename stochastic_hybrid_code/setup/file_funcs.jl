@@ -98,7 +98,8 @@ function create_df_reacts(df_reacts)
 end
 
 function load_hist_files(mainfolder)
-    foldernames = readdir(mainfolder)
+    all_items = readdir(mainfolder)
+    foldernames = [item for item in all_items if !occursin("DS", item)]
     dfs = Dict{String, Vector{DataFrame}}()
     for folder in foldernames
         folderpath = joinpath(mainfolder, folder)
@@ -140,8 +141,8 @@ function LoadDataVars(folder; reacts=true, results=true, props=true)
         threshold_vals = df_times.threshold
         titles = ["threshold: $(round(threshold_vals[i], digits=2))" for i in eachindex(threshold_vals)]
     elseif mount_path == "/Users/s2257179/stoch_files/kdam_testing/"
-        kdam_vals = df_times.kdam
-        titles = ["kdam: $(round(kdam_vals[i], digits=2))" for i in eachindex(kdam_vals)]
+        threshold_vals = df_times.kdam
+        titles = ["kdam: $(threshold_vals[i])" for i in eachindex(threshold_vals)]
     end
 
     if reacts && results && props
