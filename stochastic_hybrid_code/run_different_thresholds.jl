@@ -47,7 +47,8 @@ threshold_vals = range(125, 170, length=10) # 18/07 smaller range threshold valu
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/threshold_testing"
 dir = "1807_smaller_range" # change this! 
-print(dir)
+dir = "1807_tests_repeat1607"
+println(dir)
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
@@ -73,14 +74,13 @@ println("starting file conversion")
 
 arrow_conv(joinpath(mainpath, dir), joinpath(mainpath, final_path))
 
-print("finished file conversion!")
+println("finished file conversion!")
 
 println("making histograms")
 
-create_histogram_files(joinpath(mainpath, final_path))
+create_histogram_files(mainpath, final_path)
 
-print("finished making histograms!")
+println("finished making histograms!")
 
 
 
-joinpath(mainpath, final_path)
