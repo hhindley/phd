@@ -13,9 +13,7 @@ all_items = readdir(mount_path)
 folders = [item for item in all_items if isdir(joinpath(mount_path, item)) && !occursin("DS", item)]
 folders_dict = Dict(i => folder for (i, folder) in enumerate(folders))
 
-delete!(folders_dict, 12)
-
-folders_dict = Dict(filter(pair -> pair.first in [1, 8], folders_dict))
+folders_dict = Dict(filter(pair -> pair.first in [2, 3], folders_dict))
 
 dict_times, dict_threshvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = setup_dicts(folders_dict)
 
