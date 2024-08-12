@@ -9,32 +9,32 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/threshold_analysis/histograms/make_hists.jl"))
 
 
-n= 10000 # number of cell cycles
-options = Dict(
-"threshold"  =>  0.,       # Threshold to decide between determinisitic or stochastic reaction
-"FixDetReact"=> [14],# [10,11,12,13,14,15,16,17,18],       # Reactions to be treated determinisitically
-    "tspan"     =>   n*log(2)/lam_val,     # Max time for cell cycle
-    "samplingFreq"  => 10/60  # for sampling every x mins
-)
+# n= 10000 # number of cell cycles
+# options = Dict(
+# "threshold"  =>  0.,       # Threshold to decide between determinisitic or stochastic reaction
+# "FixDetReact"=> [14],# [10,11,12,13,14,15,16,17,18],       # Reactions to be treated determinisitically
+#     "tspan"     =>   n*log(2)/lam_val,     # Max time for cell cycle
+#     "samplingFreq"  => 10/60  # for sampling every x mins
+# )
 
-X0 = collect(get_X0(indV, init_molec)')
-par = collect(get_par(indP)')
+# X0 = collect(get_X0(indV, init_molec)')
+# par = collect(get_par(indP)')
 
-println("starting X0 calc")
-getssX0 = true
-if getssX0
-    fout=open("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat","w")
-    propen, S, propList = defineStochModel(par, indV)
-    nx = indV.nrOfItems-1
-    prop(X) = propen(X[1:nx])
-    X0 = hybrid_algo(X0, options, prop, S, out=fout)
-    X0[vidx(:V)] = 1
-    CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", DataFrame(X0,:auto), header=false)
-else
-    X0 = CSV.read("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", Tables.matrix, header=false)
-end
+# println("starting X0 calc")
+# getssX0 = true
+# if getssX0
+#     fout=open("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat","w")
+#     propen, S, propList = defineStochModel(par, indV)
+#     nx = indV.nrOfItems-1
+#     prop(X) = propen(X[1:nx])
+#     X0 = hybrid_algo(X0, options, prop, S, out=fout)
+#     X0[vidx(:V)] = 1
+#     CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", DataFrame(X0,:auto), header=false)
+# else
+#     X0 = CSV.read("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", Tables.matrix, header=false)
+# end
 
-println("finished X0 calc")
+# println("finished X0 calc")
 
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing"
@@ -47,33 +47,33 @@ time_file = dir * "_times.csv"
 final_path = dir * "_final_files"
 
 
-kdam_vals = [0.001, 0.002, 0.003, 0.004, 0.005, 0.007, 0.01, 0.05, 0.1, 0.5]
+# kdam_vals = [0.001, 0.002, 0.003, 0.004, 0.005, 0.007, 0.01, 0.05, 0.1, 0.5]
 
-thresh_scaling = [14000, 13500, 13000, 12500, 12000, 11500, 11000, 3800, 2000, 440]
+# thresh_scaling = [14000, 13500, 13000, 12500, 12000, 11500, 11000, 3800, 2000, 440]
 
-thresh_vals = kdam_vals.*thresh_scaling
+# thresh_vals = kdam_vals.*thresh_scaling
 
-df = DataFrame(kdam=kdam_vals, thresh=thresh_vals, time=zeros(length(kdam_vals)))
-for i in eachindex(kdam_vals)
-    println("starting $i")
-    time_taken = @elapsed run_stoch(X0, thresh_vals[i], kdam_vals[i], joinpath(folderpath,"kdam_$(kdam_vals[i])_thresh_$(thresh_vals[i]).dat"))
-    df.time[i] = time_taken
-    println("finished $i")
-end
+# df = DataFrame(kdam=kdam_vals, thresh=thresh_vals, time=zeros(length(kdam_vals)))
+# for i in eachindex(kdam_vals)
+#     println("starting $i")
+#     time_taken = @elapsed run_stoch(X0, thresh_vals[i], kdam_vals[i], joinpath(folderpath,"kdam_$(kdam_vals[i])_thresh_$(thresh_vals[i]).dat"))
+#     df.time[i] = time_taken
+#     println("finished $i")
+# end
 
-CSV.write(joinpath(mainpath, "$time_file"), df)
+# CSV.write(joinpath(mainpath, "$time_file"), df)
 
-println("total time = $(sum(df.time)/60/60) hours")
+# println("total time = $(sum(df.time)/60/60) hours")
 
-println("starting file conversion")
+# println("starting file conversion")
 
-arrow_conv(joinpath(mainpath, dir), joinpath(mainpath, final_path))
+# arrow_conv(joinpath(mainpath, dir), joinpath(mainpath, final_path))
 
-print("finished file conversion!")
+# print("finished file conversion!")
 
 println("making histograms")
 
-create_histogram_files(joinpath(mainpath, final_path))
+create_histogram_files(mainpath, final_path)
 
 print("finished making histograms!")
 
