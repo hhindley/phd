@@ -140,10 +140,19 @@ function LoadDataVars(folder; reacts=true, results=true, props=true)
     if mount_path == "/Users/s2257179/stoch_files/threshold_testing/"
         threshold_vals = df_times.threshold
         titles = ["threshold: $(round(threshold_vals[i], digits=2))" for i in eachindex(threshold_vals)]
-    elseif mount_path == "/Users/s2257179/stoch_files/kdam_testing/"
-        threshold_vals = df_times.kdam
-        titles = ["kdam: $(threshold_vals[i])" for i in eachindex(threshold_vals)]
+        tested_vals = Dict(:threshold=>threshold_vals)
+    # elseif mount_path == "/Users/s2257179/stoch_files/kdam_testing/"   # when only kdam is being changed 
+    #     threshold_vals = df_times.kdam
+    #     titles = ["kdam: $(threshold_vals[i])" for i in eachindex(threshold_vals)]
+    # end
+    elseif mount_path == "/Users/s2257179/stoch_files/kdam_testing/"      # when both kdam and thresh are being changed
+        threshold_vals = df_times.thresh
+        kdam_vals = df_times.kdam
+        titles = ["kdam: $(threshold_vals[i]), thresh: $(kdam_vals[i])" for i in eachindex(threshold_vals)]
+        tested_vals = Dict(:threshold=>threshold_vals, :kdam=>kdam_vals)
     end
+
+    
 
     if reacts && results && props
         df_reacts = load_files(joinpath(filepath, "reacts"))
@@ -178,12 +187,12 @@ function LoadDataVars(folder; reacts=true, results=true, props=true)
         df_results = []
         df_props = []
     end
-    return df_times, threshold_vals, titles, df_results, df_reacts, df_props
+    return df_times, tested_vals, titles, df_results, df_reacts, df_props
 end
 
 function setup_dicts(folders)
     dict_times = Dict(i => DataFrame() for i in 1:length(folders))
-    dict_threshvals = Dict(i => Float64[] for i in 1:length(folders))
+    dict_threshvals = Dict(i => Dict() for i in 1:length(folders))
     dict_titles = Dict(i => String[] for i in 1:length(folders))
     dict_results = Dict(i => [] for i in 1:length(folders))
     dict_reacts = Dict(i => [] for i in 1:length(folders))

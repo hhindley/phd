@@ -13,6 +13,8 @@ all_items = readdir(mount_path)
 folders = [item for item in all_items if isdir(joinpath(mount_path, item)) && !occursin("DS", item)]
 folders_dict = Dict(i => folder for (i, folder) in enumerate(folders))
 
+folders_dict = Dict(1 => folders_dict[1])
+
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = setup_dicts(folders_dict)
 
 for i in eachindex(folders_dict)
@@ -38,7 +40,7 @@ for specie in all_species
     for i in eachindex(folders_dict)
         println(i)
         # dict_plot_results[i, specie] = plot_results("plot_results", dict_results[i], length(dict_kdamvals[i]), folders_dict[i], species=specie, xlabel="time", ylabel="$specie", titles=dict_titles[i], size=(1000,650), tosave=true);
-        dict_plot_hists[i,specie] = plot_results("plot_hists", dict_hists[i], length(dict_kdamvals[i]), folders_dict[i], species=specie, xlabel="$specie", ylabel="frequency", titles=dict_titles[i], hidelabels=[true, true], linkaxes=true, size=(1000,650), tosave=false);
+        dict_plot_hists[i,specie] = plot_results("plot_hists", dict_hists[i], length(dict_kdamvals[i]), folders_dict[i], species=specie, xlabel="$specie", ylabel="frequency", titles=dict_titles[i], hidelabels=[true, true], linkaxes=true, size=(1000,650), tosave=true);
     end
 end
 
@@ -59,15 +61,16 @@ f, ax = plot_hist(agg_hists[8], maxval=1300)
 
 display(f)
 
-
 # all propensities 
 for folder in eachindex(folders_dict)
     println(folder)
-    for i in 2:length(dict_props[folder])
-        println(dict_kdamvals[folder][i])
-        dict_plot_props[folder, dict_kdamvals[folder][i]] = plot_prop(dict_results[folder], dict_props[folder], i, "kdam_$(dict_kdamvals[folder][i])", dict_kdamvals[folder], folders_dict[folder], maxval=500, tosave=true, size=(800,650))
+    for i in 1:length(dict_props[folder])
+        println(dict_kdamvals[folder][:kdam][i])
+        dict_plot_props[folder, dict_kdamvals[folder][:kdam][i]] = plot_prop(dict_results[folder], dict_props[folder], i, "kdam_$(dict_kdamvals[folder][:kdam][i]), thresh_$(dict_kdamvals[folder][:threshold][i])", dict_kdamvals[folder][:threshold], folders_dict[folder], maxval=500, tosave=true, size=(800,650))
     end
 end
+
+
 
 keys(dict_plot_props)
 display(dict_plot_props[1, 0.005])
