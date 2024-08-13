@@ -23,14 +23,15 @@ for i in eachindex(folders_dict)
     dict_hists[i] = load_hist_files(joinpath(mount_path, folders_dict[i], "hists"))
     dict_counts[i] = prod_tot_count(dict_reacts[i])
 end
+dict_titles
 
 dict_plot_times, dict_plot_counts, dict_plot_results, dict_plot_hists, dict_stoch_reacts, dict_plot_props = setup_plot_dicts()
 
 for i in eachindex(folders_dict)
     println(i)
     dict_plot_times[i] = plot_times(dict_times[i], "$(folders_dict[i])", folder=folders_dict[i])    
-    dict_plot_counts[i] = plot_totstochcount(dict_kdamvals[i], dict_counts[i], "$(folders_dict[i])", folder=folders_dict[i])
-    dict_stoch_reacts[i] = plot_results("plot_stoch_reacts", dict_reacts[i], length(dict_kdamvals[i]), folders_dict[i], xlabel="reaction", ylabel="count", titles=dict_titles[i], size=(1000,650), tosave=true)
+    dict_plot_counts[i] = plot_totstochcount(dict_kdamvals[i][:kdam], dict_counts[i], "$(folders_dict[i])", folder=folders_dict[i])
+    dict_stoch_reacts[i] = plot_results("plot_stoch_reacts", dict_reacts[i], length(dict_kdamvals[i][:kdam]), folders_dict[i], xlabel="reaction", ylabel="count", titles=dict_titles[i], size=(1000,650), tosave=true)
 end
 
 

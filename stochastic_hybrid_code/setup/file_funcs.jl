@@ -148,7 +148,7 @@ function LoadDataVars(folder; reacts=true, results=true, props=true)
     elseif mount_path == "/Users/s2257179/stoch_files/kdam_testing/"      # when both kdam and thresh are being changed
         threshold_vals = df_times.thresh
         kdam_vals = df_times.kdam
-        titles = ["kdam: $(threshold_vals[i]), thresh: $(kdam_vals[i])" for i in eachindex(threshold_vals)]
+        titles = ["kdam: $(kdam_vals[i]), thresh: $(threshold_vals[i])" for i in eachindex(threshold_vals)]
         tested_vals = Dict(:threshold=>threshold_vals, :kdam=>kdam_vals)
     end
 

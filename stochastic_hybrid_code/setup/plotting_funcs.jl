@@ -16,11 +16,12 @@ function plot_times(df_times, title; folder="")
         ax=Axis(f[1,1],xlabel="threshold", ylabel="time (hours)", title=title)
         lines!(ax,df_times.threshold, df_times.time/60/60)
     elseif mount_path == "/Users/s2257179/stoch_files/kdam_testing/"
-        threshold_vals = df_times.kdam
-        title = "$title, \n kdam vals: $(minimum(threshold_vals)), $(maximum(threshold_vals)), step=$(threshold_vals[2]-threshold_vals[1]), length=$(length(threshold_vals))"
+        threshold_vals = df_times.thresh
+        kdam_vals = df_times.kdam
+        title = "$title, \n kdam vals: $kdam_vals \n thresh vals: $threshold_vals"
         f=Figure()
-        ax=Axis(f[1,1],xlabel="kdam", ylabel="time (hours)", title=title)
-        lines!(ax,df_times.kdam, df_times.time/60/60)
+        ax=Axis(f[1,1],xlabel="run", ylabel="time (hours)", title=title)
+        lines!(ax,1:length(df_times.kdam), df_times.time/60/60)
     end
     
     
