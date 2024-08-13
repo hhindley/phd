@@ -38,7 +38,7 @@ println("finished X0 calc")
 
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing"
-dir = "kdam_and_thresh_test_1807" # change this! 
+dir = "kdam_and_thresh_test_1308" # change this! 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
@@ -47,11 +47,13 @@ time_file = dir * "_times.csv"
 final_path = dir * "_final_files"
 
 
-kdam_vals = [0.001, 0.002, 0.003, 0.004, 0.005, 0.007, 0.01, 0.05, 0.1, 0.5]
+kdam_vals = [0.005, 0.01, 0.03, 0.05, 0.075, 0.1, 0.3, 0.5]
 
-thresh_scaling = [14000, 13500, 13000, 12500, 12000, 11500, 11000, 3800, 2000, 440]
+# thresh_scaling = [14000, 13500, 13000, 12500, 12000, 11500, 11000, 3800, 2000, 440]
 
-thresh_vals = kdam_vals.*thresh_scaling
+# thresh_vals = kdam_vals.*thresh_scaling
+
+thresh_vals = [50, 100, 125, 150, 160, 170, 180, 190]
 
 df = DataFrame(kdam=kdam_vals, thresh=thresh_vals, time=zeros(length(kdam_vals)))
 for i in eachindex(kdam_vals)
@@ -65,17 +67,17 @@ CSV.write(joinpath(mainpath, "$time_file"), df)
 
 println("total time = $(sum(df.time)/60/60) hours")
 
-println("starting file conversion")
+println("starting file conversion for $dir")
 
 arrow_conv(joinpath(mainpath, dir), joinpath(mainpath, final_path))
 
-print("finished file conversion!")
+print("finished file conversion for $dir!")
 
-println("making histograms")
+println("making histograms for $dir")
 
 create_histogram_files(mainpath, final_path)
 
-print("finished making histograms!")
+print("finished making histograms for $dir!")
 
 
 
