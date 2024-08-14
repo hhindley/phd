@@ -40,8 +40,8 @@ for specie in all_species
     println(specie)
     for i in eachindex(folders_dict)
         println(i)
-        # dict_plot_results[i, specie] = plot_results("plot_results", dict_results[i], length(dict_kdamvals[i]), folders_dict[i], species=specie, xlabel="time", ylabel="$specie", titles=dict_titles[i], size=(1000,650), tosave=true);
-        dict_plot_hists[i,specie] = plot_results("plot_hists", dict_hists[i], length(dict_kdamvals[i]), folders_dict[i], species=specie, xlabel="$specie", ylabel="frequency", titles=dict_titles[i], hidelabels=[true, true], linkaxes=true, size=(1000,650), tosave=true);
+        dict_plot_results[i, specie] = plot_results("plot_results", dict_results[i], length(dict_kdamvals[i][:kdam]), folders_dict[i], species=specie, xlabel="time", ylabel="$specie", titles=dict_titles[i], size=(1000,650), tosave=true);
+        dict_plot_hists[i,specie] = plot_results("plot_hists", dict_hists[i], length(dict_kdamvals[i][:kdam]), folders_dict[i], species=specie, xlabel="$specie", ylabel="frequency", titles=dict_titles[i], hidelabels=[true, true], linkaxes=true, size=(1000,650), tosave=true);
     end
 end
 
