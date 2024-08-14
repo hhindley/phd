@@ -71,13 +71,13 @@ println("starting file conversion for $dir")
 
 arrow_conv(joinpath(mainpath, dir), joinpath(mainpath, final_path))
 
-print("finished file conversion for $dir!")
+print("finished file conversion for $dir")
 
 println("making histograms for $dir")
 
 create_histogram_files(mainpath, final_path)
 
-print("finished making histograms for $dir!")
+print("finished making histograms for $dir")
 
 
 
