@@ -37,7 +37,7 @@ println("finished X0 calc")
 
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing"
-dir = "kdam_and_thresh_test_1408" # change this! 
+dir = "kdam_and_thresh_test_1508" # change this! 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
@@ -46,13 +46,13 @@ time_file = dir * "_times.csv"
 final_path = dir * "_final_files"
 
 
-kdam_vals = [0.075, 0.1, 0.1, 0.3, 0.5]
+kdam_vals = [0.1, 0.3, 0.5]
 
 # thresh_scaling = [14000, 13500, 13000, 12500, 12000, 11500, 11000, 3800, 2000, 440]
 
 # thresh_vals = kdam_vals.*thresh_scaling
 
-thresh_vals = [150, 150, 160, 160, 170]
+thresh_vals = [150, 150, 150]
 
 df = DataFrame(kdam=kdam_vals, thresh=thresh_vals, time=zeros(length(kdam_vals)))
 for i in eachindex(kdam_vals)
