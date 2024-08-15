@@ -137,7 +137,7 @@ function LoadDataVars(folder; reacts=true, results=true, props=true)
         df_times = []#CSV.File(timefilepath) |> DataFrame
     end
 
-    if mount_path == "/Users/s2257179/stoch_files/threshold_testing/"
+    if mount_path == "/Users/s2257179/stoch_files/threshold_testing/with_stochdiv/"
         threshold_vals = df_times.threshold
         titles = ["threshold: $(round(threshold_vals[i], digits=2))" for i in eachindex(threshold_vals)]
         tested_vals = Dict(:threshold=>threshold_vals)

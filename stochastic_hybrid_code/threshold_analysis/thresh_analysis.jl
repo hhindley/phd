@@ -7,7 +7,7 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/analysis_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_funcs.jl"))
 
-mount_path = "/Users/s2257179/stoch_files/threshold_testing/"
+mount_path = "/Users/s2257179/stoch_files/threshold_testing/with_stochdiv/"
 
 all_items = readdir(mount_path)
 folders = [item for item in all_items if isdir(joinpath(mount_path, item)) && !occursin("DS", item)]
@@ -70,6 +70,10 @@ for folder in eachindex(folders_dict)
         dict_plot_props[folder, dict_threshvals[folder][i]] = plot_prop(dict_results[folder], dict_props[folder], i, "threshold_$(dict_threshvals[folder][i])", dict_threshvals[folder], folders_dict[folder], maxval=500, tosave=true, size=(800,650))
     end
 end
+
+dict_results[2]
+folder = 2; 
+dict_plot_props[folder, dict_threshvals[folder][i]] = plot_prop(dict_results[folder], dict_props[folder], i, "threshold_$(dict_threshvals[folder][i])", dict_threshvals[folder], folders_dict[folder], maxval=500, tosave=true, size=(800,650))
 
 folder = 1; i = 1
 plot_prop(dict_results[folder], dict_props[folder], i, "threshold_$(dict_threshvals[folder][i])", dict_threshvals[folder], folders_dict[folder], maxval=500, tosave=true, size=(800,650))
