@@ -13,7 +13,7 @@ all_items = readdir(mount_path)
 folders = [item for item in all_items if isdir(joinpath(mount_path, item)) && !occursin("DS", item)]
 folders_dict = Dict(i => folder for (i, folder) in enumerate(folders))
 
-folders_dict = Dict(2 => folders_dict[2])
+folders_dict = Dict(filter(pair -> pair.first in [1,2,4,5], folders_dict))
 
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = setup_dicts(folders_dict)
 
@@ -32,7 +32,6 @@ for i in eachindex(folders_dict)
     dict_plot_counts[i] = plot_totstochcount(dict_kdamvals[i][:kdam], dict_counts[i], "$(folders_dict[i])", folder=folders_dict[i])
     dict_stoch_reacts[i] = plot_results("plot_stoch_reacts", dict_reacts[i], length(dict_kdamvals[i][:kdam]), folders_dict[i], xlabel="reaction", ylabel="count", titles=dict_titles[i], size=(1000,650), tosave=true)
 end
-
 
 # to get all plots (probably not needed often)
 for specie in all_species
