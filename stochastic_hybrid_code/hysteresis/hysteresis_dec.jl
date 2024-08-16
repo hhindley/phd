@@ -38,7 +38,7 @@ for i in eachindex(kdam_range2)
     time_taken = @elapsed run_stoch(X0, 150, kdam_range2[i], joinpath(folderpath,"kdam_$(kdam_range2[i]).dat"))    
     df.time[i] = time_taken 
     # init1 = [mean(df[:,col]./df.volume) for col in names(eachcol(df[:,3:end-2]))]
-    ss_region = Int(length(df.rm_a)-length(df.rm_a)*0.1)
+    ss_region = Int(length(df[:,1])-length(df[:,1])*0.1)
     init1 = [mean(df[ss_region+1:end,col]) for col in names(eachcol(df[:,3:end-2]))]
     global X0 = collect(get_X0(indV, init1)')
     println("calculated new X0 and finished $i, $(Dates.now())")
