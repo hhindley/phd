@@ -38,7 +38,7 @@ println("finished X0 calc")
 
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing"
-dir = "kdam_test_thresh_150_1508_repeatof_1707" # change this! 
+dir = "kdam_test_thresh_150_bitstable_region_1608" # change this! 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
@@ -46,7 +46,7 @@ end
 time_file = dir * "_times.csv"
 final_path = dir * "_final_files"
 
-kdam_vals = [0.0, 0.005, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6]
+kdam_vals = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
 # kdam_vals = [0.005, 0.0075, 0.01, 0.03, 0.05, 0.1, 0.3, 0.5]
 
