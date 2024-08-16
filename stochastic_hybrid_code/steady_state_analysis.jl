@@ -14,6 +14,13 @@ folders_dict = Dict(filter(pair -> pair.first in [11], folders_dict))
 
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = setup_dicts(folders_dict)
 
+for i in eachindex(folders_dict)
+    println(i)
+    dict_times[i], dict_kdamvals[i], dict_titles[i], dict_results[i], dict_reacts[i], dict_props[i] = LoadDataVars(folders[i]);
+    dict_hists[i] = load_hist_files(joinpath(mount_path, folders_dict[i], "hists"))
+    dict_counts[i] = prod_tot_count(dict_reacts[i])
+end
+
 dict_titles[11][5]
 # plot one result
 folder = 12; index = 1; species = "rtca"; num_plots = 1;
