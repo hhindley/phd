@@ -9,19 +9,25 @@ function plotBIG(x, y; xtitle="", ytitle="", title="")
     return f
 end
 function plot_times(df_times, title; folder="")
-    if mount_path == "/Users/s2257179/stoch_files/threshold_testing/"
+    if "thresh" in names(df_times)
         threshold_vals = df_times.threshold
         title = "$title, \n thresh vals: $(minimum(threshold_vals)), $(maximum(threshold_vals)), step=$(threshold_vals[2]-threshold_vals[1]), length=$(length(threshold_vals))"
         f=Figure()
         ax=Axis(f[1,1],xlabel="threshold", ylabel="time (hours)", title=title)
         lines!(ax,df_times.threshold, df_times.time/60/60)
-    elseif mount_path == "/Users/s2257179/stoch_files/kdam_testing/"
+    elseif "kdam" in names(df_times) && "thresh" in names(df_times)
         threshold_vals = df_times.thresh
         kdam_vals = df_times.kdam
         title = "$title, \n kdam vals: $kdam_vals \n thresh vals: $threshold_vals"
         f=Figure()
         ax=Axis(f[1,1],xlabel="run", ylabel="time (hours)", title=title)
         lines!(ax,1:length(df_times.kdam), df_times.time/60/60)
+    elseif "kdam" in names(df_times)
+        threshold_vals = df_times.kdam
+        title = "$title, \n kdam vals: $(minimum(threshold_vals)), $(maximum(threshold_vals)), step=$(threshold_vals[2]-threshold_vals[1]), length=$(length(threshold_vals))"
+        f=Figure()
+        ax=Axis(f[1,1],xlabel="kdam", ylabel="time (hours)", title=title)
+        lines!(ax,df_times.kdam, df_times.time/60/60)
     end
     
     
@@ -75,7 +81,11 @@ function create_subplots(plotting_func, num_plots, folder; size=(600, 450), xlab
             #     titles = push!(titles, "empty")
             # end
             if data_ind <= num_plots
-                title = titles != [] ? titles[data_ind] : "Plot $data_ind"
+                if num_plots > 1
+                    title = titles != [] ? titles[data_ind] : "Plot $data_ind"
+                else
+                    title = titles != [] ? titles[1] : "Plot $data_ind"
+                end
                 if plotting_func == "plot_results" || plotting_func == "plot_hists" || plotting_func == "plot_individual_reacts"
                     ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale, xticklabelrotation=45, xlabelsize=10, ylabelsize=10, xticklabelsize=10, yticklabelsize=10, titlesize=12)
                 elseif plotting_func == "plot_stoch_reacts"
@@ -100,8 +110,13 @@ function create_subplots(plotting_func, num_plots, folder; size=(600, 450), xlab
 end
 function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, linkaxes=true)
     if plotting_func == "plot_results"
-        preprocessed_times = [get_column(df, :time) for df in df_results]
-        preprocessed_results = [get_column(df, species) for df in df_results]
+        if num_plots > 1
+            preprocessed_times = [get_column(df, :time) for df in df_results]
+            preprocessed_results = [get_column(df, species) for df in df_results]
+        else
+            preprocessed_times = [get_column(df_results, :time)]
+            preprocessed_results = [get_column(df_results, species)]
+        end
     elseif plotting_func == "plot_hists"
         dfs = df_results[string(species)]
     end
@@ -135,7 +150,7 @@ function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, li
             end
         end
     end
-    if linkaxes == true
+    if linkaxes == true && num_plots > 1
         linkaxes!(filter(x -> x isa Axis, f.content)...)
     end
     return f

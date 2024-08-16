@@ -137,19 +137,36 @@ function LoadDataVars(folder; reacts=true, results=true, props=true)
         df_times = []#CSV.File(timefilepath) |> DataFrame
     end
 
-    if mount_path == "/Users/s2257179/stoch_files/threshold_testing/with_stochdiv/"
-        threshold_vals = df_times.threshold
-        titles = ["threshold: $(round(threshold_vals[i], digits=2))" for i in eachindex(threshold_vals)]
-        tested_vals = Dict(:threshold=>threshold_vals)
-    # elseif mount_path == "/Users/s2257179/stoch_files/kdam_testing/"   # when only kdam is being changed 
-    #     threshold_vals = df_times.kdam
-    #     titles = ["kdam: $(threshold_vals[i])" for i in eachindex(threshold_vals)]
+    # if mount_path == "/Users/s2257179/stoch_files/threshold_testing/with_stochdiv/"
+    #     threshold_vals = df_times.threshold
+    #     titles = ["threshold: $(round(threshold_vals[i], digits=2))" for i in eachindex(threshold_vals)]
+    #     tested_vals = Dict(:threshold=>threshold_vals)
+    # # elseif mount_path == "/Users/s2257179/stoch_files/kdam_testing/"   # when only kdam is being changed 
+    # #     threshold_vals = df_times.kdam
+    # #     titles = ["kdam: $(threshold_vals[i])" for i in eachindex(threshold_vals)]
+    # # end
+    # elseif mount_path == "/Users/s2257179/stoch_files/kdam_testing/"      # when both kdam and thresh are being changed
+    #     if haskey(names(df_times), :thresh)
+    #         threshold_vals = df_times.thresh
+    #         kdam_vals = df_times.kdam
+    #         titles = ["kdam: $(kdam_vals[i]), thresh: $(threshold_vals[i])" for i in eachindex(threshold_vals)]
+    #         tested_vals = Dict(:threshold=>threshold_vals, :kdam=>kdam_vals)
+    #     else
     # end
-    elseif mount_path == "/Users/s2257179/stoch_files/kdam_testing/"      # when both kdam and thresh are being changed
+
+    if "kdam" in names(df_times) && "thresh" in names(df_times)
         threshold_vals = df_times.thresh
         kdam_vals = df_times.kdam
         titles = ["kdam: $(kdam_vals[i]), thresh: $(threshold_vals[i])" for i in eachindex(threshold_vals)]
         tested_vals = Dict(:threshold=>threshold_vals, :kdam=>kdam_vals)
+    elseif "kdam" in names(df_times)
+        kdam_vals = df_times.kdam
+        titles = ["kdam: $(kdam_vals[i])" for i in eachindex(kdam_vals)]
+        tested_vals = Dict(:kdam=>kdam_vals)
+    elseif "thresh" in names(df_times)
+        threshold_vals = df_times.thresh
+        titles = ["threshold: $(round(threshold_vals[i], digits=2))" for i in eachindex(threshold_vals)]
+        tested_vals = Dict(:threshold=>threshold_vals)
     end
 
     

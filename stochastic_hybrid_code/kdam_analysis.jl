@@ -13,7 +13,7 @@ all_items = readdir(mount_path)
 folders = [item for item in all_items if isdir(joinpath(mount_path, item)) && !occursin("DS", item)]
 folders_dict = Dict(i => folder for (i, folder) in enumerate(folders))
 
-folders_dict = Dict(filter(pair -> pair.first in [9], folders_dict))
+folders_dict = Dict(filter(pair -> pair.first in [11], folders_dict))
 
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = setup_dicts(folders_dict)
 
@@ -23,7 +23,7 @@ for i in eachindex(folders_dict)
     dict_hists[i] = load_hist_files(joinpath(mount_path, folders_dict[i], "hists"))
     dict_counts[i] = prod_tot_count(dict_reacts[i])
 end
-dict_kdamvals
+
 dict_plot_times, dict_plot_counts, dict_plot_results, dict_plot_hists, dict_stoch_reacts, dict_plot_props = setup_plot_dicts()
 
 for i in eachindex(folders_dict)
@@ -78,18 +78,6 @@ display(dict_plot_props[1, 0.005])
 for specie in all_species
     plot_hists_overlay(1, "$specie", 2, last=[7], folder=folders_dict[1], maxval=2e4)
 end
-
-
-dict_results[1][1]
-# testing if at steady state
-h2 = hist(dict_results[1][1].rm_a[end-50000:end], bins=20)
-h3 = hist!(dict_results[1][1].rm_a[200000:300000])
-h4 = hist!(df_results11[2].rtca[300000:400000])
-h5 = hist!(df_results11[2].rtca[400000:500000])
-h6 = hist!(df_results11[2].rtca[500000:600000])
-h7 = hist!(df_results11[2].rtca[700000:800000])
-h8 = hist!(df_results11[2].rtca[800000:end])
-
 
 
 # average molecule numbers over whole simulation
