@@ -20,27 +20,42 @@ options = Dict(
 X0 = collect(get_X0(indV, init_molec)')
 par = collect(get_par(indP)')
 
-kdam_range1 = range(0,1.5,length=50)
+mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/hysteresis/"
+dir = "dec_kdam_1608" # change this! 
+folderpath = joinpath(mainpath, dir)
+if !isdir(folderpath)
+    mkdir(folderpath)
+end
+time_file = dir * "_times.csv"
+final_path = dir * "_final_files"
+
+kdam_range1 = range(0,1.5,length=16)
 kdam_range2 = reverse(kdam_range1)[2:end]
 
-for i in ProgressBar(kdam_range1)
-    time_taken = @elapsed run_stoch(X0, 150, i, "hysteresis/inc_kdam/kdam_$i.dat")
-    df = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/hysteresis/inc_kdam/kdam_$i.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume"]))
+df = DataFrame(kdam=kdam_range2, time=zeros(length(kdam_range2)))
+for i in eachindex(kdam_range2)
+    println("starting $i, $(Dates.now())")
+    time_taken = @elapsed run_stoch(X0, 150, kdam_range2[i], joinpath(folderpath,"kdam_$(kdam_range2[i]).dat"))    
+    df.time[i] = time_taken 
     # init1 = [mean(df[:,col]./df.volume) for col in names(eachcol(df[:,3:end-2]))]
-    init1 = [mean(df[:,col]./df.volume) for col in names(eachcol(df[:,3:end-2]))]
+    ss_region = Int(length(df.rm_a)-length(df.rm_a)*0.1)
+    init1 = [mean(df[ss_region+1:end,col]) for col in names(eachcol(df[:,3:end-2]))]
     global X0 = collect(get_X0(indV, init1)')
+    println("calculated new X0 and finished $i, $(Dates.now())")
 end
 
-for i in ProgressBar(kdam_range2)
-    time_taken = @elapsed run_stoch(X0, 150, i, "hysteresis/dec_kdam/kdam_$i.dat")
-    df = DataFrame(CSV.File("/home/hollie_hindley/Documents/stochastic_hybrid/hysteresis/dec_kdam/kdam_$i.dat", header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume"]))
-    # init1 = [mean(df[:,col]./df.volume) for col in names(eachcol(df[:,3:end-2]))]
-    init1 = [mean(df[:,col]./df.volume) for col in names(eachcol(df[:,3:end-2]))]
-    global X0 = collect(get_X0(indV, init1)')
-end
+CSV.write(joinpath(mainpath, "$time_file"), df)
 
-a = DataFrame(a=[1,2,3,4,5,6,7,8,9,10])
+println("total time = $(sum(df.time)/60/60) hours")
 
-ss_region = Int(length(a.a)-length(a.a)*0.1)
+println("starting file conversion for $dir")
 
-a.a[ss_region:end]
+arrow_conv(joinpath(mainpath, dir), joinpath(mainpath, final_path))
+
+print("finished file conversion for $dir")
+
+println("making histograms for $dir")
+
+create_histogram_files(mainpath, final_path)
+
+print("finished making histograms for $dir")
