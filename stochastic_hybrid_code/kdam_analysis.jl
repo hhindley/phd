@@ -13,7 +13,7 @@ all_items = readdir(mount_path)
 folders = [item for item in all_items if isdir(joinpath(mount_path, item)) && !occursin("DS", item)]
 folders_dict = Dict(i => folder for (i, folder) in enumerate(folders))
 
-folders_dict = Dict(filter(pair -> pair.first in [11], folders_dict))
+folders_dict = Dict(filter(pair -> pair.first in [12], folders_dict))
 
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = setup_dicts(folders_dict)
 
@@ -47,6 +47,15 @@ end
 (dict_plot_hists[1, :rd])
 (dict_plot_hists[1, :rm_a])
 
+# all propensities 
+for folder in eachindex(folders_dict)
+    println(folder)
+    for i in 1:length(dict_props[folder])
+        println(dict_kdamvals[folder][:kdam][i])
+        dict_plot_props[folder, dict_kdamvals[folder][:kdam][i]] = plot_prop(dict_results[folder], dict_props[folder], i, "kdam_$(dict_kdamvals[folder][:kdam][i]), thresh_$(dict_kdamvals[folder][:threshold][i])", dict_kdamvals[folder][:threshold], folders_dict[folder], maxval=500, tosave=true, size=(800,650))
+    end
+end
+
 # making the hists have less bins to see if we see anything different 
 agg_hists = Dict{Int64, DataFrame}()
 for i in eachindex(dict_hists[1]["rm_a"])
@@ -59,17 +68,6 @@ agg_hists[5]
 f, ax = plot_hist(agg_hists[8], maxval=1300)
 
 display(f)
-
-# all propensities 
-for folder in eachindex(folders_dict)
-    println(folder)
-    for i in 1:length(dict_props[folder])
-        println(dict_kdamvals[folder][:kdam][i])
-        dict_plot_props[folder, dict_kdamvals[folder][:kdam][i]] = plot_prop(dict_results[folder], dict_props[folder], i, "kdam_$(dict_kdamvals[folder][:kdam][i]), thresh_$(dict_kdamvals[folder][:threshold][i])", dict_kdamvals[folder][:threshold], folders_dict[folder], maxval=500, tosave=true, size=(800,650))
-    end
-end
-
-
 
 keys(dict_plot_props)
 display(dict_plot_props[1, 0.005])

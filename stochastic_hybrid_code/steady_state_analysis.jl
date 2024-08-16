@@ -16,7 +16,7 @@ dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, d
 
 dict_titles[11][5]
 # plot one result
-folder = 11; index = 1; species = "rtca"; num_plots = 1;
+folder = 12; index = 1; species = "rtca"; num_plots = 1;
 f = plot_results("plot_results", dict_results[folder][index], num_plots, folders_dict[folder], titles=[dict_titles[folder][index]], species="$species", xlabel="time", ylabel="$species", size=(1000,650), tosave=false)
 
 # testing if at steady state
