@@ -21,7 +21,7 @@ X0 = collect(get_X0(indV, init_molec)')
 par = collect(get_par(indP)')
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/hysteresis/"
-dir = "dec_kdam_1608" # change this! 
+dir = "dec_kdam_1908" # change this! 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
@@ -38,8 +38,13 @@ for i in eachindex(kdam_range2)
     time_taken = @elapsed run_stoch(X0, 150, kdam_range2[i], joinpath(folderpath,"kdam_$(kdam_range2[i]).dat"))    
     df.time[i] = time_taken 
     # init1 = [mean(df[:,col]./df.volume) for col in names(eachcol(df[:,3:end-2]))]
-    ss_region = round(length(df[:,1])-length(df[:,1])*0.1)
-    init1 = [mean(df[ss_region+1:end,col]) for col in names(eachcol(df[:,3:end-2]))]
+    df_ss = CSV.read(joinpath(folderpath,"kdam_$(kdam_range2[i]).dat"), DataFrame; header=false)
+    ss_region_start = Int(round(length(df_ss[!,1])*0.9))
+    # println("ss region start: ", ss_region_start)
+    # println("length: ", length(df_ss[!,1]))
+    ss_region = df_ss[ss_region_start:end,:]
+    # println("ss region length: ", length(ss_region[!,1]))
+    init1 = [mean(ss_region[!,col]) for col in names(ss_region[:,3:end-2])]
     global X0 = collect(get_X0(indV, init1)')
     println("calculated new X0 and finished $i, $(Dates.now())")
 end
