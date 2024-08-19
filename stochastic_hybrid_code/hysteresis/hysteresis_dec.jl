@@ -29,7 +29,7 @@ end
 time_file = dir * "_times.csv"
 final_path = dir * "_final_files"
 
-kdam_range1 = range(0,1.5,length=16)
+kdam_range1 = range(0.01,1.5,length=15)
 kdam_range2 = reverse(kdam_range1)[2:end]
 
 df = DataFrame(kdam=kdam_range2, time=zeros(length(kdam_range2)))
