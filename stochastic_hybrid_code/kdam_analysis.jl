@@ -13,7 +13,7 @@ all_items = readdir(mount_path)
 folders = [item for item in all_items if isdir(joinpath(mount_path, item)) && !occursin("DS", item)]
 folders_dict = Dict(i => folder for (i, folder) in enumerate(folders))
 
-folders_dict = Dict(filter(pair -> pair.first in [7, 12, 8, 13, 10, 11, 9, 14], folders_dict))
+folders_dict = Dict(filter(pair -> pair.first in [9], folders_dict))
 
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = setup_dicts(folders_dict)
 
@@ -23,8 +23,6 @@ for i in eachindex(folders_dict)
     dict_hists[i] = load_hist_files(joinpath(mount_path, folders_dict[i], "hists"))
     dict_counts[i] = prod_tot_count(dict_reacts[i])
 end
-
-dict_results
 
 dict_plot_times, dict_plot_counts, dict_plot_results, dict_plot_hists, dict_stoch_reacts, dict_plot_props = setup_plot_dicts()
 
@@ -54,7 +52,10 @@ for folder in eachindex(folders_dict)
     println(folder)
     for i in 1:length(dict_props[folder])
         println(dict_kdamvals[folder][:kdam][i])
-        dict_plot_props[folder, dict_kdamvals[folder][:kdam][i]] = plot_prop(dict_results[folder], dict_props[folder], i, "kdam_$(dict_kdamvals[folder][:kdam][i]), thresh_$(dict_kdamvals[folder][:threshold][i])", dict_kdamvals[folder][:threshold], folders_dict[folder], maxval=500, tosave=true, size=(800,650))
+        if dict_kdamvals[folder][:kdam][i] == 0.0
+            continue
+        end
+        dict_plot_props[folder, dict_kdamvals[folder][:kdam][i]] = plot_prop(dict_results[folder], dict_props[folder], i, "kdam_$(dict_kdamvals[folder][:kdam][i]), thresh_150", set_thresh=150, folders_dict[folder], maxval=500, tosave=true, size=(800,650))
     end
 end
 

@@ -247,7 +247,7 @@ function build_reaction_count_df(df_reacts, react, threshold_vals)
 end
 
 
-function plot_prop(df_results, df_props, res_ind, title, threshold_vals, folder; maxval=31856, size=(600, 450), set_thresh=150, tosave=false)
+function plot_prop(df_results, df_props, res_ind, title, folder; maxval=31856, size=(600, 450), set_thresh=nothing, threshold_vals=nothing, tosave=false)
     time_data = df_results[res_ind].time
     prop_data = [df_props[res_ind][i] for i in eachindex(react_names[1:end-1])]
     
@@ -257,9 +257,9 @@ function plot_prop(df_results, df_props, res_ind, title, threshold_vals, folder;
         iscatter!(ax, time_data, prop_data[i], label="$(react_names[i])", color=color_list[i])
     end    
     axislegend(ax, framevisible=true)
-    if mount_path == "/Users/s2257179/stoch_files/threshold_testing/"
+    if threshold_vals !== nothing
         lines!(ax, range(minimum(time_data), maximum(time_data), length = 2), [threshold_vals[res_ind], threshold_vals[res_ind]], linewidth = 4, color = :black)
-    elseif mount_path == "/Users/s2257179/stoch_files/kdam_testing/"
+    elseif set_thresh !== nothing
         lines!(ax, range(minimum(time_data), maximum(time_data), length = 2), [set_thresh, set_thresh], linewidth = 4, color = :black)
     end
     
