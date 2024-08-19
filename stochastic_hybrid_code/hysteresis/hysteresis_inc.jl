@@ -37,6 +37,7 @@ for i in eachindex(kdam_range1)
     time_taken = @elapsed run_stoch(X0, 150, kdam_range1[i], joinpath(folderpath,"kdam_$(kdam_range1[i]).dat"))    
     df.time[i] = time_taken 
     # init1 = [mean(df[:,col]./df.volume) for col in names(eachcol(df[:,3:end-2]))]
+    df_ss = DataFrame(CSV.File(IOBuffer(joinpath(folderpath,"kdam_$(kdam_range1[i]).dat")); header=false, skipto=2))
     ss_region = Int(round(length(df.time)-length(df.time)*0.1))
     println("ss_region ",df.time[ss_region+1:end])
     println("df ", df)
