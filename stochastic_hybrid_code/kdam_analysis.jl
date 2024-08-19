@@ -13,7 +13,7 @@ all_items = readdir(mount_path)
 folders = [item for item in all_items if isdir(joinpath(mount_path, item)) && !occursin("DS", item)]
 folders_dict = Dict(i => folder for (i, folder) in enumerate(folders))
 
-folders_dict = Dict(filter(pair -> pair.first in [12], folders_dict))
+folders_dict = Dict(filter(pair -> pair.first in [7, 12, 8, 13, 10, 11, 9, 14], folders_dict))
 
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = setup_dicts(folders_dict)
 
@@ -23,6 +23,8 @@ for i in eachindex(folders_dict)
     dict_hists[i] = load_hist_files(joinpath(mount_path, folders_dict[i], "hists"))
     dict_counts[i] = prod_tot_count(dict_reacts[i])
 end
+
+dict_results
 
 dict_plot_times, dict_plot_counts, dict_plot_results, dict_plot_hists, dict_stoch_reacts, dict_plot_props = setup_plot_dicts()
 
