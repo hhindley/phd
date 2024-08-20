@@ -1,128 +1,102 @@
-using StatsBase, Distributions, Random, DataFrames, CSV, PlotlyJS, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics
+using StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase, Distributed, TableOperations, JSON, Query, FindFirstFunctions, CategoricalArrays, Colors
 
-include("/home/hollie_hindley/Documents/stochastic_hybrid/analysis_funcs.jl")
-
-kdam_range1 = range(0,1.5,length=50)
-kdam_range2 = reverse(kdam_range1)[2:end]
-
-dfs1 = [DataFrame(CSV.File(joinpath("/home/hollie_hindley/Documents/stochastic_hybrid/hysteresis/inc_kdam", file), header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"])) for file in readdir("/home/hollie_hindley/Documents/stochastic_hybrid/hysteresis/inc_kdam")]
-dfs2 = [DataFrame(CSV.File(joinpath("/home/hollie_hindley/Documents/stochastic_hybrid/hysteresis/dec_kdam", file), header=["event", "time", "rm_a", "rtca", "rm_b", "rtcb", "rm_r", "rtcr", "rh", "rd", "rt", "volume", "totprop"])) for file in readdir("/home/hollie_hindley/Documents/stochastic_hybrid/hysteresis/dec_kdam")]
-
-# sort dataframes
-props1, df_rs1, df_ps1 = df_sort_all(dfs1)
-props2, df_rs2, df_ps2 = df_sort_all(dfs2)
-
-# stochastic reactions
-df_reacts1, tot_stoch1 = all_react_dfs(dfs1, df_rs1)
-df_reacts2, tot_stoch2 = all_react_dfs(dfs2, df_rs2)
-
-p_stochreacts1 = plot([bar(x=df_reacts1[i].reaction, y=df_reacts1[i].count, name="$(kdam_range1[i])") for i in eachindex(kdam_range1)], Layout(barmode="group", yaxis_type="log"))
-p_stochreacts2 = plot([bar(x=df_reacts2[i].reaction, y=df_reacts2[i].count, name="$(kdam_range2[i])") for i in eachindex(kdam_range2)], Layout(barmode="group", yaxis_type="log"))
-
-p_totstoch1 = plot(bar(x=kdam_range1, y=tot_stoch1))
-p_totstoch2 = plot(bar(x=kdam_range2, y=tot_stoch2))
-
-# histograms 
-groups1, bins1 = all_hists(df_ps1, kdam_range1, 1000)
-for specie in species_rtc
-    display(plot([histogram(x=groups1[i][:,specie], nbins=bins1[i], opacity=0.6, name="$(kdam_range1[i])") for i in eachindex(kdam_range1)], Layout(barmode="overlay", title="$specie", yaxis_type="log")))
-end
-
-groups2, bins2 = all_hists(df_ps2, kdam_range2, 1000)
-for specie in species_rtc
-    display(plot([histogram(x=groups2[i][:,specie], nbins=bins2[i], opacity=0.6, name="$(kdam_range2[i])") for i in eachindex(kdam_range2)], Layout(barmode="overlay", title="$specie", yaxis_type="log")))
-end
-
-# % of expression
-exp_df1 = all_exp(df_ps1, kdam_range1)
-exp_df2 = all_exp(df_ps2, kdam_range2)
-
-p_exp1 = plot([scatter(x=exp_df1.kdam, y=exp_df1[:,i], name="$(names(exp_df1)[i])") for i in 2:7], Layout(xaxis_title="kdam", yaxis_title="% of expression (when species > 1)"))
-p_exp2 = plot([scatter(x=reverse(exp_df2.kdam), y=exp_df2[:,i], name="$(names(exp_df2)[i])") for i in 2:7], Layout(xaxis_title="kdam", yaxis_title="% of expression (when species > 1)"))
-
-# mean values
-df_av1 = mean_vals(df_ps1, kdam_range1, 5000)
-df_av2 = mean_vals(df_ps2, kdam_range2, 5000)
-
-p_av1 = plot([scatter(x=df_av1.kdam, y=df_av1[:,i], name="$(names(df_av1)[i])") for i in 2:10], Layout(xaxis_title="kdam", yaxis_title="mean molecule number"))
-p_av2 = plot([scatter(x=reverse(df_av2.kdam), y=df_av2[:,i], name="$(names(df_av2)[i])") for i in 2:10], Layout(xaxis_title="kdam", yaxis_title="mean molecule number"))
-
-# plotting individual species
-x = 8
-plot(scatter(x=df_ps1[x].time, y=df_ps1[x].rm_a))
-plot(scatter(x=df_ps1[x].time, y=df_ps1[x].rm_b))
-plot(scatter(x=df_ps1[x].time, y=df_ps1[x].rm_r))
-plot(scatter(x=df_ps1[x].time, y=df_ps1[x].rtca))
-plot(scatter(x=df_ps1[x].time, y=df_ps1[x].rtcb))
-plot(scatter(x=df_ps1[x].time, y=df_ps1[x].rtcr))
-plot(scatter(x=df_ps1[x].time, y=df_ps1[x].rh))#./df_ps[x].volume))
-plot(scatter(x=df_ps1[x].time, y=df_ps1[x].rd))#./df_ps[x].volume))
-plot(scatter(x=df_ps1[x].time, y=df_ps1[x].rt))#./df_ps[x].volume))
-
-plot([scatter(x=df_ps1[x].time, y=df_ps1[x][:,i]./df_ps1[x].volume, name="$i") for i in [:rh, :rd, :rt]])
-plot([scatter(x=df_ps1[x].time, y=df_ps1[x][:,i]./df_ps1[x].volume, name="$i") for i in [:rm_a, :rtca]])
-plot([scatter(x=df_ps1[x].time, y=df_ps1[x][:,i]./df_ps1[x].volume, name="$i") for i in [:rm_b, :rtcb]])
-plot([scatter(x=df_ps1[x].time, y=df_ps1[x][:,i]./df_ps1[x].volume, name="$i") for i in [:rm_r, :rtcr]])
-
-
-
-
-function compare_sims(i, j, specie)
-    return plot([scatter(x=df_ps[i].time, y=df_ps[i][:,specie], name="10000 cc"), scatter(x=df_ps1[j].time, y=df_ps1[j][:,specie], name="1000 cc")])
-end
-
-
-kdam_vals[1]
-kdam_range1[3]
-compare_sims(1, 3, :rtca)
-
-kdam_vals[2]
-kdam_range1[4]
-compare_sims(2, 4, :rtca)
-
-kdam_vals[3]
-kdam_range1[6]
-compare_sims(3, 6, :rtca)
-
-kdam_vals[4]
-kdam_range1[8]
-compare_sims(4, 8, :rtca)
-
-kdam_vals[5]
-kdam_range1[9]
-compare_sims(5, 9, :rtca)
-
-kdam_vals[6]    
-kdam_range1[11]
-compare_sims(6, 11, :rtca)
-
-kdam_vals[7]
-kdam_range1[13]
-compare_sims(7, 13, :rtca)
-
-kdam_vals[8]
-kdam_range1[14]
-compare_sims(8, 14, :rtca)
-
-plot(scatter(x=df_ps1[1].time, y=df_ps1[1].rtca))
-using Plots 
-Plots.plot(df_ps1[1].time, df_ps1[1].rtca)
-Plots.plot(df_ps[1].time, df_ps[1].rtca)
-
+# using PlotlyJS
 using InteractiveViz, GLMakie
-ilines(sin, 0, 100)
-ilines(df_ps[1].time, df_ps[1].rtca)
 
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/analysis_funcs.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_funcs.jl"))
 
-p_av = plot([scatter(x=df_av.kdam, y=df_av[:,i], name="$(names(df_av)[i])") for i in 2:10], Layout(xaxis_title="kdam", yaxis_title="mean molecule number", title="10,000 cell cycles"));
-p_av1 = plot([scatter(x=df_av_sp.kdam, y=df_av_sp[:,i], name="$(names(df_av_sp)[i])") for i in 2:10], Layout(xaxis_title="kdam", yaxis_title="mean molecule number", title="1000 cell cycles"));
+mount_path = "/Users/s2257179/stoch_files/hysteresis/"
 
-p = [p_av p_av1]
+all_items = readdir(mount_path)
+folders = [item for item in all_items if isdir(joinpath(mount_path, item)) && !occursin("DS", item)]
+folders_dict = Dict(i => folder for (i, folder) in enumerate(folders))
 
-sp = [3,4,6,8,9,11,13,14]
+# folders_dict = Dict(filter(pair -> pair.first in [9], folders_dict))
 
-df_av_sp = df_av1[sp,:]
+dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = setup_dicts(folders_dict)
 
-open("/home/hollie_hindley/Documents/stochastic_hybrid/cc_comp.html", "w") do io
-    PlotlyBase.to_html(io, p.plot)
+for i in eachindex(folders_dict)
+    println(i)
+    dict_times[i], dict_kdamvals[i], dict_titles[i], dict_results[i], dict_reacts[i], dict_props[i] = LoadDataVars(folders[i]);
+    dict_hists[i] = load_hist_files(joinpath(mount_path, folders_dict[i], "hists"))
+    dict_counts[i] = prod_tot_count(dict_reacts[i])
 end
+
+dict_plot_times, dict_plot_counts, dict_plot_results, dict_plot_hists, dict_stoch_reacts, dict_plot_props = setup_plot_dicts()
+
+round.(dict_kdamvals[1][:kdam], digits=3)
+
+for i in eachindex(folders_dict)
+    println(i)
+    dict_plot_times[i] = plot_times(dict_times[i], "$(folders_dict[i])", folder=folders_dict[i])    
+    dict_plot_counts[i] = plot_totstochcount(round.(dict_kdamvals[i][:kdam], digits=3), dict_counts[i], "$(folders_dict[i])", folder=folders_dict[i])
+    dict_stoch_reacts[i] = plot_results("plot_stoch_reacts", dict_reacts[i], length(dict_kdamvals[i][:kdam]), folders_dict[i], xlabel="reaction", ylabel="count", titles=dict_titles[i], size=(1000,650), tosave=true)
+end
+
+dict_results[1][1]
+# to get all plots (probably not needed often)
+for specie in all_species
+    println(specie)
+    for i in eachindex(folders_dict)
+        println(i)
+        dict_plot_results[i, specie] = plot_results("plot_results", dict_results[i], length(dict_kdamvals[i][:kdam]), folders_dict[i], species=specie, xlabel="time", ylabel="$specie", titles=dict_titles[i], size=(1000,650), tosave=true);
+        dict_plot_hists[i,specie] = plot_results("plot_hists", dict_hists[i], length(dict_kdamvals[i][:kdam]), folders_dict[i], species=specie, xlabel="$specie", ylabel="frequency", titles=dict_titles[i], hidelabels=[true, true], linkaxes=true, size=(1000,650), tosave=true);
+    end
+end
+
+(dict_plot_hists[1, :rh])
+(dict_plot_hists[1, :rd])
+(dict_plot_hists[1, :rm_a])
+
+# all propensities 
+for folder in eachindex(folders_dict)
+    println(folder)
+    for i in 1:length(dict_props[folder])
+        println(dict_kdamvals[folder][:kdam][i])
+        if dict_kdamvals[folder][:kdam][i] == 0.0
+            continue
+        end
+        dict_plot_props[folder, dict_kdamvals[folder][:kdam][i]] = plot_prop(dict_results[folder], dict_props[folder], i, "kdam_$(dict_kdamvals[folder][:kdam][i]), thresh_150", set_thresh=150, folders_dict[folder], maxval=500, tosave=true, size=(800,650))
+    end
+end
+
+# making the hists have less bins to see if we see anything different 
+agg_hists = Dict{Int64, DataFrame}()
+for i in eachindex(dict_hists[1]["rm_a"])
+    agg_hists[i] = hists_with_less_bins(dict_hists[1]["rm_a"][i], 10)
+end
+agg_hists
+dict_hists
+agg_hists[5]
+
+f, ax = plot_hist(agg_hists[8], maxval=1300)
+
+display(f)
+
+keys(dict_plot_props)
+display(dict_plot_props[1, 0.005])
+
+# plot all hists on top of eachother 
+for specie in all_species
+    plot_hists_overlay(1, "$specie", 2, last=[7], folder=folders_dict[1], maxval=2e4)
+end
+
+
+# average molecule numbers over whole simulation
+mean(dict_results[1][1].rm_a)
+mean(dict_results[1][2].rm_a)
+mean(dict_results[1][3].rm_a)
+mean(dict_results[1][4].rm_a)
+mean(dict_results[1][5].rm_a)
+mean(dict_results[1][6].rm_a)
+mean(dict_results[1][7].rm_a)
+mean(dict_results[1][8].rm_a)
+mean(dict_results[1][9].rm_a)
+mean(dict_results[1][10].rm_a)
+mean(dict_results[1][11].rm_a)
+mean(dict_results[1][12].rm_a)
+mean(dict_results[1][13].rm_a)
+mean(dict_results[1][14].rm_a)
+mean(dict_results[1][15].rm_a)

@@ -109,15 +109,16 @@ function create_subplots(plotting_func, num_plots, folder; size=(600, 450), xlab
 end
 function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, linkaxes=true)
     if plotting_func == "plot_results"
-        if num_plots > 1 && typeof(species) == String
+        if num_plots > 1 && (typeof(species) == String || typeof(species) == Symbol)
             preprocessed_times = [get_column(df, :time) for df in df_results]
             preprocessed_results = [get_column(df, species) for df in df_results]
         elseif typeof(species) == Array{Symbol, 1}
             preprocessed_times = get_column(df_results, :time)
             preprocessed_results = [get_column(df_results, s) for s in species]
         else
-            preprocessed_times = [get_column(df_results, :time)]
-            preprocessed_results = [get_column(df_results, species)]
+            preprocessed_times = get_column(df_results, :time)
+            # preprocessed_results = get_column(df_results, species)./get_column(df_results, :volume) # divide by volume
+            preprocessed_results = get_column(df_results, species)
         end
     elseif plotting_func == "plot_hists"
         dfs = df_results[string(species)]
@@ -129,12 +130,15 @@ function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, li
         for i in 1:rows
             data_ind = i + rows * (j - 1)
             if data_ind <= num_plots
-                if plotting_func == "plot_results" && typeof(species) == String
-                    plot_timeres(preprocessed_times[data_ind], preprocessed_results[data_ind], f[i,j])
-                elseif plotting_func == "plot_results" && typeof(species) == Array{Symbol, 1}
-                    [plot_timeres(preprocessed_times, get_column(df_results, s), f[i,j], label="$(s)") for s in species]
-                    # [plot_timeres(preprocessed_times, preprocessed_results[data_ind], f[i,j], label="$(species[data_ind])")]
-                    axislegend()
+                if plotting_func == "plot_results" 
+                    if num_plots > 1 && (typeof(species) == String || typeof(species) == Symbol)
+                        plot_timeres(preprocessed_times[data_ind], preprocessed_results[data_ind], f[i,j])
+                    elseif typeof(species) == Array{Symbol, 1}
+                        [plot_timeres(preprocessed_times, get_column(df_results, s), f[i,j], label="$(s)") for s in species]
+                        axislegend()
+                    else
+                        plot_timeres(preprocessed_times, preprocessed_results, f[i,j])
+                    end
                 elseif plotting_func == "plot_hists"
                     plot_hist(dfs[data_ind], loc=f[i,j])
                 elseif plotting_func == "plot_stoch_reacts" 
@@ -254,9 +258,14 @@ function build_reaction_count_df(df_reacts, react, threshold_vals)
 end
 
 
-function plot_prop(df_results, df_props, res_ind, title, folder; maxval=31856, size=(600, 450), set_thresh=nothing, threshold_vals=nothing, tosave=false)
-    time_data = df_results[res_ind].time
-    prop_data = [df_props[res_ind][i] for i in eachindex(react_names[1:end-1])]
+function plot_prop(df_results, df_props, res_ind, title, folder; zoom=false, maxval=31856, size=(600, 450), set_thresh=nothing, threshold_vals=nothing, tosave=false)
+    if zoom 
+        time_data = df_results.time
+        prop_data = [df_props[i] for i in eachindex(react_names[1:end-1])]
+    else
+        time_data = df_results[res_ind].time
+        prop_data = [df_props[res_ind][i] for i in eachindex(react_names[1:end-1])]
+    end
     
     f = Figure(size=size)
     ax = Axis(f[1,1], xlabel = "time", ylabel = "propensity", title="$folder, \n $title", limits=((nothing, nothing), (0, maxval)))#, limits=((2.2e5, 2.6e5),(0, maxval)))
