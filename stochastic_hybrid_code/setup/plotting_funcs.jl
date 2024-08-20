@@ -90,7 +90,6 @@ function create_subplots(plotting_func, num_plots, folder; size=(600, 450), xlab
                     ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale, xticklabelrotation=45, xlabelsize=10, ylabelsize=10, xticklabelsize=10, yticklabelsize=10, titlesize=12)
                 elseif plotting_func == "plot_stoch_reacts"
                     ax = Axis(f[i, j], xlabel = xlabel, ylabel = ylabel, title=title, yscale=yscale, xticks=(1:13, react_names_str), xticklabelrotation=45, xlabelsize=10, ylabelsize=10, xticklabelsize=10, yticklabelsize=10, titlesize=12)
-    
                 end
                 colsize!(f.layout, j, Relative(1/columns))
                 # Hide x-axis decorations for axes not in the bottom row
@@ -110,9 +109,12 @@ function create_subplots(plotting_func, num_plots, folder; size=(600, 450), xlab
 end
 function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, linkaxes=true)
     if plotting_func == "plot_results"
-        if num_plots > 1
+        if num_plots > 1 && typeof(species) == String
             preprocessed_times = [get_column(df, :time) for df in df_results]
             preprocessed_results = [get_column(df, species) for df in df_results]
+        elseif typeof(species) == Array{Symbol, 1}
+            preprocessed_times = get_column(df_results, :time)
+            preprocessed_results = [get_column(df_results, s) for s in species]
         else
             preprocessed_times = [get_column(df_results, :time)]
             preprocessed_results = [get_column(df_results, species)]
@@ -127,8 +129,12 @@ function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, li
         for i in 1:rows
             data_ind = i + rows * (j - 1)
             if data_ind <= num_plots
-                if plotting_func == "plot_results"
+                if plotting_func == "plot_results" && typeof(species) == String
                     plot_timeres(preprocessed_times[data_ind], preprocessed_results[data_ind], f[i,j])
+                elseif plotting_func == "plot_results" && typeof(species) == Array{Symbol, 1}
+                    [plot_timeres(preprocessed_times, get_column(df_results, s), f[i,j], label="$(s)") for s in species]
+                    # [plot_timeres(preprocessed_times, preprocessed_results[data_ind], f[i,j], label="$(species[data_ind])")]
+                    axislegend()
                 elseif plotting_func == "plot_hists"
                     plot_hist(dfs[data_ind], loc=f[i,j])
                 elseif plotting_func == "plot_stoch_reacts" 
@@ -176,10 +182,11 @@ function plot_results(plotting_func, df_results, num_plots, folder; species=:rm_
 end
 
 
-function plot_timeres(time, res, loc)
+function plot_timeres(time, res, loc; label="")
     x = makiex(time)
-    ilines!(loc, x, res)
+    ilines!(loc, x, res, label=label)
 end
+
 function plot_hist(df; loc=nothing, label="", specie="", maxval=8e4)
     bins = [i[1] for i in df.bin]
     push!(bins, df.bin[end][2])

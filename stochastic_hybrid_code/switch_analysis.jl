@@ -1,4 +1,4 @@
-using InteractiveViz, WGLMakie, StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase, Distributed, TableOperations, JSON, Query, FindFirstFunctions, CategoricalArrays, Colors
+using InteractiveViz, GLMakie, StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase, Distributed, TableOperations, JSON, Query, FindFirstFunctions, CategoricalArrays, Colors
 
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/analysis_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
@@ -21,16 +21,25 @@ for i in eachindex(folders_dict)
     dict_counts[i] = prod_tot_count(dict_reacts[i])
 end
 
-dict_titles[11][5]
 # plot one result
-folder = 8; index = 4; species = "rm_a"; num_plots = 1;
+folder = 8; index = 4; species = "rtca"; num_plots = 1;
 f = plot_results("plot_results", dict_results[folder][index], num_plots, folders_dict[folder], titles=[dict_titles[folder][index]], species="$species", xlabel="time", ylabel="$species", size=(1000,650), tosave=false)
 
-timepoints = [227000, 229000]
+zoom = dict_results[folder][index][149100:162000,:]
 
-dict_results[folder][index].time[116100]
-dict_results[folder][index].time[117130]
+f_all = plot_results("plot_results", zoom, 1, folders_dict[folder], species=all_species, xlabel="time", ylabel="specie", size=(1000,650), tosave=false, linkaxes=false)
+f_rib = plot_results("plot_results", zoom, 1, folders_dict[folder], species=[:rh, :rd, :rt], xlabel="time", ylabel="specie", size=(1000,650), tosave=false, linkaxes=false)
+f_mrna = plot_results("plot_results", zoom, 1, folders_dict[folder], species=[:rm_a, :rm_b, :rm_r], xlabel="time", ylabel="specie", size=(1000,650), tosave=false, linkaxes=false)
+f_prot = plot_results("plot_results", zoom, 1, folders_dict[folder], species=[:rtca, :rtcb, :rtcr], xlabel="time", ylabel="specie", size=(1000,650), tosave=false, linkaxes=false)
 
-dict_results[folder][index][116100:117130,:]
+display(GLMakie.Screen(), f_all)
+display(GLMakie.Screen(), f_rib)
+display(GLMakie.Screen(), f_mrna)
+display(GLMakie.Screen(), f_prot)
 
-f = plot_results("plot_results", dict_results[folder][index][116100:200000,:], num_plots, folders_dict[folder], titles=[dict_titles[folder][index]], species="$species", xlabel="time", ylabel="$species", size=(1000,650), tosave=false)
+DataInspector(f_rib)
+DataInspector(f_mrna)
+DataInspector(f_prot)
+
+prop = plot_prop(dict_results[folder], dict_props[folder], index, "kdam_$(dict_kdamvals[folder][:kdam][index]), thresh_150", set_thresh=150, folders_dict[folder], maxval=500, tosave=false, size=(800,650))
+DataInspector(prop)
