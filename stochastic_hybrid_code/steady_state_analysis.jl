@@ -28,12 +28,12 @@ f = plot_results("plot_results", dict_results[folder][index], num_plots, folders
 
 # testing if at steady state
 # set range for sample size for histogram comparisons
-tests = collect(range(1, length(dict_results[11][1].rh), step=75000))
+tests = collect(range(1, length(dict_results[1][1].rh), step=75000))
 fig = Figure()
 ax=Axis(fig[1,1])
 for i in 1:length(tests)-1
     println(i)
-    h = hist!(ax, dict_results[11][1].rh[tests[end-i]:tests[end-(i-1)]], bins=20)
+    h = hist!(ax, dict_results[1][1].rh[tests[end-i]:tests[end-(i-1)]], bins=20)
     text!(ax, "$i", position = Point2f(1e4, 1800), align = (:center, :center), fontsize = 24, color = :red)
     sleep(1)
 end # stop loop at point where histogram looks different 

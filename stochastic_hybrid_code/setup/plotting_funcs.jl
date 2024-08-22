@@ -107,18 +107,15 @@ function create_subplots(plotting_func, num_plots, folder; size=(600, 450), xlab
     end
     return f
 end
-function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, linkaxes=true)
+function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, linkaxes=true, conc=false)
     if plotting_func == "plot_results"
         if num_plots > 1 && (typeof(species) == String || typeof(species) == Symbol)
             preprocessed_times = [get_column(df, :time) for df in df_results]
             preprocessed_results = [get_column(df, species) for df in df_results]
         elseif typeof(species) == Array{Symbol, 1}
             preprocessed_times = get_column(df_results, :time)
-            preprocessed_results = [get_column(df_results, s) for s in species]
         else
             preprocessed_times = get_column(df_results, :time)
-            # preprocessed_results = get_column(df_results, species)./get_column(df_results, :volume) # divide by volume
-            preprocessed_results = get_column(df_results, species)
         end
     elseif plotting_func == "plot_hists"
         dfs = df_results[string(species)]
@@ -134,10 +131,19 @@ function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, li
                     if num_plots > 1 && (typeof(species) == String || typeof(species) == Symbol)
                         plot_timeres(preprocessed_times[data_ind], preprocessed_results[data_ind], f[i,j])
                     elseif typeof(species) == Array{Symbol, 1}
-                        [plot_timeres(preprocessed_times, get_column(df_results, s), f[i,j], label="$(s)") for s in species]
-                        axislegend()
+                        if conc
+                            [plot_timeres(preprocessed_times, get_column(df_results, s)./get_column(df_results, :volume), f[i,j], label="$(s)") for s in species]
+                            axislegend()
+                        else
+                            [plot_timeres(preprocessed_times, get_column(df_results, s), f[i,j], label="$(s)") for s in species]
+                            axislegend()
+                        end
                     else
-                        plot_timeres(preprocessed_times, preprocessed_results, f[i,j])
+                        if conc
+                            plot_timeres(preprocessed_times, get_column(df_results, species)./get_column(df_results, species), f[i,j])
+                        else
+                            plot_timeres(preprocessed_times, get_column(df_results, species), f[i,j])
+                        end
                     end
                 elseif plotting_func == "plot_hists"
                     plot_hist(dfs[data_ind], loc=f[i,j])
@@ -165,9 +171,9 @@ function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, li
     end
     return f
 end
-function plot_results(plotting_func, df_results, num_plots, folder; species=:rm_a, size=(600, 450), xlabel="", ylabel="", titles=[], yscale=identity, hidelabels=[true,true], linkaxes=true, tosave=false)
+function plot_results(plotting_func, df_results, num_plots, folder; species=:rm_a, size=(600, 450), xlabel="", ylabel="", titles=[], yscale=identity, hidelabels=[true,true], linkaxes=true, tosave=false, conc=false)
     f = create_subplots(plotting_func, num_plots, folder; size=size, xlabel=xlabel, ylabel=ylabel, titles=titles, hidelabels=hidelabels, yscale=yscale)
-    f = add_subplots(f, plotting_func, df_results, num_plots; species=species, linkaxes=linkaxes)
+    f = add_subplots(f, plotting_func, df_results, num_plots; species=species, linkaxes=linkaxes, conc=conc)
     
     if tosave
         plots_folder = joinpath(joinpath(mount_path, folder), "plots")
@@ -322,4 +328,13 @@ function setup_plot_dicts()
     dict_plot_props = Dict{Any, Any}()
 
     return dict_plot_times, dict_plot_counts, dict_plot_results, dict_plot_hists, dict_stoch_reacts, dict_plot_props
+end
+
+# to plot log
+# Function to replace zeros with epsilon
+function replace_zeros_with_epsilon(data)
+    return replace(data, 0.0 => epsilon)
+end
+function replace_zeros_in_dataframe(df::DataFrame)
+    return DataFrame(replace_zeros_with_epsilon.(eachcol(df)), names(df))
 end
