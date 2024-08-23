@@ -64,7 +64,7 @@ function hybrid_algo(X0, options, prop, S; out=stdout)
     nu = 0
 
     while ~division && (tf > s0)
-        println("V: ", X0[vidx(:V)])
+        # println("V: ", X0[vidx(:V)])
         exp1 = Exponential(1) # needs to be taken from the rate of the reactions (total propensities) so should be Exponential(tot_prop) ?????
         global xi = rand(exp1, 1) # get random number from exp distribution
         # global xi = 1
