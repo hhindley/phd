@@ -42,12 +42,10 @@ println("finished X0 calc")
 # push!(threshold_vals_new, 210)
 
 # threshold_vals = range(100,250,length=10) # 16/07 and 18/07 threshold values
-threshold_vals = range(125, 170, length=10) # 18/07 smaller range threshold values 
-
+threshold_vals = range(10, 150, length=15) # 18/07 smaller range threshold values 
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/threshold_testing"
-dir = "1807_smaller_range" # change this! 
-dir = "1807_tests_repeat1607"
+dir = "2308_vs_det_0dam" # change this! 
 println(dir)
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
@@ -61,7 +59,7 @@ df = DataFrame(threshold=threshold_vals, time=zeros(length(threshold_vals)))
 # Threads.@threads :static for i in eachindex(threshold_vals_new)
 for i in eachindex(threshold_vals)
     println("starting $i")
-    time_taken = @elapsed run_stoch(X0, threshold_vals[i], 0.05, joinpath(folderpath,"thresh_$(threshold_vals[i]).dat"))
+    time_taken = @elapsed run_stoch(X0, threshold_vals[i], 0, joinpath(folderpath,"thresh_$(threshold_vals[i]).dat"))
     df.time[i] = time_taken
     println("finished $i")
 end
