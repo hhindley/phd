@@ -30,7 +30,7 @@ f_mrna = plot_results("plot_results", dict_results[folder][index], 1, folders_di
 f_prot = plot_results("plot_results", dict_results[folder][index], 1, folders_dict[folder], species=[:rtca, :rtcb, :rtcr], xlabel="time", ylabel="specie", size=(800,650), tosave=false, linkaxes=false)
 
 
-zoom = dict_results[folder][1][149100:162000,:]
+zoom = dict_results[folder][1][1000:5000,:]
 f_all = plot_results("plot_results", zoom, 1, folders_dict[folder], species=all_species, titles=[dict_titles[folder][index]], xlabel="time", ylabel="specie", size=(800,650), tosave=false, linkaxes=false, conc=true, yscale=log10)
 f_rib = plot_results("plot_results", zoom, 1, folders_dict[folder], species=[:rh, :rd, :rt], xlabel="time", ylabel="specie", size=(800,650), tosave=false, linkaxes=false, conc=true)
 f_mrna = plot_results("plot_results", zoom, 1, folders_dict[folder], species=[:rm_a, :rm_b, :rm_r], xlabel="time", ylabel="specie", size=(800,650), tosave=false, linkaxes=false, conc=true)
@@ -110,7 +110,7 @@ display(GLMakie.Screen(), f_rib_off2)
 
 # working out which regions of dataframe are rtc on and calculating percentage of total dataframe 
 dict_results[1][1].rm_a
-zoom = dict_results[1][1][1510000:1800000,:]
+zoom = dict_results[folder][1][1510000:1800000,:]
 f_rib_on_zoom = plot_results("plot_results", dict_results[1][1], 1, folders_dict[1], species=[:rh, :rd, :rt], titles=[dict_titles[1][1]], xlabel="time", ylabel="specie", size=(800,650), tosave=false, linkaxes=false)
 display(GLMakie.Screen(), f_rib_on_zoom)
 
