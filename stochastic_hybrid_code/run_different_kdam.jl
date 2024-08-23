@@ -38,7 +38,7 @@ println("finished X0 calc")
 
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing"
-dir = "test" # change this! 
+dir = "test_nostochdiv" # change this! 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
