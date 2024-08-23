@@ -9,7 +9,7 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/threshold_analysis/histograms/make_hists.jl"))
 
 
-n= 100 # number of cell cycles
+n= 10 # number of cell cycles
 options = Dict(
 "threshold"  =>  0.,       # Threshold to decide between determinisitic or stochastic reaction
 "FixDetReact"=> [14],# [10,11,12,13,14,15,16,17,18],       # Reactions to be treated determinisitically
@@ -28,7 +28,7 @@ if getssX0
     nx = indV.nrOfItems-1
     prop(X) = propen(X[1:nx])
     X0 = hybrid_algo(X0, options, prop, S, out=fout)
-    X0[vidx(:V)] = 1
+    X0[vidx(:V)] = 1e-15
     CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", DataFrame(X0,:auto), header=false)
 else
     X0 = CSV.read("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", Tables.matrix, header=false)
