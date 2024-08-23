@@ -38,7 +38,7 @@ println("finished X0 calc")
 
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing"
-dir = "2208_keyvals" # change this! 
+dir = "zero_kdam" # change this! 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
@@ -46,8 +46,8 @@ end
 time_file = dir * "_times.csv"
 final_path = dir * "_final_files"
 
-kdam_vals = [0, 0.01, 0.1, 0.5, 0.7, 1.2, 1.5]
-
+# kdam_vals = [0, 0.01, 0.1, 0.5, 0.7, 1.2, 1.5]
+kdam_vals = [0]
 # kdam_vals = [0.005, 0.0075, 0.01, 0.03, 0.05, 0.1, 0.3, 0.5]
 
 df = DataFrame(kdam=kdam_vals, time=zeros(length(kdam_vals)))
