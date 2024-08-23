@@ -30,7 +30,7 @@ end
 
 function hybrid_algo(X0, options, prop, S; out=stdout)
     # save_when = 10 .^ range(log10(1e-6), log10(1e6), length=1000)
-    println("initial V: ", X0[vidx(:V)])
+    # println("initial V: ", X0[vidx(:V)])
     t0 = 0
 
     thresh = options["threshold"]
