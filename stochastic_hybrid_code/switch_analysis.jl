@@ -25,9 +25,9 @@ end
 # plot one result
 folder = 9; index = 1; species = "rh"; num_plots = 1;
 f = plot_results("plot_results", dict_results[folder][index], num_plots, folders_dict[folder], titles=[dict_titles[folder][index]], species="$species", xlabel="time", ylabel="$species", size=(800,650), tosave=false)
-f_rib = plot_results("plot_results", dict_results[folder][index], 1, folders_dict[folder], species=[:rh, :rd, :rt], xlabel="time", ylabel="specie", size=(800,650), tosave=false, linkaxes=false, conc=false)
-f_mrna = plot_results("plot_results", dict_results[folder][index], 1, folders_dict[folder], species=[:rm_a, :rm_b, :rm_r], xlabel="time", ylabel="specie", size=(800,650), tosave=false, linkaxes=false)
-f_prot = plot_results("plot_results", dict_results[folder][index], 1, folders_dict[folder], species=[:rtca, :rtcb, :rtcr], xlabel="time", ylabel="specie", size=(800,650), tosave=false, linkaxes=false)
+f_rib = plot_results("plot_results", dict_results[folder][index], 1, folders_dict[folder], species=[:rh, :rd, :rt], xlabel="time", ylabel="specie", size=(800,650), tosave=false, linkaxes=false, conc=true)
+f_mrna = plot_results("plot_results", dict_results[folder][index], 1, folders_dict[folder], species=[:rm_a, :rm_b, :rm_r], xlabel="time", ylabel="specie", size=(800,650), tosave=false, linkaxes=false, conc=true)
+f_prot = plot_results("plot_results", dict_results[folder][index], 1, folders_dict[folder], species=[:rtca, :rtcb, :rtcr], xlabel="time", ylabel="specie", size=(800,650), tosave=false, linkaxes=false, conc=true)
 
 
 zoom = dict_results[folder][1][1000:5000,:]
@@ -41,7 +41,7 @@ display(GLMakie.Screen(), f_rib)
 display(GLMakie.Screen(), f_mrna)
 display(GLMakie.Screen(), f_prot)
 
-DataInspector(f_all)
+DataInspector(f_rib)
 DataInspector(f_mrna)
 DataInspector(f_prot)
 
