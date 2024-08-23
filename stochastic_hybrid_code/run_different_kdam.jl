@@ -14,7 +14,7 @@ options = Dict(
 "threshold"  =>  0.,       # Threshold to decide between determinisitic or stochastic reaction
 "FixDetReact"=> [14],# [10,11,12,13,14,15,16,17,18],       # Reactions to be treated determinisitically
     "tspan"     =>   n*log(2)/lam_val,     # Max time for cell cycle
-    "samplingFreq"  => 0.001 #10/60  # for sampling every x mins
+    "samplingFreq"  => 10/60  # for sampling every x mins
 )
 
 X0 = collect(get_X0(indV, init_molec)')
