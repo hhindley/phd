@@ -38,7 +38,7 @@ par = collect(get_par(indP)')
 
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing"
-dir = "test_nostochdiv" # change this! 
+dir = "test" # change this! 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
