@@ -20,21 +20,21 @@ options = Dict(
 X0 = collect(get_X0(indV, init_molec)')
 par = collect(get_par(indP)')
 
-println("starting X0 calc")
-getssX0 = true
-if getssX0
-    fout=open("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat","w")
-    propen, S, propList = defineStochModel(par, indV)
-    nx = indV.nrOfItems-1
-    prop(X) = propen(X[1:nx])
-    X0 = hybrid_algo(X0, options, prop, S, out=fout)
-    X0[vidx(:V)] = 1 #1e-15
-    CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", DataFrame(X0,:auto), header=false)
-else
-    X0 = CSV.read("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", Tables.matrix, header=false)
-end
+# println("starting X0 calc")
+# getssX0 = true
+# if getssX0
+#     fout=open("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat","w")
+#     propen, S, propList = defineStochModel(par, indV)
+#     nx = indV.nrOfItems-1
+#     prop(X) = propen(X[1:nx])
+#     X0 = hybrid_algo(X0, options, prop, S, out=fout)
+#     X0[vidx(:V)] = 1 #1e-15
+#     CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", DataFrame(X0,:auto), header=false)
+# else
+#     X0 = CSV.read("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", Tables.matrix, header=false)
+# end
 
-println("finished X0 calc")
+# println("finished X0 calc")
 
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing"
