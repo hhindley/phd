@@ -99,8 +99,8 @@ function hybrid_algo(X0, options, prop, S; out=stdout)
                 # Partition the molecules stochastically using a binomial distribution
                 pDiv=rand(Beta(200.,200.))
                 # pDiv=0.5
-                # X0[j] = X0[j] > 0. ? float(rand(Binomial(round(Int, X0[j]), pDiv))) : 0                
-                X0[j] = X0[j] / 2
+                X0[j] = X0[j] > 0. ? float(rand(Binomial(round(Int, X0[j]), pDiv))) : 0                
+                # X0[j] = X0[j] / 2
             end
             # dump(20,ss[end],X0;output=out)
             division = false
