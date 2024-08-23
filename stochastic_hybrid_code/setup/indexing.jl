@@ -65,7 +65,7 @@ function get_X0(indV, ssvals)
     X0[vidx(:rh)] = ssvals[7]
     X0[vidx(:rd)] = ssvals[8]
     X0[vidx(:rt)] = ssvals[9]
-    X0[vidx(:V)] = 1e-15 # volume of ecoli cell so now volume should be correct in simulations #1 # added in volume/dilution corrections
+    X0[vidx(:V)] = 1 #1e-15 # volume of ecoli cell so now volume should be correct in simulations #1 # added in volume/dilution corrections
     X0[vidx(:totProp)] = 0
 
     return X0

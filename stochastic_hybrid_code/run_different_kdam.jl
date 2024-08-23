@@ -28,7 +28,7 @@ if getssX0
     nx = indV.nrOfItems-1
     prop(X) = propen(X[1:nx])
     X0 = hybrid_algo(X0, options, prop, S, out=fout)
-    X0[vidx(:V)] = 1e-15
+    X0[vidx(:V)] = 1 #1e-15
     CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", DataFrame(X0,:auto), header=false)
 else
     X0 = CSV.read("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", Tables.matrix, header=false)
