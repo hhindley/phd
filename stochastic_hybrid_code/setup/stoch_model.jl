@@ -4,7 +4,8 @@ function defineStochModel(par, indV)
     propList = Vector{Function}(undef, n_react)
 
     Vref = 1
-    v_sf(X) = Vref/X[vidx(:V)]
+    # v_sf(X) = Vref/X[vidx(:V)]
+    v_sf(X) = X[vidx(:V)]
 
     sf(X) = (1e6/(6.022e23*(X[vidx(:V)]*1e-15)))
     atp(X) = par[pidx(:atp)]/sf(X)
