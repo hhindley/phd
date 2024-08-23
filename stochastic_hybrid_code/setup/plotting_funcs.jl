@@ -132,8 +132,8 @@ function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, li
                         plot_timeres(preprocessed_times[data_ind], preprocessed_results[data_ind], f[i,j])
                     elseif typeof(species) == Array{Symbol, 1}
                         if conc
-                            # [plot_timeres(preprocessed_times, (get_column(df_results, s)./get_column(df_results, :volume)), f[i,j], label="$(s)") for s in species]
-                            [plot_timeres(preprocessed_times, 1e6*(get_column(df_results, s)./(6.022e23*get_column(df_results, :volume))), f[i,j], label="$(s)") for s in species]
+                            [plot_timeres(preprocessed_times, (get_column(df_results, s)./get_column(df_results, :volume)), f[i,j], label="$(s)") for s in species]
+                            # [plot_timeres(preprocessed_times, 1e6*(get_column(df_results, s)./(6.022e23*get_column(df_results, :volume))), f[i,j], label="$(s)") for s in species]
                             axislegend()
                         else
                             [plot_timeres(preprocessed_times, get_column(df_results, s), f[i,j], label="$(s)") for s in species]
