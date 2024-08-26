@@ -6,12 +6,13 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_funcs.jl"
 
 mount_path = "/Users/s2257179/stoch_files/kdam_testing/"
 # mount_path = "/Users/s2257179/stoch_files/hysteresis/"
+mount_path = "/Users/s2257179/stoch_files/threshold_testing/"
 
 all_items = readdir(mount_path)
 folders = [item for item in all_items if isdir(joinpath(mount_path, item)) && !occursin("DS", item)]
 folders_dict = Dict(i => folder for (i, folder) in enumerate(folders))
 
-folders_dict = Dict(filter(pair -> pair.first in [9], folders_dict))
+folders_dict = Dict(filter(pair -> pair.first in [1], folders_dict))
 
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = setup_dicts(folders_dict)
 
@@ -23,12 +24,13 @@ for i in eachindex(folders_dict)
 end
 
 # plot one result
-folder = 9; index = 1; species = "rh"; num_plots = 1;
+folder = 1; index = 15; species = "rh"; num_plots = 1;
 f = plot_results("plot_results", dict_results[folder][index], num_plots, folders_dict[folder], titles=[dict_titles[folder][index]], species="$species", xlabel="time", ylabel="$species", size=(800,650), tosave=false)
-f_rib = plot_results("plot_results", dict_results[folder][index], 1, folders_dict[folder], species=[:rh, :rd, :rt], xlabel="time", ylabel="specie", size=(800,650), tosave=false, linkaxes=false, conc=true)
+f_rib = plot_results("plot_results", dict_results[folder][index], 1, folders_dict[folder], titles=[dict_titles[folder][index]], species=[:rh, :rd, :rt], xlabel="time", ylabel="specie", size=(800,650), tosave=false, linkaxes=false, conc=true)
 f_mrna = plot_results("plot_results", dict_results[folder][index], 1, folders_dict[folder], species=[:rm_a, :rm_b, :rm_r], xlabel="time", ylabel="specie", size=(800,650), tosave=false, linkaxes=false, conc=true)
 f_prot = plot_results("plot_results", dict_results[folder][index], 1, folders_dict[folder], species=[:rtca, :rtcb, :rtcr], xlabel="time", ylabel="specie", size=(800,650), tosave=false, linkaxes=false, conc=true)
 
+display(GLMakie.Screen(), f_rib_zero)
 
 zoom = dict_results[folder][1][1000:5000,:]
 f_all = plot_results("plot_results", zoom, 1, folders_dict[folder], species=all_species, titles=[dict_titles[folder][index]], xlabel="time", ylabel="specie", size=(800,650), tosave=false, linkaxes=false, conc=true, yscale=log10)

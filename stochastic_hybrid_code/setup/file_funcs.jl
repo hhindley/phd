@@ -146,8 +146,12 @@ function LoadDataVars(folder; reacts=true, results=true, props=true)
         kdam_vals = df_times.kdam
         titles = ["kdam: $(kdam_vals[i])" for i in eachindex(kdam_vals)]
         tested_vals = Dict(:kdam=>kdam_vals)
-    elseif "thresh" in names(df_times)
+    elseif "thresh" in names(df_times) 
         threshold_vals = df_times.thresh
+        titles = ["threshold: $(round(threshold_vals[i], digits=2))" for i in eachindex(threshold_vals)]
+        tested_vals = Dict(:threshold=>threshold_vals)
+    elseif "threshold" in names(df_times) 
+        threshold_vals = df_times.threshold
         titles = ["threshold: $(round(threshold_vals[i], digits=2))" for i in eachindex(threshold_vals)]
         tested_vals = Dict(:threshold=>threshold_vals)
     end

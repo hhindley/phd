@@ -3,21 +3,29 @@ using Revise, LinearAlgebra, Printf, ModelingToolkit, OrderedCollections
 # using Plots
 using PlotlyJS, ProgressBars
 
-PATH = "/home/holliehindley/phd"
+include(joinpath(homedir(), "phd/general_funcs/all_model_funcs.jl"))
+include(joinpath(homedir(), "phd/general_funcs/solving.jl"))
+include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params.jl"))
+include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params_molecs.jl"))
 
-include("$PATH/general_funcs/solving.jl")
-include("$PATH/rtc_model/models/rtc_orig.jl")
-include("$PATH/rtc_model/parameters/rtc_params.jl")
-include("$PATH/rtc_model/parameters/rtc_params_molecs.jl")
-include("$PATH/rtc_model/functions/bf_funcs/bf_funcs.jl")
+include(joinpath(homedir(), "phd/rtc_model/models/rtc_orig.jl"))
+include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
 
-
+# concentration
 br = get_br(rtc_model, ssvals_rtc, params_rtc, 1.5)
 bf = bf_point_df(br)
 df = create_br_df(br)
 kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
 kdam2 = findall(x->x==bf.kdam[2],df.kdam)[1]
 plot(scatter(x=df.kdam, y=df.rtcb, name="RtcB"))
+
+# molecules
+br = get_br_molec(rtc_model, ssvals_rtc_molec, params_rtc_molec, 1.5)
+bf = bf_point_df(br)
+df = create_br_df(br)
+kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
+kdam2 = findall(x->x==bf.kdam[2],df.kdam)[1]
+plot([scatter(x=df.kdam, y=df.rtcb, name="RtcB"), scatter(x=df.kdam, y=df.rtca, name="RtcA")])
 
 alpha = df.rt/kr_val # unitless
 fa = @. (1+alpha)^6/(L_val*((1+c_val*alpha)^6)+(1+alpha)^6)

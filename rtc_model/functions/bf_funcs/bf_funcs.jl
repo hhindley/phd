@@ -9,12 +9,13 @@ function get_br(model, init, params, kdam_max)
     odefun = prob.f
     F = (u,p) -> odefun(u,p,0)
     J = (u,p) -> odefun.jac(u,p,0)
-    id_kdam = indexof(kdam, parameters(model))
-    par_tm = prob.p
+    par_tm = prob.p[1]
+    # id_kdam = indexof(kdam, parameters(model))
+    id_kdam = indexof(0.0, par_tm)
     # Bifurcation Problem
     if nameof(model) == :rtc_model || nameof(model) == :rtc_inhib_model
         # print("original rtc model")
-        prob = BifurcationProblem(F, prob.u0, setproperties(par_tm), (@lens _[id_kdam]); J=J,
+        prob = BifurcationProblem(F, prob.u0, (par_tm), (@lens _[id_kdam]); J=J,
         record_from_solution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
         opts_br = ContinuationPar(p_min = 0., p_max = kdam_max, ds = 0.001, a=0.1,
         dsmax = 0.05, # 0.15
@@ -30,7 +31,7 @@ function get_br(model, init, params, kdam_max)
         br = continuation(prob, PALC(θ=0.5), opts_br; plot = false, bothside=true, normC = norminf)
     else
         # print("tRNA rtc model")
-        prob = BifurcationProblem(F, prob.u0, setproperties(par_tm), (@lens _[id_kdam]); J=J,
+        prob = BifurcationProblem(F, prob.u0, (par_tm), (@lens _[id_kdam]); J=J,
         record_from_solution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], trna = x[7], rd = x[8], rt = x[9]),)
         opts_br = ContinuationPar(p_min = 0., p_max = kdam_max, ds = 0.001,# a=0.1,
         dsmax = 0.15, dsmin = 0.0001,# 0.15
@@ -49,6 +50,32 @@ function get_br(model, init, params, kdam_max)
     return br
 end
 
+function get_br_molec(model, init, params, kdam_max)
+    prob = ODEProblem(model, init, tspan, params; jac=true)
+    odefun = prob.f
+    F = (u,p) -> odefun(u,p,0)
+    J = (u,p) -> odefun.jac(u,p,0)
+    par_tm = prob.p[1]
+    # id_kdam = indexof(kdam, parameters(model))
+    id_kdam = indexof(0.0, par_tm)
+    # Bifurcation Problem
+    prob = BifurcationProblem(F, prob.u0, (par_tm), (@lens _[id_kdam]); J=J,
+    record_from_solution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], trna = x[7], rd = x[8], rt = x[9]),)
+    opts_br = ContinuationPar(p_min = 0., p_max = kdam_max, ds = 0.001,# a=0.1,
+    dsmax = 0.25, dsmin = 0.0001,# 0.15
+    # options to detect bifurcations
+    detect_bifurcation = 3, n_inversion = 2, max_bisection_steps = 20, #3,2,10
+    # number of eigenvalues
+    # nev =100, #tolParamBisectionEvent=1e-30, 
+    # maximum number of continuation steps
+    max_steps = 50000,)# dsmin_bisection=1e-30)#, tol_bisection_eigenvalue=1e-10)# a=0.9, )
+    # tolStability=1e-10, tolBisectionEigenvalue=1e-10)#,tolParamBisectionEvent=1e-1)
+    # only using parameters that make a difference to solution
+    # continuation of equilibria
+
+    br = continuation(prob, PALC(θ=0.5), opts_br; plot = false, bothside=true, normC = norminf)
+    return br
+end
 
 
 function numerical_bistability_analysis(model, params, init, specie, all_species, kdam_range, kdam) # used to be 'checking_bistability' - used when bifurcationkit not working 
