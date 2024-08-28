@@ -9,7 +9,7 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/threshold_analysis/histograms/make_hists.jl"))
 
 
-n= 1000 # number of cell cycles
+n= 10000 # number of cell cycles
 options = Dict(
 "threshold"  =>  0.,       # Threshold to decide between determinisitic or stochastic reaction
 "FixDetReact"=> [14],# [10,11,12,13,14,15,16,17,18],       # Reactions to be treated determinisitically
@@ -38,7 +38,7 @@ println("finished X0 calc")
 
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing"
-dir = "test" # change this! 
+dir = "2808_keyvals1" # change this! 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
@@ -46,14 +46,13 @@ end
 time_file = dir * "_times.csv"
 final_path = dir * "_final_files"
 
-# kdam_vals = [0, 0.01, 0.1, 0.5, 0.7, 1.2, 1.5]
-kdam_vals = [0]
+kdam_vals = [0, 0.01, 0.1, 0.5, 0.7, 1.2, 1.5]
 # kdam_vals = [0.005, 0.0075, 0.01, 0.03, 0.05, 0.1, 0.3, 0.5]
 
 df = DataFrame(kdam=kdam_vals, time=zeros(length(kdam_vals)))
 for i in eachindex(kdam_vals)
     println("starting $i, $(Dates.now())")
-    time_taken = @elapsed run_stoch(X0, 0, kdam_vals[i], joinpath(folderpath,"kdam_$(kdam_vals[i]).dat"))
+    time_taken = @elapsed run_stoch(X0, 150, kdam_vals[i], joinpath(folderpath,"kdam_$(kdam_vals[i]).dat"))
     df.time[i] = time_taken
     println("finished $i, $(Dates.now())")
 end
