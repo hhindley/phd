@@ -36,7 +36,7 @@ end
 println("finished X0 calc, X0: $X0")
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/hysteresis/"
-dir = "2808_low0.01-0.8" # change this! 
+dir = "2808_high1.5-0.8" # change this! 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
@@ -44,7 +44,7 @@ end
 time_file = dir * "_times.csv"
 final_path = dir * "_final_files"
 
-kdam_range1 = [0.01, 0.8]
+kdam_range1 = [1.5, 0.8]
 
 df = DataFrame(kdam=kdam_range1, time=zeros(length(kdam_range1)))
 for i in eachindex(kdam_range1)
