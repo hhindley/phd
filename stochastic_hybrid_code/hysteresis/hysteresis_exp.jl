@@ -9,7 +9,7 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/threshold_analysis/histograms/make_hists.jl"))
 
 
-n= 1000 # number of cell cycles
+n= 10000 # number of cell cycles
 options = Dict(
 "threshold"  =>  0.,       # Threshold to decide between determinisitic or stochastic reaction
 "FixDetReact"=> [14],# [10,11,12,13,14,15,16,17,18],       # Reactions to be treated determinisitically
@@ -33,12 +33,10 @@ if getssX0
 else
     X0 = CSV.read("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", Tables.matrix, header=false)
 end
+println("finished X0 calc, X0: $X0")
 
-println("finished X0 calc")
-
-
-mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing"
-dir = "test" # change this! 
+mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/hysteresis/"
+dir = "2808_low0.01-0.8" # change this! 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
@@ -46,17 +44,22 @@ end
 time_file = dir * "_times.csv"
 final_path = dir * "_final_files"
 
-# kdam_vals = [0, 0.01, 0.1, 0.5, 0.7, 1.2, 1.5]
-kdam_vals = [0]
-# kdam_vals = [0.005, 0.0075, 0.01, 0.03, 0.05, 0.1, 0.3, 0.5]
+kdam_range1 = [0.01, 0.8]
 
-df = DataFrame(kdam=kdam_vals, time=zeros(length(kdam_vals)))
-for i in eachindex(kdam_vals)
+df = DataFrame(kdam=kdam_range1, time=zeros(length(kdam_range1)))
+for i in eachindex(kdam_range1)
     println("starting $i, $(Dates.now())")
-    time_taken = @elapsed run_stoch(X0, 0, kdam_vals[i], joinpath(folderpath,"kdam_$(kdam_vals[i]).dat"))
-    df.time[i] = time_taken
-    println("finished $i, $(Dates.now())")
+    println("X0: $X0")
+    time_taken = @elapsed run_stoch(X0, 150, kdam_range1[i], joinpath(folderpath,"kdam_$(kdam_range1[i]).dat"))    
+    df.time[i] = time_taken 
+    df_ss = CSV.read(joinpath(folderpath,"kdam_$(kdam_range1[i]).dat"), DataFrame; header=false)
+    ss_region_start = Int(round(length(df_ss[!,1])*0.9))
+    ss_region = df_ss[ss_region_start:end,:]
+    init1 = [mean(ss_region[!,col]) for col in names(ss_region[:,3:end-2])]
+    global X0 = collect(get_X0(indV, init1)')
+    println("calculated new X0 and finished $i, $(Dates.now())")
 end
+
 
 CSV.write(joinpath(mainpath, "$time_file"), df)
 
@@ -66,14 +69,12 @@ println("starting file conversion for $dir")
 
 arrow_conv(joinpath(mainpath, dir), joinpath(mainpath, final_path))
 
-println("finished file conversion for $dir")
+print("finished file conversion for $dir")
 
 println("making histograms for $dir")
 
 create_histogram_files(mainpath, final_path)
 
 print("finished making histograms for $dir")
-
-
 
 
