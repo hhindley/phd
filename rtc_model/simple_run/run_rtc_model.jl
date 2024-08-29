@@ -28,19 +28,24 @@ solu_rtc_molec = sol(rtc_model, init_rtc_molec, (0,10000), params_rtc_molec)
 
 df_molec = create_solu_df(solu_rtc_molec, species_rtc)
 
-p_rtc1_molec = plot([scatter(x=df_molec.time, y=col, name="$(names(df_molec)[i])", legendgroup="$i", marker_color=colours[i]) for (col, i) in zip(eachcol(df_molec[:,2:end]), range(2,length(names(df_molec))))], Layout(xaxis_type="log", yaxis_tickformat=".2e", title="kdam = $(params_rtc_molec[kdam])"))
-
+p_rtc1_molec = plot([scatter(x=df_molec.time, y=col, name="$(names(df_molec)[i])", legendgroup="$i", marker_color=colours[i]) for (col, i) in zip(eachcol(df_molec[:,2:end]), range(2,length(names(df_molec))))], Layout(xaxis_type="log", yaxis_tickformat=".2e", title="kdam = $(params_rtc_molec[kdam])", xaxis_title="Time (s)", yaxis_title="Molecule number"))
+open("/Users/s2257179/Desktop/solu_nodam.html", "w") do io
+    PlotlyBase.to_html(io, p_rtc1_molec.plot)
+end
 p_rtc1_molec = plot([scatter(x=df_molec.time, y=col, name="$(names(df_molec)[i])", legendgroup="$i", marker_color=colours[i]) for (col, i) in zip(eachcol(df_molec[:,2:end]), range(2,length(names(df_molec))))], Layout(title="kdam = $(params_rtc_molec[kdam])"))
 
 params_kdam = deepcopy(params_rtc_molec)
-params_kdam[kdam] = 0.1
+params_kdam[kdam] = 0.01
 
-solu_rtc_kdam = sol(rtc_model, ssvals_rtc_molec, (0,2000), params_kdam)
+solu_rtc_kdam = sol(rtc_model, ssvals_rtc_molec, (0,10000), params_kdam)
 
 df_kdam = create_solu_df(solu_rtc_kdam, species_rtc)
 # colours =["#636EFA", "#EF553B", "#00CC96", "#AB63FA", "#FFA15A", "#19D3F3", "#FF6692", "#B6E880", "#FF97FF", "#FECB52", :blue]
 colours =["#EF553B",  "#00CC96", "#AB63FA", "#FFA15A", "#19D3F3", "#FF6692", "#B6E880", "#FF97FF", "#FECB52", :blue]
-p_kdam = plot([scatter(x=df_kdam.time, y=col, name="$(names(df_kdam)[i])", legendgroup="$i", marker_color=colours[i]) for (col, i) in zip(eachcol(df_kdam[:,2:end]), range(2,length(names(df_kdam))))], Layout(title="kdam = $(params_kdam[kdam])"))#,yaxis_tickformat=".2e"))
+p_kdam = plot([scatter(x=df_kdam.time, y=col, name="$(names(df_kdam)[i])", legendgroup="$i", marker_color=colours[i]) for (col, i) in zip(eachcol(df_kdam[:,2:end]), range(2,length(names(df_kdam))))], Layout(title="kdam = $(params_kdam[kdam])", xaxis_title="Time (s)", yaxis_title="Molecule number"))#,yaxis_tickformat=".2e"))
+open("/Users/s2257179/Desktop/solu_dam.html", "w") do io
+    PlotlyBase.to_html(io, p_kdam.plot)
+end
 
 plot(scatter(x=df_kdam.time, y=df_kdam.rh, marker_color="#FF97FF"), Layout(yaxis_tickformat=".2e"))
 

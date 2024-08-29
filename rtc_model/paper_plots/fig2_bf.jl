@@ -25,7 +25,10 @@ bf = bf_point_df(br)
 df = create_br_df(br)
 kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
 kdam2 = findall(x->x==bf.kdam[2],df.kdam)[1]
-plot([scatter(x=df.kdam, y=df.rtcb, name="RtcB"), scatter(x=df.kdam, y=df.rtca, name="RtcA")])
+p = plot([scatter(x=df.kdam, y=df.rtcb, name="RtcB"), scatter(x=df.kdam, y=df.rtca, name="RtcA")], Layout(xaxis_title="Damage rate (min<sup>-1</sup>)",yaxis_title="Molecule number"))
+open("/Users/s2257179/Desktop/bf.html", "w") do io
+    PlotlyBase.to_html(io, p.plot)
+end
 
 alpha = df.rt/kr_val # unitless
 fa = @. (1+alpha)^6/(L_val*((1+c_val*alpha)^6)+(1+alpha)^6)
