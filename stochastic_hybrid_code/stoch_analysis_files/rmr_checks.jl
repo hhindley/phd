@@ -4,35 +4,15 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/analysis_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_funcs.jl"))
 
-mount_path = "/Users/s2257179/stoch_files/kdam_testing/"
-mount_path2 = "/Users/s2257179/stoch_files/hysteresis/"
 
-all_items = readdir(mount_path)
-folders = [item for item in all_items if isdir(joinpath(mount_path, item)) && !occursin("DS", item)]
-folders_dict = Dict(i => folder for (i, folder) in enumerate(folders))
-folders_dict = Dict(filter(pair -> pair.first in [1,2,3,4,5,6,8,9], folders_dict))
+mount_path, folders, folders_dict = load_file_structure("kdam_testing")
+folders_dict = Dict(filter(pair -> pair.first in [7], folders_dict))
+dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = load_data(mount_path, folders, folders_dict)
 
-all_items2 = readdir(mount_path2)
-folders2 = [item for item in all_items2 if isdir(joinpath(mount_path2, item)) && !occursin("DS", item)]
-folders_dict2 = Dict(i => folder for (i, folder) in enumerate(folders2))
+mount_path, folders, folders_dict = load_file_structure("hysteresis")
+folders_dict = Dict(filter(pair -> pair.first in [7], folders_dict))
+dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = load_data(mount_path, folders, folders_dict)
 
-dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = setup_dicts(folders_dict)
-
-for i in eachindex(folders_dict)
-    println(i)
-    dict_times[i], dict_kdamvals[i], dict_titles[i], dict_results[i], dict_reacts[i], dict_props[i] = LoadDataVars(folders[i]);
-    dict_hists[i] = load_hist_files(joinpath(mount_path, folders_dict[i], "hists"))
-    dict_counts[i] = prod_tot_count(dict_reacts[i])
-end
-
-dict_times2, dict_kdamvals2, dict_titles2, dict_results2, dict_reacts2, dict_props2, dict_counts2, dict_hists2 = setup_dicts(folders_dict2)
-
-for i in eachindex(folders_dict2)
-    println(i)
-    dict_times2[i], dict_kdamvals2[i], dict_titles2[i], dict_results2[i], dict_reacts2[i], dict_props2[i] = LoadDataVars(folders2[i]);
-    dict_hists2[i] = load_hist_files(joinpath(mount_path2, folders_dict2[i], "hists"))
-    dict_counts2[i] = prod_tot_count(dict_reacts2[i])
-end
 
 function get_counts(dict_reacts, dict_kdamvals)
     txr_counts = []

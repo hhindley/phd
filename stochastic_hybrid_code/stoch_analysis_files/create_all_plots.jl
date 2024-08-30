@@ -29,12 +29,6 @@ for specie in all_species
     end
 end
 
-dict_plot_results[6, :rtca]
-
-(dict_plot_hists[1, :rh])
-(dict_plot_hists[1, :rd])
-(dict_plot_hists[1, :rm_a])
-
 # all propensities 
 for folder in eachindex(folders_dict)
     println(folder)
