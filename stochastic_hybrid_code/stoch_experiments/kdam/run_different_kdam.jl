@@ -6,7 +6,7 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/indexing.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/hybrid_algo.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/stoch_model.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
-include(joinpath(homedir(), "phd/stochastic_hybrid_code/threshold_analysis/histograms/make_hists.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/stoch_analysis_files/histograms/make_hists.jl"))
 
 
 n= 10 # number of cell cycles
