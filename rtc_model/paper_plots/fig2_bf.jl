@@ -17,17 +17,19 @@ bf = bf_point_df(br)
 df = create_br_df(br)
 kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
 kdam2 = findall(x->x==bf.kdam[2],df.kdam)[1]
-plot(scatter(x=df.kdam, y=df.rtcb, name="RtcB"))
+p_conc = plot([scatter(x=df.kdam, y=df.rtcb, name="RtcB", line=attr(color=:blue)), scatter(x=df.kdam, y=df.rtca, name="RtcA", line=attr(color=:red))], Layout(xaxis_title="Damage rate (min<sup>-1</sup>)",yaxis_title="Concentration μM"))
 
 # molecules
-br = get_br_molec(rtc_model, ssvals_rtc_molec, params_rtc_molec, 1.5)
-bf = bf_point_df(br)
-df = create_br_df(br)
-kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
-kdam2 = findall(x->x==bf.kdam[2],df.kdam)[1]
-p = plot([scatter(x=df.kdam, y=df.rtcb, name="RtcB"), scatter(x=df.kdam, y=df.rtca, name="RtcA")], Layout(xaxis_title="Damage rate (min<sup>-1</sup>)",yaxis_title="Molecule number"))
+br_molec = get_br_molec(rtc_model, ssvals_rtc_molec, params_rtc_molec, 1.5)
+bf_molec = bf_point_df(br_molec)
+df_molec = create_br_df(br_molec)
+kdam1_molec = findall(x->x==bf_molec.kdam[1],df_molec.kdam)[1]
+kdam2_molec = findall(x->x==bf_molec.kdam[2],df_molec.kdam)[1]
+p_molec = plot([scatter(x=df_molec.kdam, y=df_molec.rtcb, name="RtcB", line=attr(color=:blue)), scatter(x=df_molec.kdam, y=df_molec.rtca, name="RtcA", line=attr(color=:red))], Layout(xaxis_title="Damage rate (min<sup>-1</sup>)",yaxis_title="Molecule number"))
+
+p_all = [p_conc p_molec]
 open("/Users/s2257179/Desktop/bf.html", "w") do io
-    PlotlyBase.to_html(io, p.plot)
+    PlotlyBase.to_html(io, p_all.plot)
 end
 
 alpha = df.rt/kr_val # unitless
