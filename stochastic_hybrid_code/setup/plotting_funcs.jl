@@ -118,8 +118,6 @@ function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, li
         else
             preprocessed_times = get_column(df_results, :time)
         end
-    elseif plotting_func == "plot_hists"
-        dfs = df_results[string(species)]
     end
     base = ceil(sqrt(num_plots))
     columns = Int(base)
@@ -148,7 +146,11 @@ function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, li
                         end
                     end
                 elseif plotting_func == "plot_hists"
-                    plot_hist(dfs[data_ind], loc=f[i,j])
+                    if num_plots > 1
+                        plot_hist(df_results[string(species)][data_ind], loc=f[i,j])
+                    else 
+                        plot_hist(df_results, loc=f[i,j])
+                    end
                 elseif plotting_func == "plot_stoch_reacts" 
                     if num_plots > 1
                         barplot!(f[i,j], df_results[data_ind].event, df_results[data_ind].count)
@@ -212,7 +214,7 @@ function plot_hist(df; loc=nothing, label="", specie="", maxval=8e4)
         f = Figure()
         ax = Axis(f[1,1], xlabel="bin", ylabel="frequency", title="$specie", limits=((nothing, nothing), (0, maxval)))
         barplot!(ax, bin_c, df.freq, width=diff(bins), gap=0, label=label)
-        return f, ax
+        # return f, ax
     else
         barplot!(loc, bin_c, df.freq, width=diff(bins), gap=0, label=label)
         ax = loc
