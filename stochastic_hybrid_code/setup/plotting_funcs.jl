@@ -1,5 +1,6 @@
 all_species = [:rm_a, :rm_b, :rm_r, :rtca, :rtcb, :rtcr, :rh, :rd, :rt]
 react_names = [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr]
+sf = 1e6/(6.022e23*1e-15)
 
 function plotBIG(x, y; xtitle="", ytitle="", title="")
     xvals = range(minimum(x), maximum(x), length=length(x))
@@ -108,7 +109,7 @@ function create_subplots(plotting_func, num_plots, folder; size=(600, 450), xlab
     end
     return f
 end
-function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, linkaxes=true, conc=false)
+function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, linkaxes=true, conc=false, divvol=false)
     if plotting_func == "plot_results"
         if num_plots > 1 && (typeof(species) == String || typeof(species) == Symbol)
             preprocessed_times = [get_column(df, :time) for df in df_results]
@@ -131,16 +132,21 @@ function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, li
                         plot_timeres(preprocessed_times[data_ind], preprocessed_results[data_ind], f[i,j])
                     elseif typeof(species) == Array{Symbol, 1}
                         if conc
-                            [plot_timeres(preprocessed_times, (get_column(df_results, s)./get_column(df_results, :volume)), f[i,j], label="$(s)") for s in species]
+                            [plot_timeres(preprocessed_times, (get_column(df_results, s)./get_column(df_results, :volume))*sf, f[i,j], label="$(s)") for s in species]
                             # [plot_timeres(preprocessed_times, 1e6*(get_column(df_results, s)./(6.022e23*get_column(df_results, :volume))), f[i,j], label="$(s)") for s in species]
                             axislegend()
+                        elseif divvol
+                            [plot_timeres(preprocessed_times, (get_column(df_results, s)./get_column(df_results, :volume)), f[i,j], label="$(s)") for s in species]
                         else
                             [plot_timeres(preprocessed_times, get_column(df_results, s), f[i,j], label="$(s)") for s in species]
                             axislegend()
                         end
                     else
                         if conc
-                            plot_timeres(preprocessed_times, get_column(df_results, species)./get_column(df_results, species), f[i,j])
+                            plot_timeres(preprocessed_times, (get_column(df_results, species)./get_column(df_results, :volume))*sf, f[i,j])
+                        elseif divvol 
+                            plot_timeres(preprocessed_times, (get_column(df_results, species)./get_column(df_results, :volume)), f[i,j])
+
                         else
                             plot_timeres(preprocessed_times, get_column(df_results, species), f[i,j])
                         end
@@ -179,9 +185,9 @@ function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, li
     end
     return f
 end
-function plot_results(plotting_func, df_results, num_plots, folder; species=:rm_a, size=(600, 450), xlabel="", ylabel="", titles=[], yscale=identity, hidelabels=[true,true], linkaxes=true, tosave=false, conc=false)
+function plot_results(plotting_func, df_results, num_plots, folder; species=:rm_a, size=(600, 450), xlabel="", ylabel="", titles=[], yscale=identity, hidelabels=[true,true], linkaxes=true, tosave=false, conc=false, divvol=false)
     f = create_subplots(plotting_func, num_plots, folder; size=size, xlabel=xlabel, ylabel=ylabel, titles=titles, hidelabels=hidelabels, yscale=yscale)
-    f = add_subplots(f, plotting_func, df_results, num_plots; species=species, linkaxes=linkaxes, conc=conc)
+    f = add_subplots(f, plotting_func, df_results, num_plots; species=species, linkaxes=linkaxes, conc=conc, divvol=divvol)
     
     if tosave
         plots_folder = joinpath(joinpath(mount_path, folder), "plots")
