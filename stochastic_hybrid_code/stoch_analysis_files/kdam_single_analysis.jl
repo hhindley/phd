@@ -1,6 +1,4 @@
 using StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase, Distributed, TableOperations, JSON, Query, FindFirstFunctions, CategoricalArrays, Colors
-
-# using PlotlyJS
 using InteractiveViz, WGLMakie
 
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
