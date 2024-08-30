@@ -1,4 +1,5 @@
 all_species = [:rm_a, :rm_b, :rm_r, :rtca, :rtcb, :rtcr, :rh, :rd, :rt]
+react_names = [:tscr_ab, :tscr_r, :tlr_a, :tlr_b, :tlr_r, :Vinflux, :Vdam, :Vtag, :Vrep, :deg_rd, :deg_rma, :deg_rmb, :deg_rmr]
 
 function plotBIG(x, y; xtitle="", ytitle="", title="")
     xvals = range(minimum(x), maximum(x), length=length(x))
@@ -149,7 +150,11 @@ function add_subplots(f, plotting_func, df_results, num_plots; species=:rm_a, li
                 elseif plotting_func == "plot_hists"
                     plot_hist(dfs[data_ind], loc=f[i,j])
                 elseif plotting_func == "plot_stoch_reacts" 
-                    barplot!(f[i,j], df_results[data_ind].event, df_results[data_ind].count)
+                    if num_plots > 1
+                        barplot!(f[i,j], df_results[data_ind].event, df_results[data_ind].count)
+                    else
+                        barplot!(f[i,j], df_results.event, df_results.count)
+                    end
                 elseif plotting_func == "plot_individual_reacts"
                     if data_ind <= length(react_names[1:end-1])
                         barplot!(f[i,j], df_results[react_names[1:end-1][data_ind]].threshold, df_results[react_names[1:end-1][data_ind]].count)

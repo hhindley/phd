@@ -3,17 +3,16 @@ using StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, 
 # using PlotlyJS
 using InteractiveViz, GLMakie
 
-include(joinpath(homedir(), "phd/stochastic_hybrid_code/analysis_funcs.jl"))
+# include(joinpath(homedir(), "phd/stochastic_hybrid_code/analysis_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_funcs.jl"))
 
 mount_path = "/Users/s2257179/stoch_files/kdam_testing/"
-
 all_items = readdir(mount_path)
 folders = [item for item in all_items if isdir(joinpath(mount_path, item)) && !occursin("DS", item)]
 folders_dict = Dict(i => folder for (i, folder) in enumerate(folders))
 
-folders_dict = Dict(filter(pair -> pair.first in [7,8,9], folders_dict))
+folders_dict = Dict(filter(pair -> pair.first in [7], folders_dict))
 
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = setup_dicts(folders_dict)
 
@@ -82,20 +81,3 @@ for specie in all_species
     plot_hists_overlay(1, "$specie", 2, last=[7], folder=folders_dict[1], maxval=2e4)
 end
 
-
-# average molecule numbers over whole simulation
-mean(dict_results[1][1].rm_a)
-mean(dict_results[1][2].rm_a)
-mean(dict_results[1][3].rm_a)
-mean(dict_results[1][4].rm_a)
-mean(dict_results[1][5].rm_a)
-mean(dict_results[1][6].rm_a)
-mean(dict_results[1][7].rm_a)
-mean(dict_results[1][8].rm_a)
-mean(dict_results[1][9].rm_a)
-mean(dict_results[1][10].rm_a)
-mean(dict_results[1][11].rm_a)
-mean(dict_results[1][12].rm_a)
-mean(dict_results[1][13].rm_a)
-mean(dict_results[1][14].rm_a)
-mean(dict_results[1][15].rm_a)
