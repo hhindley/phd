@@ -9,7 +9,7 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/stoch_analysis_files/histograms/make_hists.jl"))
 
 
-n= 10 # number of cell cycles
+n= 10000 # number of cell cycles
 options = Dict(
 "threshold"  =>  0.,       # Threshold to decide between determinisitic or stochastic reaction
 "FixDetReact"=> [14],# [10,11,12,13,14,15,16,17,18],       # Reactions to be treated determinisitically
@@ -36,7 +36,7 @@ end
 
 println("finished X0 calc")
 
-mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing"
+mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/keyvals2"
 
 date = Dates.format(Dates.now(), "ddmm")
 dir_num = 1
