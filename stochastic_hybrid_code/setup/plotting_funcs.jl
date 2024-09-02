@@ -11,7 +11,7 @@ function plotBIG(x, y; xtitle="", ytitle="", title="")
     return f
 end
 function plot_times(df_times, title; folder="")
-    if "thresh" in names(df_times)
+    if "thresh" in names(df_times) || "threshold" in names(df_times)
         threshold_vals = df_times.threshold
         title = "$title, \n thresh vals: $(minimum(threshold_vals)), $(maximum(threshold_vals)), step=$(threshold_vals[2]-threshold_vals[1]), length=$(length(threshold_vals))"
         f=Figure()
