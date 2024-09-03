@@ -1,8 +1,12 @@
-using Parameters, CSV, DataFrames, DifferentialEquations, StaticArrays, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, Statistics
+using Parameters, CSV, DataFrames, DifferentialEquations, LabelledArrays, BenchmarkTools, OrderedCollections, DataInterpolations, Statistics
 using Revise, ForwardDiff, Setfield, LinearAlgebra, Printf, ModelingToolkit
 # using Plots
 using PlotlyJS, ProgressBars
 
+using Parameters, CSV, DataFrames, DifferentialEquations, LabelledArrays, BenchmarkTools
+using Revise, LinearAlgebra, Printf, ModelingToolkit, OrderedCollections
+# using Plots
+using PlotlyJS, ProgressBars
 include(joinpath(homedir(), "phd/general_funcs/solving.jl"))
 include(joinpath(homedir(), "phd/rtc_model/models/rtc_orig.jl"))
 include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params.jl"))
@@ -155,7 +159,6 @@ yaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,3],
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=axes_title_fs, color="black", family="sans-serif"), showlegend=false, margin=margins))
 
 PlotlyJS.savefig(lam_p, "/home/holliehindley/phd/rtc_model/paper_plots/plots/lam_rtcb.svg")
-
 
 
 kin_range = [1e-4, 1.8e-4, 2.4e-4, 3e-4]#range(0.0001,stop=0.0003,length=4)
@@ -417,3 +420,65 @@ yaxis=attr(showline=true,linewidth=3,linecolor="black"),xaxis=attr(showline=true
 xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=24, color="black", family="sans-serif")))
 
 
+
+lam_range = [0.01,0.013,0.015,0.02]
+kin_range = [1e-4, 1.8e-4, 2.4e-4, 3e-4]
+
+bfs=[]; dfs=[];
+copyparams = deepcopy(params_rtc)
+for i in ProgressBar(eachindex(kin_range))
+    copyparams[kin] = kin_range[i]
+    copyparams[lam] = lam_range[i]  
+    br = get_br(rtc_model, ssvals_rtc, copyparams, 1.5)
+    bf = bf_point_df(br)
+    df = create_br_df(br)
+    push!(bfs, bf)
+    push!(dfs, df)
+end
+
+kin_rtcb1, kin_rtcb2, kin_rtcb3 = plot_rtc_bf(dfs[1], findall(x->x==bfs[1].kdam[1],dfs[1].kdam)[1], findall(x->x==bfs[1].kdam[2],dfs[1].kdam)[1], :rtcb, "1", "dda0ddff", "λ = $(round.(kin_range[1]; sigdigits=2))", "1")
+kin_rtcb1a, kin_rtcb2a, kin_rtcb3a = plot_rtc_bf(dfs[2], findall(x->x==bfs[2].kdam[1],dfs[2].kdam)[1], findall(x->x==bfs[2].kdam[2],dfs[2].kdam)[1], :rtcb, "2", "ba55d3ff", "λ = $(round.(kin_range[2]; sigdigits=2))", "1")
+kin_rtcb1b, kin_rtcb2b, kin_rtcb3b = plot_rtc_bf(dfs[3], findall(x->x==bfs[3].kdam[1],dfs[3].kdam)[1], findall(x->x==bfs[3].kdam[2],dfs[3].kdam)[1], :rtcb, "3", "800080ff", "λ = $(round.(kin_range[3]; sigdigits=2))", "1")
+kin_rtcb1c, kin_rtcb2c, kin_rtcb3c = plot_rtc_bf(dfs[4], findall(x->x==bfs[4].kdam[1],dfs[4].kdam)[1], findall(x->x==bfs[4].kdam[2],dfs[4].kdam)[1], :rtcb, "3", "800080ff", "λ = $(round.(kin_range[4]; sigdigits=2))", "1")
+
+kin_rtcb_nonbs = scatter(x=dfs[1].kdam,y=dfs[1].rtcb,showlegend=true,line=attr(width=9, color="#c1c1c1ff"), name="λ = $(round.(kin_range[1]; sigdigits=2))", legendgroup="1")
+kin_rtcb_nonbs1 = scatter(x=dfs[4].kdam,y=dfs[4].rtcb,showlegend=true,line=attr(width=9, color="#c1c1c1ff"), name="λ = $(round.(kin_range[1]; sigdigits=2))", legendgroup="1")
+
+kin_p = plot([kin_rtcb1, kin_rtcb2, kin_rtcb3, kin_rtcb1a, kin_rtcb2a, kin_rtcb3a, kin_rtcb1b, kin_rtcb2b, kin_rtcb3b, kin_rtcb1c, kin_rtcb2c, kin_rtcb3c],
+Layout(xaxis_title="Damage rate (min<sup>-1</sup>)", 
+yaxis_title="RtcB (μM)", 
+yaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs,automargin=true),xaxis=attr(showline=true,linewidth=axes_linewidth,linecolor="black",range=[0,1.5],tickvals=[0,0.5,1,1.5],tickfont=tick_fs,automargin=true),
+xaxis_showgrid=false,yaxis_showgrid=false,yaxis2_showgrid=false,plot_bgcolor="white",font=attr(size=axes_title_fs, color="black", family="sans-serif"), showlegend=false, margin=margins))
+
+
+df = double_param_vary(rtc_model, ssvals_rtc, lam_range, lam, kin_range, kin, params_rtc, 1.5)
+max_, min_, param_vals = bistable_region(rtc_model, ssvals_rtc, lam_range, lam, kin_range, kin, params_rtc, 1.5)
+
+
+bfs = []
+dfs = []
+kins = []
+lams = []
+copyparams = deepcopy(params_rtc)
+for kin_val in kin_range
+    for lam_val in lam_range
+        copyparams[kin] = kin_val
+        copyparams[lam] = lam_val
+        br = get_br(rtc_model, ssvals_rtc, copyparams, 7.)
+        bf = bf_point_df(br)
+        df = create_br_df(br)
+        push!(bfs, bf)
+        push!(dfs, df)
+        push!(kins, kin_val)
+        push!(lams, lam_val)
+    end
+end
+
+
+s = [scatter(x=dfs[i].kdam, y=dfs[i].rtcb, name="kin: $(kins[i]), λ: $(lams[i])") for i in 1:16]
+
+s1 = plot(s)
+
+open("/Users/s2257179/Desktop/lam_kin.html", "w") do io
+    PlotlyBase.to_html(io, s1.plot)
+end
