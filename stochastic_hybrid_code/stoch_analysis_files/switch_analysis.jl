@@ -4,9 +4,9 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/switching_funcs.jl"))
 
-mount_path, folders, folders_dict = load_file_structure("kdam_testing")
+mount_path, folders, folders_dict = load_file_structure("kdam_testing/keyvals2")
 folders_dict = Dict(filter(pair -> pair.first in [6,7,8,9], folders_dict))
-dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = load_data(mount_path, folders, folders_dict)
+dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = load_data(mount_path, folders, folders_dict, reacts=false, props=false)
 
 # plot one result
 folder = 6; index = 1; species = "rtca"; num_plots = 1;
@@ -67,23 +67,21 @@ DataInspector(f_rtcb)
 display(GLMakie.Screen(), f_rtcb) 
 
 
-
-switch_vals_on6, switch_vals_off6 = get_all_switch_rates(6, threshold=threshold)
-switch_vals_on7, switch_vals_off7 = get_all_switch_rates(7, threshold=threshold)
-switch_vals_on8, switch_vals_off8 = get_all_switch_rates(8, threshold=threshold)
-switch_vals_on9, switch_vals_off9 = get_all_switch_rates(9, threshold=threshold)
+switch_vals_on = []
+switch_vals_off = []
+for i in eachindex(dict_results)
+    println(i)
+    switch_val_on, switch_val_off = get_all_switch_rates(i, threshold=threshold)
+    push!(switch_vals_on, switch_val_on)
+    push!(switch_vals_off, switch_val_off)
+end
 
 
 f_switch = Figure()
 ax = Axis(f_switch[1,1], xlabel="kdam", ylabel="switch rate", title="threshold method", yscale=log10)
-lines!(ax, dict_kdamvals[6][:kdam], switch_vals_on6, label="on→off 6")
-lines!(ax, dict_kdamvals[6][:kdam], switch_vals_off6, label="off→on 6")
-lines!(ax, dict_kdamvals[7][:kdam], switch_vals_on7, label="on→off 7")
-lines!(ax, dict_kdamvals[7][:kdam], switch_vals_off7, label="off→on 7")
-lines!(ax, dict_kdamvals[8][:kdam], switch_vals_on8, label="on→off 8")
-lines!(ax, dict_kdamvals[8][:kdam], switch_vals_off8, label="off→on 8")
-lines!(ax, dict_kdamvals[9][:kdam], switch_vals_on9, label="on→off 9")
-lines!(ax, dict_kdamvals[9][:kdam], switch_vals_off9, label="off→on 9")
+[lines!(ax, dict_kdamvals[i][:kdam], switch_vals_on[i], label="on→off $i") for i in eachindex(dict_kdamvals)]
+[lines!(ax, dict_kdamvals[i][:kdam], switch_vals_off[i], label="off→on $i") for i in eachindex(dict_kdamvals)]
+
 axislegend(position=:rc)
 display(GLMakie.Screen(), f_switch)
 
@@ -94,30 +92,42 @@ lines!(ax, dict_kdamvals[folder][:kdam], switch_vals_off1, label="off→on")
 axislegend()
 
 
-frac_on6, frac_off6 = calc_frac_times(switch_vals_on6, switch_vals_off6)
-frac_on7, frac_off7 = calc_frac_times(switch_vals_on7, switch_vals_off7)
-frac_on8, frac_off8 = calc_frac_times(switch_vals_on8, switch_vals_off8)
-frac_on9, frac_off9 = calc_frac_times(switch_vals_on9, switch_vals_off9)
+fracs_on = []
+fracs_off = []
+for i in eachindex(switch_vals_on)
+    println(i)
+    frac_on, frac_off = calc_frac_times(switch_vals_on[i], switch_vals_off[i])
+    push!(fracs_on, frac_on)
+    push!(fracs_off, frac_off)
+end
 
 f_frac = Figure()
 ax = Axis(f_frac[1,1], xlabel="kdam", ylabel="fraction of time in state", title="threshold method")
-lines!(ax, dict_kdamvals[6][:kdam], frac_on6, label="on state6")
-lines!(ax, dict_kdamvals[6][:kdam], frac_off6, label="off state6")
-lines!(ax, dict_kdamvals[7][:kdam], frac_on7, label="on state7")
-lines!(ax, dict_kdamvals[7][:kdam], frac_off7, label="off state7")
-lines!(ax, dict_kdamvals[8][:kdam], frac_on8, label="on state8")
-lines!(ax, dict_kdamvals[8][:kdam], frac_off8, label="off state8")
-lines!(ax, dict_kdamvals[9][:kdam], frac_on9, label="on state9")
-lines!(ax, dict_kdamvals[9][:kdam], frac_off9, label="off state9")
+[lines!(ax, dict_kdamvals[i][:kdam], fracs_on[i], label="on state $i") for i in eachindex(dict_kdamvals)]
+[lines!(ax, dict_kdamvals[i][:kdam], fracs_off[i], label="off state $i") for i in eachindex(dict_kdamvals)]
 axislegend(position=:rc)
 display(GLMakie.Screen(), f_frac)
-frac_on6+frac_off6
-dict_reacts[6][1]
+
+
 
 
 # average conc for on and off states 
 rtca_on, rtcb_on = get_av_conc_state(dict_results[6][1], on=true)
 rtca_off, rtcb_off = get_av_conc_state(dict_results[6][1], on=false)
+
+rtca_ons = []
+rtcb_ons = []
+rtca_offs = []
+rtcb_offs = []
+for i in eachindex(dict_results)
+    println(i)
+    rtca_on, rtcb_on, rtca_off, rtcb_off = get_all_av_conc(i)
+    push!(rtca_ons, rtca_on)
+    push!(rtcb_ons, rtcb_on)
+    push!(rtca_offs, rtca_off)
+    push!(rtcb_offs, rtcb_off)
+end
+
 
 rtc_on6 = [get_av_conc_state(dict_results[6][i], on=true) for i in eachindex(dict_results[6])]
 rtc_off6 = [get_av_conc_state(dict_results[6][i], on=false) for i in eachindex(dict_results[6])]
@@ -152,14 +162,24 @@ rtcb_off7 = [rtc_off7[i][2] for i in eachindex(rtc_off7)]
 rtcb_off8 = [rtc_off8[i][2] for i in eachindex(rtc_off8)]
 rtcb_off9 = [rtc_off9[i][2] for i in eachindex(rtc_off9)]
 
+normalized_fracs_on = [clamp.(fracs_on[i], 0, 1) for i in eachindex(fracs_on)]
+normalized_fracs_off = [clamp.(fracs_off[i], 0, 1) for i in eachindex(fracs_off)]
+
 f = Figure()
 ax = Axis(f[1,1])#, yscale=log10)
-scatter!(ax, dict_kdamvals[6][:kdam], rtca_on6, color=frac_on6)
-scatter!(ax, dict_kdamvals[6][:kdam], rtca_on7, color=frac_on7)
-scatter!(ax, dict_kdamvals[6][:kdam], rtca_on8, color=frac_on8)
-scatter!(ax, dict_kdamvals[6][:kdam], rtca_on9, color=frac_on9)
+[scatter!(ax, dict_kdamvals[i][:kdam], rtca_ons[i], color=normalized_fracs_on[i]) for i in eachindex(rtca_ons)]
+[scatter!(ax, dict_kdamvals[i][:kdam], rtca_offs[i], color=normalized_fracs_off[i]) for i in eachindex(rtca_offs)]
+Colorbar(f[1, 2], limits = (0,1), colormap = :viridis)
 
-scatter!(ax, dict_kdamvals[6][:kdam], rtca_off6, color=frac_off6)
-scatter!(ax, dict_kdamvals[6][:kdam], rtca_off7, color=frac_off7)
-scatter!(ax, dict_kdamvals[6][:kdam], rtca_off8, color=frac_off8)
-scatter!(ax, dict_kdamvals[6][:kdam], rtca_off9, color=frac_off9)
+min_on = minimum([minimum(fracs_on[i]) for i in eachindex(fracs_on)])
+max_on = maximum([maximum(fracs_on[i]) for i in eachindex(fracs_on)])
+min_off = minimum([minimum(fracs_off[i]) for i in eachindex(fracs_on)])
+max_off = maximum([maximum(fracs_off[i]) for i in eachindex(fracs_on)])
+
+
+
+df = DataFrame(:rtca_ons=>rtca_ons, :rtcb_ons=>rtcb_ons, :rtca_offs=>rtca_offs, :rtcb_offs=>rtcb_offs, :fracs_on=>fracs_on, :fracs_off=>fracs_off)
+df_kdam_vals = DataFrame(:kdam=>dict_kdamvals[6][:kdam])
+
+CSV.write("/Users/s2257179/Desktop/res.csv", df)
+CSV.write("/Users/s2257179/Desktop/kdam.csv", df_kdam_vals)

@@ -24,14 +24,14 @@ function switch_times(res; threshold=nothing)
         push!(stop_times, df.time[i])
     end
     if start_times[1] > stop_times[1] && start_times[end] > stop_times[end]
-        println("start_times[1] > stop_times[1] && start_times[end] > stop_times[end]")
+        # println("start_times[1] > stop_times[1] && start_times[end] > stop_times[end]")
         pushfirst!(start_times, df.time[1])
         push!(stop_times, df.time[end])
     elseif start_times[end] > stop_times[end]
-        println("start_times[end] > stop_times[end]")
+        # println("start_times[end] > stop_times[end]")
         push!(stop_times, df.time[end])
     elseif start_times[1] > stop_times[1] 
-        println("start_times[1] > stop_times[1] ")
+        # println("start_times[1] > stop_times[1] ")
         pushfirst!(start_times, df.time[1])
     end
     return df, start_times, stop_times
@@ -51,7 +51,7 @@ function get_all_switch_rates(folder; threshold=nothing)
     switch_rates_on = []
     switch_rates_off = []
     for i in eachindex(dict_results[folder])
-        println(i)
+        # println(i)
         df, start_times, stop_times = switch_times(dict_results[folder][i], threshold=threshold)
         switch_rate_on, switch_rate_off = calc_switch_rate(df, start_times, stop_times)
         push!(switch_rates_on, switch_rate_on)
@@ -112,4 +112,23 @@ function get_av_conc_state(res; on=true)
     end
 
     return rtca_mean, rtcb_mean
+
+    # return rtca_mean, rtcb_mean
+end
+
+function get_all_av_conc(folder)
+    rtca_on = []
+    rtcb_on = []
+    rtca_off = []
+    rtcb_off = []
+    for i in eachindex(dict_results[folder])
+        # println(i)
+        rtca_mean_on, rtcb_mean_on = get_av_conc_state(dict_results[folder][i], on=true)
+        rtca_mean_off, rtcb_mean_off = get_av_conc_state(dict_results[folder][i], on=false)
+        push!(rtca_on, rtca_mean_on)
+        push!(rtcb_on, rtcb_mean_on)
+        push!(rtca_off, rtca_mean_off)
+        push!(rtcb_off, rtcb_mean_off)
+    end
+    return rtca_on, rtcb_on, rtca_off, rtcb_off
 end
