@@ -474,6 +474,7 @@ for kin_val in kin_range
     end
 end
 
+dfs
 
 s = [scatter(x=dfs[i].kdam, y=dfs[i].rtcb, name="kin: $(kins[i]), λ: $(lams[i])") for i in 1:16]
 

@@ -5,9 +5,9 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_funcs.jl"))
 
 type1 = :threshold
-mount_path, folders, folders_dict = load_file_structure("threshold_testing")
+mount_path, folders, folders_dict = load_file_structure("threshold_testing/with_stochdiv")
 folders_dict
-folders_dict = Dict(filter(pair -> pair.first in [1,2,3], folders_dict))
+folders_dict = Dict(filter(pair -> pair.first in [3], folders_dict))
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = load_data(mount_path, folders, folders_dict)
 
 
@@ -42,4 +42,3 @@ for folder in eachindex(folders_dict)
     end
 end
 
-folders_dict
