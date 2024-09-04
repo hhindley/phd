@@ -1,12 +1,23 @@
 using InteractiveViz, GLMakie, StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase, Distributed, TableOperations, JSON, Query, FindFirstFunctions, CategoricalArrays, Colors
+using Parameters, LabelledArrays, BenchmarkTools
+using Revise, LinearAlgebra, Printf, ModelingToolkit, OrderedCollections
 
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/switching_funcs.jl"))
 
+include(joinpath(homedir(), "phd/general_funcs/all_model_funcs.jl"))
+include(joinpath(homedir(), "phd/general_funcs/solving.jl"))
+include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params.jl"))
+include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params_molecs.jl"))
+
+include(joinpath(homedir(), "phd/rtc_model/models/rtc_orig.jl"))
+include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
+
 mount_path, folders, folders_dict = load_file_structure("kdam_testing/keyvals2")
-folders_dict = Dict(filter(pair -> pair.first in [6,7,8,9], folders_dict))
-dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = load_data(mount_path, folders, folders_dict, reacts=false, props=false)
+folders_dict = Dict(filter(pair -> pair.first in [6,7,8,9,10,11,12,13,14,15], folders_dict))
+# folders_dict = Dict(filter(pair -> pair.first in [6], folders_dict))
+dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = load_data(mount_path, folders, folders_dict, reacts=false, props=false, hists=false)
 
 # plot one result
 folder = 6; index = 1; species = "rtca"; num_plots = 1;
@@ -109,58 +120,51 @@ axislegend(position=:rc)
 display(GLMakie.Screen(), f_frac)
 
 
+# threshold as unstable steady state line
+br = get_br(rtc_model, ssvals_rtc, params_rtc, 1.5)
+bf = bf_point_df(br)
+df = create_br_df(br)
+kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
+kdam2 = findall(x->x==bf.kdam[2],df.kdam)[1]
+unstab_species = df[!,specie][kdam1:kdam2]
+unstab_kdam = df[!,kdam][kdam1:kdam2]
 
+function find_closest_index(array, value)
+    differences = abs.(array .- value)
+    closest_index = argmin(differences)
+    return closest_index
+end
 
-# average conc for on and off states 
-rtca_on, rtcb_on = get_av_conc_state(dict_results[6][1], on=true)
-rtca_off, rtcb_off = get_av_conc_state(dict_results[6][1], on=false)
-
-rtca_ons = []
-rtcb_ons = []
-rtca_offs = []
-rtcb_offs = []
-for i in eachindex(dict_results)
+thresholds=[]
+for i in dict_kdamvals[6][:kdam]
     println(i)
-    rtca_on, rtcb_on, rtca_off, rtcb_off = get_all_av_conc(i)
-    push!(rtca_ons, rtca_on)
-    push!(rtcb_ons, rtcb_on)
-    push!(rtca_offs, rtca_off)
-    push!(rtcb_offs, rtcb_off)
+    index = find_closest_index(unstab_kdam, i)
+    push!(thresholds, unstab_species[index])
 end
 
 
-rtc_on6 = [get_av_conc_state(dict_results[6][i], on=true) for i in eachindex(dict_results[6])]
-rtc_off6 = [get_av_conc_state(dict_results[6][i], on=false) for i in eachindex(dict_results[6])]
+# average conc for on and off states 
+species = :rh
+means_on = get_av_conc_state(dict_results[6][1], threshold, species, on=true)
+means_off = get_av_conc_state(dict_results[6][1], threshold, species, on=false)
 
-rtc_on7 = [get_av_conc_state(dict_results[7][i], on=true) for i in eachindex(dict_results[7])]
-rtc_off7 = [get_av_conc_state(dict_results[7][i], on=false) for i in eachindex(dict_results[7])]
+species_ons = []
+species_offs = []
+for i in eachindex(dict_results)
+    println(i)
+    species_on, species_off = get_all_av_conc(i, species)
+    push!(species_ons, species_on)
+    push!(species_offs, species_off)
+end
 
-rtc_on8 = [get_av_conc_state(dict_results[8][i], on=true) for i in eachindex(dict_results[8])]
-rtc_off8 = [get_av_conc_state(dict_results[8][i], on=false) for i in eachindex(dict_results[8])]
+cmap = :rainbow_bgyr_35_85_c72_n256
+f = Figure()
+ax = Axis(f[1,1], xlabel="Damage rate (min-1)", ylabel="[$species] (μM)")
+[scatter!(ax, kdams, species_ons[i], color=fracs_on[i], colorrange=(0,1), colormap=cmap) for i in eachindex(species_ons)]
+[scatter!(ax, kdams, species_offs[i], color=fracs_off[i], colorrange=(0,1), colormap=cmap) for i in eachindex(species_offs)]
+Colorbar(f[1, 2], limits = (0,1), colormap = cmap, label="fraction of time in state")
 
-rtc_on9 = [get_av_conc_state(dict_results[9][i], on=true) for i in eachindex(dict_results[9])]
-rtc_off9 = [get_av_conc_state(dict_results[9][i], on=false) for i in eachindex(dict_results[9])]
 
-
-rtca_on6 = [rtc_on6[i][1] for i in eachindex(rtc_on6)]
-rtca_on7 = [rtc_on7[i][1] for i in eachindex(rtc_on7)]
-rtca_on8 = [rtc_on8[i][1] for i in eachindex(rtc_on8)]
-rtca_on9 = [rtc_on9[i][1] for i in eachindex(rtc_on9)]
-
-rtcb_on6 = [rtc_on6[i][2] for i in eachindex(rtc_on6)]
-rtcb_on7 = [rtc_on7[i][2] for i in eachindex(rtc_on7)]
-rtcb_on8 = [rtc_on8[i][2] for i in eachindex(rtc_on8)]
-rtcb_on9 = [rtc_on9[i][2] for i in eachindex(rtc_on9)]
-
-rtca_off6 = [rtc_off6[i][1] for i in eachindex(rtc_off6)]
-rtca_off7 = [rtc_off7[i][1] for i in eachindex(rtc_off7)]
-rtca_off8 = [rtc_off8[i][1] for i in eachindex(rtc_off8)]
-rtca_off9 = [rtc_off9[i][1] for i in eachindex(rtc_off9)]
-
-rtcb_off6 = [rtc_off6[i][2] for i in eachindex(rtc_off6)]
-rtcb_off7 = [rtc_off7[i][2] for i in eachindex(rtc_off7)]
-rtcb_off8 = [rtc_off8[i][2] for i in eachindex(rtc_off8)]
-rtcb_off9 = [rtc_off9[i][2] for i in eachindex(rtc_off9)]
 
 
 
@@ -177,14 +181,25 @@ rtcb_offs = [convert_to_vector(df.rtcb_offs[i]) for i in 1:nrow(df)]
 fracs_on = [convert_to_vector(df.fracs_on[i]) for i in 1:nrow(df)]
 fracs_off = [convert_to_vector(df.fracs_off[i]) for i in 1:nrow(df)]
 
-rtca_offs1 = reverse(rtca_offs)
-fracs_off1 = reverse(fracs_off)
-rtca_conc = [rtca_ons; rtca_offs1]
-fracs = [fracs_on; fracs_off1]
+
+rtca_conc = [rtca_ons; rtca_offs]
+rtcb_conc = [rtcb_ons; rtcb_offs]
+fracs = [fracs_on; fracs_off]
 
 cmap = :rainbow_bgyr_35_85_c72_n256
 f = Figure()
 ax = Axis(f[1,1], xlabel="Damage rate (min-1)", ylabel="[RtcA] (μM)")
 [scatter!(ax, kdams, rtca_conc[i], color=fracs[i], colorrange=(0,1), colormap=cmap) for i in eachindex(rtca_conc)]
 Colorbar(f[1, 2], limits = (0,1), colormap = cmap, label="fraction of time in state")
+
+f = Figure()
+ax = Axis(f[1,1], xlabel="Damage rate (min-1)", ylabel="[RtcB] (μM)")
+[scatter!(ax, kdams, rtcb_conc[i], color=fracs[i], colorrange=(0,1), colormap=cmap) for i in eachindex(rtcb_conc)]
+Colorbar(f[1, 2], limits = (0,1), colormap = cmap, label="fraction of time in state")
+
+df = DataFrame(:rtca_ons=>rtca_ons, :rtcb_ons=>rtcb_ons, :rtca_offs=>rtca_offs, :rtcb_offs=>rtcb_offs, :fracs_on=>fracs_on, :fracs_off=>fracs_off)
+df_kdam_vals = DataFrame(:kdam=>dict_kdamvals[6][:kdam])
+
+CSV.write("/Users/s2257179/Desktop/res.csv", df)
+CSV.write("/Users/s2257179/Desktop/kdam.csv", df_kdam_vals)
 

@@ -212,14 +212,20 @@ function load_file_structure(main_folder)
     return mount_path, folders, folders_dict
 end
 
-function load_data(mount_path, folders, folders_dict; reacts=true, results=true, props=true)
+function load_data(mount_path, folders, folders_dict; reacts=true, results=true, props=true, hists=true)
     dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = setup_dicts(folders_dict)
 
     for i in eachindex(folders_dict)
         println(i)
         dict_times[i], dict_kdamvals[i], dict_titles[i], dict_results[i], dict_reacts[i], dict_props[i] = LoadDataVars(folders[i]; reacts=reacts, results=results, props=props);
-        dict_hists[i] = load_hist_files(joinpath(mount_path, folders_dict[i], "hists"))
-        dict_counts[i] = prod_tot_count(dict_reacts[i])
+        if hists && reacts
+            dict_hists[i] = load_hist_files(joinpath(mount_path, folders_dict[i], "hists"))
+            dict_counts[i] = prod_tot_count(dict_reacts[i])
+        elseif hists 
+            dict_hists[i] = load_hist_files(joinpath(mount_path, folders_dict[i], "hists"))
+        elseif reacts
+            dict_counts[i] = prod_tot_count(dict_reacts[i])
+        end
     end
     return dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists
 end

@@ -66,69 +66,77 @@ function calc_frac_times(switch_vals_on, switch_vals_off)
     return frac_on, frac_off
 end
 
-function get_av_conc_state(res; on=true)
-    df = res[!,[:time, :rtca, :rtcb, :volume]]
-    if threshold !== nothing
-        condition = (df.rtca .> threshold) .| (df.rtcb .> threshold)
-    else
-        diff_rtca = diff(df.rtca)
-        diff_rtcb = diff(df.rtcb)
-        condition = (diff_rtca .> 1e-10) .| (diff_rtcb .> 1e-10)
-        pushfirst!(condition, !condition[1])
+function get_av_conc_state(res, threshold, species; on=true)
+    df = res
+    if typeof(species) == Symbol
+        species = [species]
     end
-    df = insertcols!(df, 1, :on => condition)
+    df_time = getproperty(df, :time)
+    df_volume = getproperty(df, :volume)
+    df_rtca = getproperty(df, :rtca)
+    df_rtcb = getproperty(df, :rtcb)
+    
+    if species == [:rtca, :rtcb]
+        all_species = [df_rtca, df_rtcb]
+    else
+        all_species = [getproperty(df,i) for i in species]
+    end
+
+    condition = (df_rtca .> threshold) .| (df_rtcb .> threshold)
+    condition_changes = diff(Int.(condition))
+
     condition_changes = diff(Int.(condition))
     start_indices = findall(x -> x == 1, condition_changes)
     stop_indices = findall(x -> x == -1, condition_changes)
 
     if start_indices[1] > stop_indices[1] && start_indices[end] > stop_indices[end]
-        # println("start_times[1] > stop_times[1] && start_times[end] > stop_times[end]")
         pushfirst!(start_indices, 1)
-        push!(stop_indices, length(df.time))
+        push!(stop_indices, length(df_time))
     elseif start_indices[end] > stop_indices[end]
-        # println("start_times[end] > stop_times[end]")
-        push!(stop_indices, length(df.time))
+        push!(stop_indices, length(df_time))
     elseif start_indices[1] > stop_indices[1] 
-        # println("start_times[1] > stop_times[1] ")
         pushfirst!(start_indices, 1)
     end
 
     if on
-        rtca_vals = [@view df.rtca[start:stop] for (start, stop) in zip(start_indices, stop_indices)]
-        rtcb_vals = [@view df.rtcb[start:stop] for (start, stop) in zip(start_indices, stop_indices)]
-        vol_vals = [@view df.volume[start:stop] for (start, stop) in zip(start_indices, stop_indices)]
+        species_vals = [[@view all_species[i][start:stop] for (start, stop) in zip(start_indices, stop_indices)] for i in eachindex(all_species)]
+        vol_vals = [@view df_volume[start:stop] for (start, stop) in zip(start_indices, stop_indices)]
 
-        rtca_mean = mean([mean(sf.*(rtca ./ volume)) for (rtca, volume) in zip(rtca_vals, vol_vals)])
-        rtcb_mean = mean([mean(sf.*(rtcb ./ volume)) for (rtcb, volume) in zip(rtcb_vals, vol_vals)])
+        species_mean = [mean([mean(sf.*(species ./ volume)) for (species, volume) in zip(species_vals[i], vol_vals)]) for i in eachindex(species)]
+    
     else
         new_starts = start_indices[2:end]
         new_stops = stop_indices[1:end-1]
-        rtca_vals = [@view df.rtca[stop:start] for (start, stop) in zip(new_starts, new_stops)]
-        rtcb_vals = [@view df.rtcb[stop:start] for (start, stop) in zip(new_starts, new_stops)]
-        vol_vals = [@view df.volume[stop:start] for (start, stop) in zip(new_starts, new_stops)]
 
-        rtca_mean = mean([mean(sf*(rtca ./ volume)) for (rtca, volume) in zip(rtca_vals, vol_vals)])
-        rtcb_mean = mean([mean(sf*(rtcb ./ volume)) for (rtcb, volume) in zip(rtcb_vals, vol_vals)])
+        species_vals = [[@view all_species[i][stop:start] for (start, stop) in zip(new_starts, new_stops)] for i in eachindex(all_species)]
+        vol_vals = [@view df_volume[stop:start] for (start, stop) in zip(new_starts, new_stops)]
+
+        species_mean = [mean([mean(sf.*(species ./ volume)) for (species, volume) in zip(species_vals[i], vol_vals)]) for i in eachindex(species)]
+
     end
 
-    return rtca_mean, rtcb_mean
+    return species_mean
 
-    # return rtca_mean, rtcb_mean
 end
 
-function get_all_av_conc(folder)
-    rtca_on = []
-    rtcb_on = []
-    rtca_off = []
-    rtcb_off = []
+function get_all_av_conc(folder, threshold, species)
+    species_on = []
+    species_off = []
     for i in eachindex(dict_results[folder])
         # println(i)
-        rtca_mean_on, rtcb_mean_on = get_av_conc_state(dict_results[folder][i], on=true)
-        rtca_mean_off, rtcb_mean_off = get_av_conc_state(dict_results[folder][i], on=false)
-        push!(rtca_on, rtca_mean_on)
-        push!(rtcb_on, rtcb_mean_on)
-        push!(rtca_off, rtca_mean_off)
-        push!(rtcb_off, rtcb_mean_off)
+        if typeof(threshold) == Array
+            for i in threshold
+                means_on = get_av_conc_state(dict_results[folder][i], i, species, on=true)
+                means_off = get_av_conc_state(dict_results[folder][i], i, species, on=false)
+                push!(species_on, means_on)
+                push!(species_off, means_off)
+            end
+        else
+            means_on = get_av_conc_state(dict_results[folder][i], threshold, species, on=true)
+            means_off = get_av_conc_state(dict_results[folder][i], threshold, species, on=false)
+            push!(species_on, means_on)
+            push!(species_off, means_off)
+        end
     end
-    return rtca_on, rtcb_on, rtca_off, rtcb_off
+    return species_on, species_off
 end
