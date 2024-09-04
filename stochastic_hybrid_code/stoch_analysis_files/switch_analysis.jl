@@ -162,24 +162,29 @@ rtcb_off7 = [rtc_off7[i][2] for i in eachindex(rtc_off7)]
 rtcb_off8 = [rtc_off8[i][2] for i in eachindex(rtc_off8)]
 rtcb_off9 = [rtc_off9[i][2] for i in eachindex(rtc_off9)]
 
-normalized_fracs_on = [clamp.(fracs_on[i], 0, 1) for i in eachindex(fracs_on)]
-normalized_fracs_off = [clamp.(fracs_off[i], 0, 1) for i in eachindex(fracs_off)]
 
+
+df = CSV.read("/Users/s2257179/Desktop/res.csv", DataFrame)
+kdams = CSV.read("/Users/s2257179/Desktop/kdam.csv", DataFrame)
+
+convert_to_vector(str) = eval(Meta.parse(str))
+
+kdams = kdams.kdam
+rtca_ons = [convert_to_vector(df.rtca_ons[i]) for i in 1:nrow(df)]
+rtcb_ons = [convert_to_vector(df.rtcb_ons[i]) for i in 1:nrow(df)]
+rtca_offs = [convert_to_vector(df.rtca_offs[i]) for i in 1:nrow(df)]
+rtcb_offs = [convert_to_vector(df.rtcb_offs[i]) for i in 1:nrow(df)]
+fracs_on = [convert_to_vector(df.fracs_on[i]) for i in 1:nrow(df)]
+fracs_off = [convert_to_vector(df.fracs_off[i]) for i in 1:nrow(df)]
+
+rtca_offs1 = reverse(rtca_offs)
+fracs_off1 = reverse(fracs_off)
+rtca_conc = [rtca_ons; rtca_offs1]
+fracs = [fracs_on; fracs_off1]
+
+cmap = :rainbow_bgyr_35_85_c72_n256
 f = Figure()
-ax = Axis(f[1,1])#, yscale=log10)
-[scatter!(ax, dict_kdamvals[i][:kdam], rtca_ons[i], color=normalized_fracs_on[i]) for i in eachindex(rtca_ons)]
-[scatter!(ax, dict_kdamvals[i][:kdam], rtca_offs[i], color=normalized_fracs_off[i]) for i in eachindex(rtca_offs)]
-Colorbar(f[1, 2], limits = (0,1), colormap = :viridis)
+ax = Axis(f[1,1], xlabel="Damage rate (min-1)", ylabel="[RtcA] (μM)")
+[scatter!(ax, kdams, rtca_conc[i], color=fracs[i], colorrange=(0,1), colormap=cmap) for i in eachindex(rtca_conc)]
+Colorbar(f[1, 2], limits = (0,1), colormap = cmap, label="fraction of time in state")
 
-min_on = minimum([minimum(fracs_on[i]) for i in eachindex(fracs_on)])
-max_on = maximum([maximum(fracs_on[i]) for i in eachindex(fracs_on)])
-min_off = minimum([minimum(fracs_off[i]) for i in eachindex(fracs_on)])
-max_off = maximum([maximum(fracs_off[i]) for i in eachindex(fracs_on)])
-
-
-
-df = DataFrame(:rtca_ons=>rtca_ons, :rtcb_ons=>rtcb_ons, :rtca_offs=>rtca_offs, :rtcb_offs=>rtcb_offs, :fracs_on=>fracs_on, :fracs_off=>fracs_off)
-df_kdam_vals = DataFrame(:kdam=>dict_kdamvals[6][:kdam])
-
-CSV.write("/Users/s2257179/Desktop/res.csv", df)
-CSV.write("/Users/s2257179/Desktop/kdam.csv", df_kdam_vals)
