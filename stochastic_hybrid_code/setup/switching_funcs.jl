@@ -18,8 +18,8 @@ function get_unstab_threshold_array(folder)
     min_bs = ceil(minimum(unstab_kdam), digits=1)
     max_bs = floor(maximum(unstab_kdam), digits=1)
 
-    min_kdam_ind = find_closest_index(dict_kdamvals[6][:kdam], min_bs)
-    max_kdam_ind = find_closest_index(dict_kdamvals[6][:kdam], max_bs)
+    min_kdam_ind = find_closest_index(dict_kdamvals[folder][:kdam], min_bs)
+    max_kdam_ind = find_closest_index(dict_kdamvals[folder][:kdam], max_bs)
 
     thresholds_rtca=[]
     thresholds_rtcb=[]
@@ -46,8 +46,8 @@ function get_unstab_threshold_array(folder)
 end
 
 function set_condition(df; threshold_rtca::Union{Int, Float64}=0, threshold_rtcb::Union{Int, Float64}=0) # just for one dataframe (one kdam val)
-    df_rtca = getproperty(df, :rtca)
-    df_rtcb = getproperty(df, :rtcb)
+    df_rtca = df.rtca
+    df_rtcb = df.rtcb
 
     condition = (df_rtca .> threshold_rtca) .| (df_rtcb .> threshold_rtcb)
 
@@ -55,7 +55,7 @@ function set_condition(df; threshold_rtca::Union{Int, Float64}=0, threshold_rtcb
 end
 
 function start_stop_indices(df, condition)
-    df_time = getproperty(df, :time)
+    df_time = df.time
 
     condition_changes = diff(Int.(condition))
     start_indices = findall(x -> x == 1, condition_changes)
@@ -118,14 +118,20 @@ function calc_av_state_conc(df, species, start_indices, stop_indices; on=true)
         species_mean = [mean([mean(sf.*(species ./ volume)) for (species, volume) in zip(species_vals[i], vol_vals)]) for i in eachindex(species)]
     
     else
-        new_starts = start_indices[2:end]
-        new_stops = stop_indices[1:end-1]
+        if length(start_indices) == 1 && length(stop_indices) == 1
+            region1 = mean(@view df_volume[1:start_indices[1]])
+            region2 = mean(@view df_volume[stop_indices[1]:end])
+    
+            species_mean = [mean([region1, region2])]
+        else
+            new_starts = start_indices[2:end]
+            new_stops = stop_indices[1:end-1]
 
-        species_vals = [[@view all_species[i][stop:start] for (start, stop) in zip(new_starts, new_stops)] for i in eachindex(all_species)]
-        vol_vals = [@view df_volume[stop:start] for (start, stop) in zip(new_starts, new_stops)]
-
-        species_mean = [mean([mean(sf.*(species ./ volume)) for (species, volume) in zip(species_vals[i], vol_vals)]) for i in eachindex(species)]
-
+            species_vals = [[@view all_species[i][stop:start] for (start, stop) in zip(new_starts, new_stops)] for i in eachindex(all_species)]
+            vol_vals = [@view df_volume[stop:start] for (start, stop) in zip(new_starts, new_stops)]
+            
+            species_mean = [mean([mean(sf.*(species ./ volume)) for (species, volume) in zip(species_vals[i], vol_vals)]) for i in eachindex(species)]
+        end
     end
 
     return species_mean
@@ -133,31 +139,37 @@ end
 
 # calculations for a folder at a time 
 function folder_indices(folder, threshold_rtca::Union{Int, Vector{Any}}; threshold_rtcb::Union{Vector{Any}, Nothing}=nothing)
-    start_indices_f = Dict(key => [] for key in dict_kdamvals[folder][:kdam])
-    stop_indices_f = Dict(key => [] for key in dict_kdamvals[folder][:kdam])
+    kdamvals = dict_kdamvals[folder][:kdam]
+    results = dict_results[folder]
+
+    start_indices_f = Dict(key => Vector{Int}() for key in kdamvals)
+    stop_indices_f = Dict(key => Vector{Int}() for key in kdamvals)
     
     if typeof(threshold_rtca) == Int
-        threshold_rtca = fill(threshold_rtca, length(dict_kdamvals[folder][:kdam]))
+        threshold_rtca = fill(threshold_rtca, length(kdamvals))
     end
 
     threshold_rtcb = threshold_rtcb === nothing ? threshold_rtca : threshold_rtcb
 
-    for (kdam, ind) in zip(dict_kdamvals[folder][:kdam], eachindex(dict_kdamvals[folder][:kdam]))
-        condition = set_condition(dict_results[folder][ind], threshold_rtca=threshold_rtca[ind], threshold_rtcb=threshold_rtcb[ind])
-        start_indices_f[kdam], stop_indices_f[kdam] = start_stop_indices(dict_results[folder][ind], condition)
+    for (kdam, ind) in zip(kdamvals, eachindex(kdamvals))
+        condition = set_condition(results[ind], threshold_rtca=threshold_rtca[ind], threshold_rtcb=threshold_rtcb[ind])
+        start_indices_f[kdam], stop_indices_f[kdam] = start_stop_indices(results[ind], condition)
     end
     return start_indices_f, stop_indices_f
 end
 
 function folder_switchrates_fracs(folder, start_indices_f, stop_indices_f)
-    switch_rates_on_f = Dict(key => 0.0 for key in dict_kdamvals[folder][:kdam])
-    switch_rates_off_f = Dict(key => 0.0 for key in dict_kdamvals[folder][:kdam])
-    fracs_on_f = Dict(key => 0.0 for key in dict_kdamvals[folder][:kdam])
-    fracs_off_f = Dict(key => 0.0 for key in dict_kdamvals[folder][:kdam])
+    kdamvals = dict_kdamvals[folder][:kdam]
+    results = dict_results[folder]
 
-    for (kdam, ind) in zip(dict_kdamvals[folder][:kdam], eachindex(dict_kdamvals[folder][:kdam]))
-        start_times, stop_times = switch_times(dict_results[folder][ind], start_indices_f[kdam], stop_indices_f[kdam])
-        switch_rate_on, switch_rate_off = calc_switch_rate(dict_results[folder][ind], start_times, stop_times)
+    switch_rates_on_f = Dict(key => 0.0 for key in kdamvals)
+    switch_rates_off_f = Dict(key => 0.0 for key in kdamvals)
+    fracs_on_f = Dict(key => 0.0 for key in kdamvals)
+    fracs_off_f = Dict(key => 0.0 for key in kdamvals)
+
+    for (kdam, ind) in zip(kdamvals, eachindex(kdamvals))
+        start_times, stop_times = switch_times(results[ind], start_indices_f[kdam], stop_indices_f[kdam])
+        switch_rate_on, switch_rate_off = calc_switch_rate(results[ind], start_times, stop_times)
         switch_rates_on_f[kdam] = switch_rate_on
         switch_rates_off_f[kdam] = switch_rate_off
 
@@ -170,12 +182,14 @@ function folder_switchrates_fracs(folder, start_indices_f, stop_indices_f)
 end
 
 function folder_concs(folder, species, start_indices_f, stop_indices_f)
-    species_mean_on_f = Dict(key => [] for key in dict_kdamvals[folder][:kdam])
-    species_mean_off_f = Dict(key => [] for key in dict_kdamvals[folder][:kdam])
+    species_mean_on_f = Dict(key => Vector{Float64}() for key in dict_kdamvals[folder][:kdam])
+    species_mean_off_f = Dict(key => Vector{Float64}() for key in dict_kdamvals[folder][:kdam])
+
+    results = dict_results[folder]
 
     for (kdam, ind) in zip(dict_kdamvals[folder][:kdam], eachindex(dict_kdamvals[folder][:kdam]))
-        species_mean_on_f[kdam] = calc_av_state_conc(dict_results[folder][ind], species, start_indices_f[kdam], stop_indices_f[kdam])
-        species_mean_off_f[kdam] = calc_av_state_conc(dict_results[folder][ind], species, start_indices_f[kdam], stop_indices_f[kdam], on=false)
+        species_mean_on_f[kdam] = calc_av_state_conc(results[ind], species, start_indices_f[kdam], stop_indices_f[kdam])
+        species_mean_off_f[kdam] = calc_av_state_conc(results[ind], species, start_indices_f[kdam], stop_indices_f[kdam], on=false)
     end
 
     return species_mean_on_f, species_mean_off_f
