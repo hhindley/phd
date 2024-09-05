@@ -66,7 +66,7 @@ function calc_frac_times(switch_vals_on, switch_vals_off)
     return frac_on, frac_off
 end
 
-function get_av_conc_state(res, threshold, species; on=true)
+function get_av_conc_state(res, threshold, species; on=true, dynamic=false)
     df = res
     if typeof(species) == Symbol
         species = [species]
@@ -82,7 +82,12 @@ function get_av_conc_state(res, threshold, species; on=true)
         all_species = [getproperty(df,i) for i in species]
     end
 
-    condition = (df_rtca .> threshold) .| (df_rtcb .> threshold)
+    if dynamic == false
+        condition = (df_rtca .> threshold) .| (df_rtcb .> threshold)
+    else 
+        condition = (df_rtca .> threshold_rtca) .& (df_rtcb .> threshold_rtcb)
+    end
+
     condition_changes = diff(Int.(condition))
 
     condition_changes = diff(Int.(condition))
@@ -139,4 +144,44 @@ function get_all_av_conc(folder, threshold, species)
         end
     end
     return species_on, species_off
+end
+
+function get_unstab_threshold_array(folder)
+    br = get_br_molec(rtc_model, ssvals_rtc_molec, params_rtc_molec, 1.5)
+    bf = bf_point_df(br)
+    df = create_br_df(br)
+    kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
+    kdam2 = findall(x->x==bf.kdam[2],df.kdam)[1]
+    unstab_rtca = df[!,:rtca][kdam1:kdam2]
+    unstab_rtcb = df[!,:rtcb][kdam1:kdam2]
+    unstab_kdam = df[!,:kdam][kdam1:kdam2]
+
+    min_bs = ceil(minimum(unstab_kdam), digits=1)
+    max_bs = floor(maximum(unstab_kdam), digits=1)
+
+    min_kdam_ind = find_closest_index(dict_kdamvals[6][:kdam], min_bs)
+    max_kdam_ind = find_closest_index(dict_kdamvals[6][:kdam], max_bs)
+
+    thresholds_rtca=[]
+    thresholds_rtcb=[]
+    for i in dict_kdamvals[folder][:kdam][min_kdam_ind:max_kdam_ind]
+        println(i)
+        index = find_closest_index(unstab_kdam, i)
+        push!(thresholds_rtca, unstab_rtca[index])
+        push!(thresholds_rtcb, unstab_rtcb[index])
+    end
+
+    start_vals_rtca = fill(thresholds_rtca[1], length(dict_kdamvals[folder][:kdam][1:min_kdam_ind-1]))
+    end_vals_rtca = fill(thresholds_rtca[end], length(dict_kdamvals[folder][:kdam][max_kdam_ind+1:end]))
+
+    start_vals_rtcb = fill(thresholds_rtcb[1], length(dict_kdamvals[folder][:kdam][1:min_kdam_ind-1]))
+    end_vals_rtcb = fill(thresholds_rtcb[end], length(dict_kdamvals[folder][:kdam][max_kdam_ind+1:end]))
+
+    pushfirst!(thresholds_rtca, start_vals_rtca...)
+    push!(thresholds_rtca, end_vals_rtca...)
+
+    pushfirst!(thresholds_rtcb, start_vals_rtcb...)
+    push!(thresholds_rtcb, end_vals_rtcb...)
+
+    return thresholds_rtca, thresholds_rtcb
 end

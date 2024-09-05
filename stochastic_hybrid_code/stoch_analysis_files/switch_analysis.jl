@@ -1,6 +1,9 @@
-using InteractiveViz, GLMakie, StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase, Distributed, TableOperations, JSON, Query, FindFirstFunctions, CategoricalArrays, Colors
+using StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase, Distributed, TableOperations, JSON, Query, FindFirstFunctions, CategoricalArrays
 using Parameters, LabelledArrays, BenchmarkTools
 using Revise, LinearAlgebra, Printf, ModelingToolkit, OrderedCollections
+
+
+using InteractiveViz, GLMakie, Parameters, CSV, DataFrames, DifferentialEquations, LabelledArrays, BenchmarkTools, Revise, LinearAlgebra, Printf, ModelingToolkit, OrderedCollections, Colors
 
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_funcs.jl"))
@@ -121,13 +124,20 @@ display(GLMakie.Screen(), f_frac)
 
 
 # threshold as unstable steady state line
-br = get_br(rtc_model, ssvals_rtc, params_rtc, 1.5)
+br = get_br_molec(rtc_model, ssvals_rtc_molec, params_rtc_molec, 1.5)
 bf = bf_point_df(br)
 df = create_br_df(br)
 kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
 kdam2 = findall(x->x==bf.kdam[2],df.kdam)[1]
-unstab_species = df[!,specie][kdam1:kdam2]
-unstab_kdam = df[!,kdam][kdam1:kdam2]
+unstab_rtca = df[!,:rtca][kdam1:kdam2]
+unstab_rtcb = df[!,:rtca][kdam1:kdam2]
+unstab_kdam = df[!,:kdam][kdam1:kdam2]
+
+min_bs = ceil(minimum(unstab_kdam), digits=1)
+max_bs = floor(maximum(unstab_kdam), digits=1)
+
+min_kdam_ind = find_closest_index(dict_kdamvals[6][:kdam], min_bs)
+max_kdam_ind = find_closest_index(dict_kdamvals[6][:kdam], max_bs)
 
 function find_closest_index(array, value)
     differences = abs.(array .- value)
@@ -136,23 +146,46 @@ function find_closest_index(array, value)
 end
 
 thresholds=[]
-for i in dict_kdamvals[6][:kdam]
+for i in dict_kdamvals[6][:kdam][min_kdam_ind:max_kdam_ind]
     println(i)
     index = find_closest_index(unstab_kdam, i)
-    push!(thresholds, unstab_species[index])
+    push!(thresholds, unstab_rtca[index])
 end
 
+start_vals = fill(thresholds[1], length(dict_kdamvals[6][:kdam][1:min_kdam_ind-1]))
+end_vals = fill(thresholds[end], length(dict_kdamvals[6][:kdam][max_kdam_ind+1:end]))
 
-# average conc for on and off states 
+pushfirst!(thresholds, start_vals...)
+push!(thresholds, end_vals...)
+
+thresholds
+
+
+
+
+thresholds_rtca, thresholds_rtcb = get_unstab_threshold_array(6)
+
+
+lines(df.kdam, df.rtca)
+lines!(df.kdam, df.rtcb)
+lines!(dict_kdamvals[6][:kdam], thresholds_rtca)
+lines!(dict_kdamvals[6][:kdam], thresholds_rtcb)
+
+# average conc for on and off states
+threshold = 5 
 species = :rh
 means_on = get_av_conc_state(dict_results[6][1], threshold, species, on=true)
 means_off = get_av_conc_state(dict_results[6][1], threshold, species, on=false)
 
+means_on = get_av_conc_state(dict_results[6][1], thresholds_rtca[1], species, on=true)
+means_off = get_av_conc_state(dict_results[6][1], thresholds_rtca[1], species, on=false)
+
+# using singular threshold
 species_ons = []
 species_offs = []
 for i in eachindex(dict_results)
     println(i)
-    species_on, species_off = get_all_av_conc(i, species)
+    species_on, species_off = get_all_av_conc(i, 5, species)
     push!(species_ons, species_on)
     push!(species_offs, species_off)
 end
@@ -163,6 +196,26 @@ ax = Axis(f[1,1], xlabel="Damage rate (min-1)", ylabel="[$species] (μM)")
 [scatter!(ax, kdams, species_ons[i], color=fracs_on[i], colorrange=(0,1), colormap=cmap) for i in eachindex(species_ons)]
 [scatter!(ax, kdams, species_offs[i], color=fracs_off[i], colorrange=(0,1), colormap=cmap) for i in eachindex(species_offs)]
 Colorbar(f[1, 2], limits = (0,1), colormap = cmap, label="fraction of time in state")
+
+[thresholds_rtca, thresholds_rtcb]
+
+# using dynamic threshold
+species_ons_dt = []
+species_offs_dt = []
+for i in eachindex(dict_results)
+    println(i)
+    species_on, species_off = get_all_av_conc(i, thresholds_rtca, species)
+    push!(species_ons_dt, species_on)
+    push!(species_offs_dt, species_off)
+end
+
+
+
+
+
+
+
+
 
 
 
@@ -203,3 +256,69 @@ df_kdam_vals = DataFrame(:kdam=>dict_kdamvals[6][:kdam])
 CSV.write("/Users/s2257179/Desktop/res.csv", df)
 CSV.write("/Users/s2257179/Desktop/kdam.csv", df_kdam_vals)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# this file so far does three things
+    # calculates the switching rate
+    # calculates the fraction of time in each state
+    # calculates the average concentration in each state
+# for calculating switching rate
+threshold=5
+df, start_times, stop_times = switch_times(dict_results[7][2], threshold=threshold)
+switch_rate_on, switch_rate_off = calc_switch_rate(df, start_times, stop_times)
+
+# switch times does most of the same things as the get_av_conc_state function
+
+function switch_times(res; threshold=nothing)
+    df = res[!,[:time, :rtca, :rtcb]]
+    condition = (df.rtca .> threshold) .| (df.rtcb .> threshold)
+    
+    df = insertcols!(df, 1, :on => condition)
+    condition_changes = diff(Int.(condition))
+    start_indices = findall(x -> x == 1, condition_changes)
+    stop_indices = findall(x -> x == -1, condition_changes)
+    start_times = []
+    for i in start_indices
+        push!(start_times, df.time[i])
+    end
+    stop_times = []
+    for i in stop_indices
+        push!(stop_times, df.time[i])
+    end
+    if start_times[1] > stop_times[1] && start_times[end] > stop_times[end]
+        # println("start_times[1] > stop_times[1] && start_times[end] > stop_times[end]")
+        pushfirst!(start_times, df.time[1])
+        push!(stop_times, df.time[end])
+    elseif start_times[end] > stop_times[end]
+        # println("start_times[end] > stop_times[end]")
+        push!(stop_times, df.time[end])
+    elseif start_times[1] > stop_times[1] 
+        # println("start_times[1] > stop_times[1] ")
+        pushfirst!(start_times, df.time[1])
+    end
+    return df, start_times, stop_times
+end
