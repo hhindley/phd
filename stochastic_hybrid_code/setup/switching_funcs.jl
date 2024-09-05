@@ -1,149 +1,8 @@
-# two versions of determining the switching rate
-# if rtca and rtcb are both above a certain threshold
-# or if rtca and rtcb are both increasing then we are in the on state, if they are not changing or are decreasing then we are in the off state 
-function switch_times(res; threshold=nothing)
-    df = res[!,[:time, :rtca, :rtcb]]
-    if threshold !== nothing
-        condition = (df.rtca .> threshold) .| (df.rtcb .> threshold)
-    else
-        diff_rtca = diff(df.rtca)
-        diff_rtcb = diff(df.rtcb)
-        condition = (diff_rtca .> 1e-10) .| (diff_rtcb .> 1e-10)
-        pushfirst!(condition, !condition[1])
-    end
-    df = insertcols!(df, 1, :on => condition)
-    condition_changes = diff(Int.(condition))
-    start_indices = findall(x -> x == 1, condition_changes)
-    stop_indices = findall(x -> x == -1, condition_changes)
-    start_times = []
-    for i in start_indices
-        push!(start_times, df.time[i])
-    end
-    stop_times = []
-    for i in stop_indices
-        push!(stop_times, df.time[i])
-    end
-    if start_times[1] > stop_times[1] && start_times[end] > stop_times[end]
-        # println("start_times[1] > stop_times[1] && start_times[end] > stop_times[end]")
-        pushfirst!(start_times, df.time[1])
-        push!(stop_times, df.time[end])
-    elseif start_times[end] > stop_times[end]
-        # println("start_times[end] > stop_times[end]")
-        push!(stop_times, df.time[end])
-    elseif start_times[1] > stop_times[1] 
-        # println("start_times[1] > stop_times[1] ")
-        pushfirst!(start_times, df.time[1])
-    end
-    return df, start_times, stop_times
-end
 
-function calc_switch_rate(df, start_times, stop_times)
-    time_on = sum(stop_times.-start_times)
-    on_res = time_on/length(start_times)
-    time_off = df.time[end] - time_on
-    off_res = time_off/length(stop_times)
-    switch_rate_on = 1/on_res
-    switch_rate_off = 1/off_res
-    return switch_rate_on, switch_rate_off
-end
-
-function get_all_switch_rates(folder; threshold=nothing)
-    switch_rates_on = []
-    switch_rates_off = []
-    for i in eachindex(dict_results[folder])
-        # println(i)
-        df, start_times, stop_times = switch_times(dict_results[folder][i], threshold=threshold)
-        switch_rate_on, switch_rate_off = calc_switch_rate(df, start_times, stop_times)
-        push!(switch_rates_on, switch_rate_on)
-        push!(switch_rates_off, switch_rate_off)
-    end
-    return switch_rates_on, switch_rates_off
-end
-
-function calc_frac_times(switch_vals_on, switch_vals_off)
-    frac_on = @. switch_vals_off/(switch_vals_on+switch_vals_off)
-    frac_off = @. switch_vals_on/(switch_vals_on+switch_vals_off)
-    return frac_on, frac_off
-end
-
-function get_av_conc_state(res, threshold, species; on=true, dynamic=false)
-    df = res
-    if typeof(species) == Symbol
-        species = [species]
-    end
-    df_time = getproperty(df, :time)
-    df_volume = getproperty(df, :volume)
-    df_rtca = getproperty(df, :rtca)
-    df_rtcb = getproperty(df, :rtcb)
-    
-    if species == [:rtca, :rtcb]
-        all_species = [df_rtca, df_rtcb]
-    else
-        all_species = [getproperty(df,i) for i in species]
-    end
-
-    if dynamic == false
-        condition = (df_rtca .> threshold) .| (df_rtcb .> threshold)
-    else 
-        condition = (df_rtca .> threshold_rtca) .& (df_rtcb .> threshold_rtcb)
-    end
-
-    condition_changes = diff(Int.(condition))
-
-    condition_changes = diff(Int.(condition))
-    start_indices = findall(x -> x == 1, condition_changes)
-    stop_indices = findall(x -> x == -1, condition_changes)
-
-    if start_indices[1] > stop_indices[1] && start_indices[end] > stop_indices[end]
-        pushfirst!(start_indices, 1)
-        push!(stop_indices, length(df_time))
-    elseif start_indices[end] > stop_indices[end]
-        push!(stop_indices, length(df_time))
-    elseif start_indices[1] > stop_indices[1] 
-        pushfirst!(start_indices, 1)
-    end
-
-    if on
-        species_vals = [[@view all_species[i][start:stop] for (start, stop) in zip(start_indices, stop_indices)] for i in eachindex(all_species)]
-        vol_vals = [@view df_volume[start:stop] for (start, stop) in zip(start_indices, stop_indices)]
-
-        species_mean = [mean([mean(sf.*(species ./ volume)) for (species, volume) in zip(species_vals[i], vol_vals)]) for i in eachindex(species)]
-    
-    else
-        new_starts = start_indices[2:end]
-        new_stops = stop_indices[1:end-1]
-
-        species_vals = [[@view all_species[i][stop:start] for (start, stop) in zip(new_starts, new_stops)] for i in eachindex(all_species)]
-        vol_vals = [@view df_volume[stop:start] for (start, stop) in zip(new_starts, new_stops)]
-
-        species_mean = [mean([mean(sf.*(species ./ volume)) for (species, volume) in zip(species_vals[i], vol_vals)]) for i in eachindex(species)]
-
-    end
-
-    return species_mean
-
-end
-
-function get_all_av_conc(folder, threshold, species)
-    species_on = []
-    species_off = []
-    for i in eachindex(dict_results[folder])
-        # println(i)
-        if typeof(threshold) == Array
-            for i in threshold
-                means_on = get_av_conc_state(dict_results[folder][i], i, species, on=true)
-                means_off = get_av_conc_state(dict_results[folder][i], i, species, on=false)
-                push!(species_on, means_on)
-                push!(species_off, means_off)
-            end
-        else
-            means_on = get_av_conc_state(dict_results[folder][i], threshold, species, on=true)
-            means_off = get_av_conc_state(dict_results[folder][i], threshold, species, on=false)
-            push!(species_on, means_on)
-            push!(species_off, means_off)
-        end
-    end
-    return species_on, species_off
+function find_closest_index(array, value)
+    differences = abs.(array .- value)
+    closest_index = argmin(differences)
+    return closest_index
 end
 
 function get_unstab_threshold_array(folder)
@@ -185,3 +44,185 @@ function get_unstab_threshold_array(folder)
 
     return thresholds_rtca, thresholds_rtcb
 end
+
+function set_condition(df; threshold_rtca::Union{Int, Float64}=0, threshold_rtcb::Union{Int, Float64}=0) # just for one dataframe (one kdam val)
+    df_rtca = getproperty(df, :rtca)
+    df_rtcb = getproperty(df, :rtcb)
+
+    condition = (df_rtca .> threshold_rtca) .| (df_rtcb .> threshold_rtcb)
+
+    return condition
+end
+
+function start_stop_indices(df, condition)
+    df_time = getproperty(df, :time)
+
+    condition_changes = diff(Int.(condition))
+    start_indices = findall(x -> x == 1, condition_changes)
+    stop_indices = findall(x -> x == -1, condition_changes)
+
+    if start_indices[1] > stop_indices[1] && start_indices[end] > stop_indices[end]
+        pushfirst!(start_indices, 1)
+        push!(stop_indices, length(df_time))
+    elseif start_indices[end] > stop_indices[end]
+        push!(stop_indices, length(df_time))
+    elseif start_indices[1] > stop_indices[1] 
+        pushfirst!(start_indices, 1)
+    end
+
+    return start_indices, stop_indices
+end
+
+function switch_times(df, start_indices, stop_indices)
+    df_time = getproperty(df, :time)
+
+    start_times = []
+    for i in start_indices
+        push!(start_times, df_time[i])
+    end
+    stop_times = []
+    for i in stop_indices
+        push!(stop_times, df_time[i])
+    end
+
+    return start_times, stop_times
+end
+
+function calc_switch_rate(df, start_times, stop_times)
+    time_on = sum(stop_times.-start_times)
+    on_res = time_on/length(start_times)
+    time_off = df.time[end] - time_on
+    off_res = time_off/length(stop_times)
+    switch_rate_on = 1/on_res
+    switch_rate_off = 1/off_res
+    return switch_rate_on, switch_rate_off
+end
+
+function calc_frac_times(switch_vals_on, switch_vals_off)
+    frac_on = @. switch_vals_off/(switch_vals_on+switch_vals_off)
+    frac_off = @. switch_vals_on/(switch_vals_on+switch_vals_off)
+    return frac_on, frac_off
+end
+
+function calc_av_state_conc(df, species, start_indices, stop_indices; on=true)
+    df_volume = getproperty(df, :volume)
+    if typeof(species) == Symbol
+        species = [species]
+    end
+    all_species = [getproperty(df,i) for i in species]
+
+    if on
+        species_vals = [[@view all_species[i][start:stop] for (start, stop) in zip(start_indices, stop_indices)] for i in eachindex(all_species)]
+        vol_vals = [@view df_volume[start:stop] for (start, stop) in zip(start_indices, stop_indices)]
+
+        species_mean = [mean([mean(sf.*(species ./ volume)) for (species, volume) in zip(species_vals[i], vol_vals)]) for i in eachindex(species)]
+    
+    else
+        new_starts = start_indices[2:end]
+        new_stops = stop_indices[1:end-1]
+
+        species_vals = [[@view all_species[i][stop:start] for (start, stop) in zip(new_starts, new_stops)] for i in eachindex(all_species)]
+        vol_vals = [@view df_volume[stop:start] for (start, stop) in zip(new_starts, new_stops)]
+
+        species_mean = [mean([mean(sf.*(species ./ volume)) for (species, volume) in zip(species_vals[i], vol_vals)]) for i in eachindex(species)]
+
+    end
+
+    return species_mean
+end
+
+# calculations for a folder at a time 
+function folder_indices(folder, threshold_rtca::Union{Int, Vector{Any}}; threshold_rtcb::Union{Vector{Any}, Nothing}=nothing)
+    start_indices_f = Dict(key => [] for key in dict_kdamvals[folder][:kdam])
+    stop_indices_f = Dict(key => [] for key in dict_kdamvals[folder][:kdam])
+    
+    if typeof(threshold_rtca) == Int
+        threshold_rtca = fill(threshold_rtca, length(dict_kdamvals[folder][:kdam]))
+    end
+
+    threshold_rtcb = threshold_rtcb === nothing ? threshold_rtca : threshold_rtcb
+
+    for (kdam, ind) in zip(dict_kdamvals[folder][:kdam], eachindex(dict_kdamvals[folder][:kdam]))
+        condition = set_condition(dict_results[folder][ind], threshold_rtca=threshold_rtca[ind], threshold_rtcb=threshold_rtcb[ind])
+        start_indices_f[kdam], stop_indices_f[kdam] = start_stop_indices(dict_results[folder][ind], condition)
+    end
+    return start_indices_f, stop_indices_f
+end
+
+function folder_switchrates_fracs(folder, start_indices_f, stop_indices_f)
+    switch_rates_on_f = Dict(key => 0.0 for key in dict_kdamvals[folder][:kdam])
+    switch_rates_off_f = Dict(key => 0.0 for key in dict_kdamvals[folder][:kdam])
+    fracs_on_f = Dict(key => 0.0 for key in dict_kdamvals[folder][:kdam])
+    fracs_off_f = Dict(key => 0.0 for key in dict_kdamvals[folder][:kdam])
+
+    for (kdam, ind) in zip(dict_kdamvals[folder][:kdam], eachindex(dict_kdamvals[folder][:kdam]))
+        start_times, stop_times = switch_times(dict_results[folder][ind], start_indices_f[kdam], stop_indices_f[kdam])
+        switch_rate_on, switch_rate_off = calc_switch_rate(dict_results[folder][ind], start_times, stop_times)
+        switch_rates_on_f[kdam] = switch_rate_on
+        switch_rates_off_f[kdam] = switch_rate_off
+
+        frac_on, frac_off = calc_frac_times(switch_rate_on, switch_rate_off)
+        fracs_on_f[kdam] = frac_on
+        fracs_off_f[kdam] = frac_off
+    end
+
+    return switch_rates_on_f, switch_rates_off_f, fracs_on_f, fracs_off_f
+end
+
+function folder_concs(folder, species, start_indices_f, stop_indices_f)
+    species_mean_on_f = Dict(key => [] for key in dict_kdamvals[folder][:kdam])
+    species_mean_off_f = Dict(key => [] for key in dict_kdamvals[folder][:kdam])
+
+    for (kdam, ind) in zip(dict_kdamvals[folder][:kdam], eachindex(dict_kdamvals[folder][:kdam]))
+        species_mean_on_f[kdam] = calc_av_state_conc(dict_results[folder][ind], species, start_indices_f[kdam], stop_indices_f[kdam])
+        species_mean_off_f[kdam] = calc_av_state_conc(dict_results[folder][ind], species, start_indices_f[kdam], stop_indices_f[kdam], on=false)
+    end
+
+    return species_mean_on_f, species_mean_off_f
+end
+
+
+# functions for doing all of the folders loaded in the current folders_dict
+function all_indices(folders_dict, threshold_rtca::Union{Int, Vector{Any}}; threshold_rtcb::Union{Vector{Any}, Nothing}=nothing)
+    all_start_indices = Dict(key => Dict() for key in eachindex(folders_dict))
+    all_stop_indices = Dict(key => Dict() for key in eachindex(folders_dict))
+
+    for folder in eachindex(folders_dict)
+        start_indices, stop_indices = folder_indices(folder, threshold_rtca, threshold_rtcb=threshold_rtcb)
+        all_start_indices[folder] = start_indices
+        all_stop_indices[folder] = stop_indices
+    end
+
+    return all_start_indices, all_stop_indices
+end
+
+function all_switchrates_fracs(folders_dict, all_start_indices, all_stop_indices)
+    all_switch_rates_on = Dict(key => Dict() for key in eachindex(folders_dict))
+    all_switch_rates_off = Dict(key => Dict() for key in eachindex(folders_dict))
+    all_fracs_on = Dict(key => Dict() for key in eachindex(folders_dict))
+    all_fracs_off = Dict(key => Dict() for key in eachindex(folders_dict))
+
+    for folder in eachindex(folders_dict)
+        switch_rates_on_f, switch_rates_off_f, fracs_on_f, fracs_off_f = folder_switchrates_fracs(folder, all_start_indices[folder], all_stop_indices[folder])
+        all_switch_rates_on[folder] = switch_rates_on_f
+        all_switch_rates_off[folder] = switch_rates_off_f
+        all_fracs_on[folder] = fracs_on_f
+        all_fracs_off[folder] = fracs_off_f
+    end
+
+    return all_switch_rates_on, all_switch_rates_off, all_fracs_on, all_fracs_off
+end
+
+function all_concs(folders_dict, species, all_start_indices, all_stop_indices)
+    all_species_mean_on = Dict(key => Dict() for key in eachindex(folders_dict))
+    all_species_mean_off = Dict(key => Dict() for key in eachindex(folders_dict))
+
+    for folder in eachindex(folders_dict)
+        species_mean_on_f, species_mean_off_f = folder_concs(folder, species, all_start_indices[folder], all_stop_indices[folder])
+        all_species_mean_on[folder] = species_mean_on_f
+        all_species_mean_off[folder] = species_mean_off_f
+    end
+
+    return all_species_mean_on, all_species_mean_off
+end
+
