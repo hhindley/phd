@@ -112,25 +112,52 @@ function calc_av_state_conc(df, species, start_indices, stop_indices; on=true)
     all_species = [getproperty(df,i) for i in species]
 
     if on
-        species_vals = [[@view all_species[i][start:stop] for (start, stop) in zip(start_indices, stop_indices)] for i in eachindex(all_species)]
-        vol_vals = [@view df_volume[start:stop] for (start, stop) in zip(start_indices, stop_indices)]
+        # calculate mean in batches 
+        # species_vals = [[@view all_species[i][start:stop] for (start, stop) in zip(start_indices, stop_indices)] for i in eachindex(all_species)]
+        # vol_vals = [@view df_volume[start:stop] for (start, stop) in zip(start_indices, stop_indices)]
+        # species_mean = [mean([mean(sf.*(species ./ volume)) for (species, volume) in zip(species_vals[i], vol_vals)]) for i in eachindex(species)]
+        
+        # calculate mean over whole region
+        species_vals_batch = [[@view all_species[i][start:stop] for (start, stop) in zip(start_indices, stop_indices)] for i in eachindex(all_species)]
+        vol_vals_batch = [@view df_volume[start:stop] for (start, stop) in zip(start_indices, stop_indices)]
 
-        species_mean = [mean([mean(sf.*(species ./ volume)) for (species, volume) in zip(species_vals[i], vol_vals)]) for i in eachindex(species)]
-    
+        species_vals = [vcat(species_vals_batch[i]...) for i in eachindex(all_species)]
+        vol_vals = vcat(vol_vals_batch...)
+
+        concs = [sf*(species_vals[i]./vol_vals) for i in eachindex(all_species)]
+
+        species_mean = [mean(concs[i]) for i in eachindex(all_species)]
+
     else
         if length(start_indices) == 1 && length(stop_indices) == 1
-            region1 = mean(@view df_volume[1:start_indices[1]])
-            region2 = mean(@view df_volume[stop_indices[1]:end])
+            species_vals_batch1 = [@view all_species[i][1:start_indices[1]] for i in eachindex(all_species)]
+            vol_vals_batch1 = @view df_volume[1:start_indices[1]]
+            species_vals_batch2 = [@view all_species[i][stop_indices[1]:end] for i in eachindex(all_species)]
+            vol_vals_batch2 = @view df_volume[stop_indices[1]:end]
+
+            species_vals = [vcat(species_vals_batch1[i], species_vals_batch2[i]) for i in eachindex(all_species)]
+            vol_vals = vcat(vol_vals_batch1, vol_vals_batch2)
+
+            concs = [sf*(species_vals[i]./vol_vals) for i in eachindex(all_species)]
+
+            species_mean = [mean(concs[i]) for i in eachindex(all_species)]
     
-            species_mean = [mean([region1, region2])]
         else
             new_starts = start_indices[2:end]
             new_stops = stop_indices[1:end-1]
 
-            species_vals = [[@view all_species[i][stop:start] for (start, stop) in zip(new_starts, new_stops)] for i in eachindex(all_species)]
-            vol_vals = [@view df_volume[stop:start] for (start, stop) in zip(new_starts, new_stops)]
+            species_vals_batch = [[@view all_species[i][stop:start] for (start, stop) in zip(new_starts, new_stops)] for i in eachindex(all_species)]
+            vol_vals_batch = [@view df_volume[stop:start] for (start, stop) in zip(new_starts, new_stops)]
+
+            species_vals = [vcat(species_vals_batch[i]...) for i in eachindex(all_species)]
+            vol_vals = vcat(vol_vals_batch...)
+
+            concs = [sf*(species_vals[i]./vol_vals) for i in eachindex(all_species)]
+
+            species_mean = [mean(concs[i]) for i in eachindex(all_species)]
             
-            species_mean = [mean([mean(sf.*(species ./ volume)) for (species, volume) in zip(species_vals[i], vol_vals)]) for i in eachindex(species)]
+            # batch
+            # species_mean = [mean([mean(sf.*(species ./ volume)) for (species, volume) in zip(species_vals[i], vol_vals)]) for i in eachindex(species)]
         end
     end
 
