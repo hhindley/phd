@@ -204,8 +204,12 @@ function setup_dicts(folders)
     return dict_times, dict_threshvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists
 end
 
-function load_file_structure(main_folder)
-    mount_path = "/Users/s2257179/stoch_files/$main_folder/"
+function load_file_structure(main_folder; server=false)
+    if server
+        mount_path = "/home/hollie_hindley/Documents/stochastic_hybrid/$main_folder/"
+    else
+        mount_path = "/Users/s2257179/stoch_files/$main_folder/"
+    end
     all_items = readdir(mount_path)
     folders = [item for item in all_items if isdir(joinpath(mount_path, item)) && !occursin("DS", item)]
     folders_dict = Dict(i => folder for (i, folder) in enumerate(folders))
