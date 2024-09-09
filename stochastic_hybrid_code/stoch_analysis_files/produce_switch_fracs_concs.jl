@@ -16,11 +16,11 @@ include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
 
 mount_path, folders, folders_dict = load_file_structure("kdam_testing/keyvals2", server=true)
 folders_dict
-folders_dict = Dict(filter(pair -> pair.first in [2,4,6,8,10,11,12,13,14,15,16,17,18,19,20], folders_dict))
+# folders_dict = Dict(filter(pair -> pair.first in [2,4,6,8,10,11,12,13,14,15,16,17,18,19,20], folders_dict))
 # folders_dict = Dict(filter(pair -> pair.first in [6], folders_dict))
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = load_data(mount_path, folders, folders_dict, reacts=false, props=false, hists=false)
 
-@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/keyvals2_raw_data.jld2" folders_dict dict_times dict_kdamvals dict_titles dict_results dict_reacts dict_props dict_counts dict_hists
+# @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/keyvals2_raw_data.jld2" folders_dict dict_times dict_kdamvals dict_titles dict_results dict_reacts dict_props dict_counts dict_hists
 
 thresholds_rtca, thresholds_rtcb = get_unstab_threshold_array(collect(keys(folders_dict))[1]) # argument just has to be any folder number to get kdam vals
 
