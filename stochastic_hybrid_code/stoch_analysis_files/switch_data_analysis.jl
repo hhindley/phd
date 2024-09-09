@@ -1,10 +1,14 @@
 using JLD2, InteractiveViz, GLMakie
 
-@load "/Users/s2257179/phd/stochastic_hybrid_code/saved_data/raw_data.jld2" folders_dict dict_times dict_kdamvals dict_titles dict_results dict_reacts dict_props dict_counts dict_hists
-@load "/Users/s2257179/phd/stochastic_hybrid_code/saved_data/data.jld2" all_start_indices all_stop_indices all_switch_rates_on all_switch_rates_off all_fracs_on all_fracs_off all_species_mean_on all_species_mean_off all_start_indices_bs all_stop_indices_bs all_switch_rates_on_bs all_switch_rates_off_bs all_fracs_on_bs all_fracs_off_bs all_species_mean_on_bs all_species_mean_off_bs
+@load "/Users/s2257179/Desktop/saved_vars/data_thresh_2.jld2" all_start_indices2 all_stop_indices2 all_switch_rates_on2 all_switch_rates_off2 all_fracs_on2 all_fracs_off2 all_species_mean_on2 all_species_mean_off2
+@load "/Users/s2257179/Desktop/saved_vars/data_thresh_5.jld2" all_start_indices5 all_stop_indices5 all_switch_rates_on5 all_switch_rates_off5 all_fracs_on5 all_fracs_off5 all_species_mean_on5 all_species_mean_off5
+@load "/Users/s2257179/Desktop/saved_vars/data_thresh_10.jld2" all_start_indices10 all_stop_indices10 all_switch_rates_on10 all_switch_rates_off10 all_fracs_on10 all_fracs_off10 all_species_mean_on10 all_species_mean_off10
+@load "/Users/s2257179/Desktop/saved_vars/data_thresh_bs.jld2" all_start_indices_bs all_stop_indices_bs all_switch_rates_on_bs all_switch_rates_off_bs all_fracs_on_bs all_fracs_off_bs all_species_mean_on_bs all_species_mean_off_bs thresholds_rtca thresholds_rtcb
 
 # sorting results for plotting
-kdams = sort(collect(keys(all_switch_rates_on[collect(keys(folders_dict))[1]])))
+kdams = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
+
+# kdams = sort(collect(keys(all_switch_rates_on[collect(keys(folders_dict))[1]])))
 
 # plotting all results
 f_switch = Figure()
