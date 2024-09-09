@@ -45,4 +45,3 @@ all_species_mean_on_bs, all_species_mean_off_bs = all_concs(folders_dict, [:rtca
 @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_5.jld2" all_start_indices5 all_stop_indices5 all_switch_rates_on5 all_switch_rates_off5 all_fracs_on5 all_fracs_off5 all_species_mean_on5 all_species_mean_off5
 @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_10.jld2" all_start_indices10 all_stop_indices10 all_switch_rates_on10 all_switch_rates_off10 all_fracs_on10 all_fracs_off10 all_species_mean_on10 all_species_mean_off10
 @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_bs.jld2" all_start_indices_bs all_stop_indices_bs all_switch_rates_on_bs all_switch_rates_off_bs all_fracs_on_bs all_fracs_off_bs all_species_mean_on_bs all_species_mean_off_bs thresholds_rtca thresholds_rtcb
-
