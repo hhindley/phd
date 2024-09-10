@@ -9,41 +9,102 @@ using JLD2, InteractiveViz, GLMakie, Statistics
 kdams = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
 
 # calculate the average and std switch rate but first need to rearrange data so they are in a kdam dict 20 kdam values and in each value there should be 19 numbers 
-all_switch_rates_on2[1][1.3]
-mean_switch_rates_on2 = Dict()
-std_switch_rates_on2 = Dict()
-mean_switch_rates_off2 = Dict()
-std_switch_rates_off2 = Dict()
-mean_switch_rates_on5 = Dict()
-std_switch_rates_on5 = Dict()
-mean_switch_rates_off5 = Dict()
-std_switch_rates_off5 = Dict()
-mean_switch_rates_on10 = Dict()
-std_switch_rates_on10 = Dict()
-mean_switch_rates_off10 = Dict()
-std_switch_rates_off10 = Dict()
-mean_switch_rates_on_bs = Dict()
-std_switch_rates_on_bs = Dict()
-mean_switch_rates_off_bs = Dict()
-std_switch_rates_off_bs = Dict()
+all_switch_frac_on2[1][1.3]
+mean_switch_frac_on2 = Dict("switch"=>Dict(), "frac"=>Dict())
+std_switch_frac_on2 = Dict("switch"=>Dict(), "frac"=>Dict())
+mean_switch_frac_off2 = Dict("switch"=>Dict(), "frac"=>Dict())
+std_switch_frac_off2 = Dict("switch"=>Dict(), "frac"=>Dict())
+mean_switch_frac_on5 = Dict("switch"=>Dict(), "frac"=>Dict())
+std_switch_frac_on5 = Dict("switch"=>Dict(), "frac"=>Dict())
+mean_switch_frac_off5 = Dict("switch"=>Dict(), "frac"=>Dict())
+std_switch_frac_off5 = Dict("switch"=>Dict(), "frac"=>Dict())
+mean_switch_frac_on10 = Dict("switch"=>Dict(), "frac"=>Dict())
+std_switch_frac_on10 = Dict("switch"=>Dict(), "frac"=>Dict())
+mean_switch_frac_off10 = Dict("switch"=>Dict(), "frac"=>Dict())
+std_switch_frac_off10 = Dict("switch"=>Dict(), "frac"=>Dict())
+mean_switch_frac_on_bs = Dict("switch"=>Dict(), "frac"=>Dict())
+std_switch_frac_on_bs = Dict("switch"=>Dict(), "frac"=>Dict())
+mean_switch_frac_off_bs = Dict("switch"=>Dict(), "frac"=>Dict())
+std_switch_frac_off_bs = Dict("switch"=>Dict(), "frac"=>Dict())
 
 for kdam in kdams
-    mean_switch_rates_on2[kdam] = mean([all_switch_rates_on2[i][kdam] for i in eachindex(all_switch_rates_on2)])
-    std_switch_rates_on2[kdam] = std([all_switch_rates_on2[i][kdam] for i in eachindex(all_switch_rates_on2)])
-    mean_switch_rates_off2[kdam] = mean([all_switch_rates_off2[i][kdam] for i in eachindex(all_switch_rates_off2)])
-    std_switch_rates_off2[kdam] = std([all_switch_rates_off2[i][kdam] for i in eachindex(all_switch_rates_off2)])
-    mean_switch_rates_on5[kdam] = mean([all_switch_rates_on5[i][kdam] for i in eachindex(all_switch_rates_on5)])
-    std_switch_rates_on5[kdam] = std([all_switch_rates_on5[i][kdam] for i in eachindex(all_switch_rates_on5)])
-    mean_switch_rates_off5[kdam] = mean([all_switch_rates_off5[i][kdam] for i in eachindex(all_switch_rates_off5)])
-    std_switch_rates_off5[kdam] = std([all_switch_rates_off5[i][kdam] for i in eachindex(all_switch_rates_off5)])
-    mean_switch_rates_on10[kdam] = mean([all_switch_rates_on10[i][kdam] for i in eachindex(all_switch_rates_on10)])
-    std_switch_rates_on10[kdam] = std([all_switch_rates_on10[i][kdam] for i in eachindex(all_switch_rates_on10)])
-    mean_switch_rates_off10[kdam] = mean([all_switch_rates_off10[i][kdam] for i in eachindex(all_switch_rates_off10)])
-    std_switch_rates_off10[kdam] = std([all_switch_rates_off10[i][kdam] for i in eachindex(all_switch_rates_off10)])
-    mean_switch_rates_on_bs[kdam] = mean([all_switch_rates_on_bs[i][kdam] for i in eachindex(all_switch_rates_on_bs)])
-    std_switch_rates_on_bs[kdam] = std([all_switch_rates_on_bs[i][kdam] for i in eachindex(all_switch_rates_on_bs)])
+    mean_switch_frac_on2["switch"][kdam] = mean([all_switch_rates_on2[i][kdam] for i in eachindex(all_switch_rates_on2)])
+    std_switch_frac_on2["switch"][kdam] = std([all_switch_rates_on2[i][kdam] for i in eachindex(all_switch_rates_on2)])
+    mean_switch_frac_off2["switch"][kdam] = mean([all_switch_rates_off2[i][kdam] for i in eachindex(all_switch_rates_off2)])
+    std_switch_frac_off2["switch"][kdam] = std([all_switch_rates_off2[i][kdam] for i in eachindex(all_switch_rates_off2)])
+    mean_switch_frac_on5["switch"][kdam] = mean([all_switch_rates_on5[i][kdam] for i in eachindex(all_switch_rates_on5)])
+    std_switch_frac_on5["switch"][kdam] = std([all_switch_rates_on5[i][kdam] for i in eachindex(all_switch_rates_on5)])
+    mean_switch_frac_off5["switch"][kdam] = mean([all_switch_rates_off5[i][kdam] for i in eachindex(all_switch_rates_off5)])
+    std_switch_frac_off5["switch"][kdam] = std([all_switch_rates_off5[i][kdam] for i in eachindex(all_switch_rates_off5)])
+    mean_switch_frac_on10["switch"][kdam] = mean([all_switch_rates_on10[i][kdam] for i in eachindex(all_switch_rates_on10)])
+    std_switch_frac_on10["switch"][kdam] = std([all_switch_rates_on10[i][kdam] for i in eachindex(all_switch_rates_on10)])
+    mean_switch_frac_off10["switch"][kdam] = mean([all_switch_rates_off10[i][kdam] for i in eachindex(all_switch_rates_off10)])
+    std_switch_frac_off10["switch"][kdam] = std([all_switch_rates_off10[i][kdam] for i in eachindex(all_switch_rates_off10)])
+    mean_switch_frac_on_bs["switch"][kdam] = mean([all_switch_rates_on_bs[i][kdam] for i in eachindex(all_switch_rates_on_bs)])
+    std_switch_frac_on_bs["switch"][kdam] = std([all_switch_rates_on_bs[i][kdam] for i in eachindex(all_switch_rates_on_bs)])
+    mean_switch_frac_off_bs["switch"][kdam] = mean([all_switch_rates_off_bs[i][kdam] for i in eachindex(all_switch_rates_off_bs)])
+    std_switch_frac_off_bs["switch"][kdam] = std([all_switch_rates_off_bs[i][kdam] for i in eachindex(all_switch_rates_off_bs)])
+
+    mean_switch_frac_on2["frac"][kdam] = mean([all_fracs_on2[i][kdam] for i in eachindex(all_fracs_on2)])
+    std_switch_frac_on2["frac"][kdam] = std([all_fracs_on2[i][kdam] for i in eachindex(all_fracs_on2)])
+    mean_switch_frac_off2["frac"][kdam] = mean([all_fracs_off2[i][kdam] for i in eachindex(all_fracs_off2)])
+    std_switch_frac_off2["frac"][kdam] = std([all_fracs_off2[i][kdam] for i in eachindex(all_fracs_off2)])
+    mean_switch_frac_on5["frac"][kdam] = mean([all_fracs_on5[i][kdam] for i in eachindex(all_fracs_on5)])
+    std_switch_frac_on5["frac"][kdam] = std([all_fracs_on5[i][kdam] for i in eachindex(all_fracs_on5)])
+    mean_switch_frac_off5["frac"][kdam] = mean([all_fracs_off5[i][kdam] for i in eachindex(all_fracs_off5)])
+    std_switch_frac_off5["frac"][kdam] = std([all_fracs_off5[i][kdam] for i in eachindex(all_fracs_off5)])
+    mean_switch_frac_on10["frac"][kdam] = mean([all_fracs_on10[i][kdam] for i in eachindex(all_fracs_on10)])
+    std_switch_frac_on10["frac"][kdam] = std([all_fracs_on10[i][kdam] for i in eachindex(all_fracs_on10)])
+    mean_switch_frac_off10["frac"][kdam] = mean([all_fracs_off10[i][kdam] for i in eachindex(all_fracs_off10)])
+    std_switch_frac_off10["frac"][kdam] = std([all_fracs_off10[i][kdam] for i in eachindex(all_fracs_off10)])
+    mean_switch_frac_on_bs["frac"][kdam] = mean([all_fracs_on_bs[i][kdam] for i in eachindex(all_fracs_on_bs)])
+    std_switch_frac_on_bs["frac"][kdam] = std([all_fracs_on_bs[i][kdam] for i in eachindex(all_fracs_on_bs)])
+    mean_switch_frac_off_bs["frac"][kdam] = mean([all_fracs_off_bs[i][kdam] for i in eachindex(all_fracs_off_bs)])
+    std_switch_frac_off_bs["frac"][kdam] = std([all_fracs_off_bs[i][kdam] for i in eachindex(all_fracs_off_bs)])
 end
 
+mean_switch_frac_on10["frac"]
+sorted_keys = sort(collect(keys(mean_switch_frac_off10["switch"])))
+sorted_mean_values = [mean_switch_frac_off10["switch"][key] for key in sorted_keys]
+sorted_std_values = [std_switch_frac_off10["switch"][key] for key in sorted_keys]
+
+function plot_mean_std(mean_switch_frac_on, std_switch_frac_on, mean_switch_frac_off, std_switch_frac_off, switch::String)
+    sorted_keys = sort(collect(keys(mean_switch_frac_off10["switch"])))
+
+    f = Figure()
+    if switch == "switch"
+        ax = Axis(f[1, 1], xlabel="kdam", ylabel="switch rate", yscale=log10)
+        labels = ["on → off", "off → on"]
+    else
+        ax = Axis(f[1, 1], xlabel="kdam", ylabel="fraction of time in state", yscale=identity)
+        labels = ["on state", "off state"]
+    end
+    errorbars!(ax, kdams, [mean_switch_frac_off[switch][key] for key in sorted_keys], [std_switch_frac_off[switch][key] for key in sorted_keys])
+    lines!(ax, kdams, [mean_switch_frac_off[switch][key] for key in sorted_keys], label=labels[1])
+    errorbars!(ax, kdams, [mean_switch_frac_on[switch][key] for key in sorted_keys], [std_switch_frac_on[switch][key] for key in sorted_keys])
+    lines!(ax, kdams, [mean_switch_frac_on[switch][key] for key in sorted_keys], label=labels[2])
+    axislegend(position=:rc)
+    return f
+end
+
+f_switch2 = plot_mean_std(mean_switch_frac_on2, std_switch_frac_on2, mean_switch_frac_off2, std_switch_frac_off2, "switch")
+f_frac2 = plot_mean_std(mean_switch_frac_on2, std_switch_frac_on2, mean_switch_frac_off2, std_switch_frac_off2, "frac")
+
+f_switch5 = plot_mean_std(mean_switch_frac_on5, std_switch_frac_on5, mean_switch_frac_off5, std_switch_frac_off5, "switch")
+f_frac5 = plot_mean_std(mean_switch_frac_on5, std_switch_frac_on5, mean_switch_frac_off5, std_switch_frac_off5, "frac")
+
+f_switch10 = plot_mean_std(mean_switch_frac_on10, std_switch_frac_on10, mean_switch_frac_off10, std_switch_frac_off10, "switch")
+f_frac10 = plot_mean_std(mean_switch_frac_on10, std_switch_frac_on10, mean_switch_frac_off10, std_switch_frac_off10, "frac")
+
+f_switch_bs = plot_mean_std(mean_switch_frac_on_bs, std_switch_frac_on_bs, mean_switch_frac_off_bs, std_switch_frac_off_bs, "switch")
+f_frac_bs = plot_mean_std(mean_switch_frac_on_bs, std_switch_frac_on_bs, mean_switch_frac_off_bs, std_switch_frac_off_bs, "frac")
+
+errorbars(kdams, [mean_switch_frac_on_bs["switch"][key] for key in sorted_keys], [std_switch_frac_on_bs["switch"][key] for key in sorted_keys])
+lines!(kdams, [mean_switch_frac_on_bs["switch"][key] for key in sorted_keys])
+std_switch_frac_on_bs["switch"][1.1]
+
+minimum([mean_switch_frac_on_bs["switch"][key] for key in sorted_keys])
+minimum([std_switch_frac_on_bs["switch"][key] for key in sorted_keys])
 
 # plotting all results
 f_switch = Figure()
@@ -60,10 +121,33 @@ ax = Axis(f_frac[1,1], xlabel="kdam", ylabel="fraction of time in state", title=
 axislegend(position=:rc)
 display(GLMakie.Screen(), f_frac)
 
-specie_plot = 1
-cmap = :rainbow_bgyr_35_85_c72_n256
-f = Figure()
-ax = Axis(f[1,1], xlabel="Damage rate (min-1)", ylabel="[$([species][specie_plot])] (μM)")
-[scatter!(ax, kdams, [all_species_mean_on[i][key][specie_plot] for key in kdams], color=[all_fracs_on[i][key] for key in kdams], colorrange=(0,1), colormap=cmap) for i in eachindex(all_species_mean_on)]
-[scatter!(ax, kdams, [all_species_mean_off[i][key][specie_plot] for key in kdams], color=[all_fracs_off[i][key] for key in kdams], colorrange=(0,1), colormap=cmap) for i in eachindex(all_species_mean_off)]
-Colorbar(f[1, 2], limits = (0,1), colormap = cmap, label="fraction of time in state")
+function plot_conc_frac(specie_plot, all_species_mean_on, all_species_mean_off, all_fracs_on, all_fracs_off)
+    specie_plot = specie_plot; species = [:rtca, :rm_a, :rh];
+    cmap = :rainbow_bgyr_35_85_c72_n256
+    f = Figure()
+    ax = Axis(f[1,1], xlabel="Damage rate (min-1)", ylabel="[$(species[specie_plot])] (μM)")
+    [scatter!(ax, kdams, [all_species_mean_on[i][key][specie_plot] for key in kdams], color=[all_fracs_on[i][key] for key in kdams], colorrange=(0,1), colormap=cmap) for i in eachindex(all_species_mean_on)]
+    [scatter!(ax, kdams, [all_species_mean_off[i][key][specie_plot] for key in kdams], color=[all_fracs_off[i][key] for key in kdams], colorrange=(0,1), colormap=cmap) for i in eachindex(all_species_mean_off)]
+    Colorbar(f[1, 2], limits = (0,1), colormap = cmap, label="fraction of time in state")
+
+    return f
+end
+
+f2_rtca = plot_conc_frac(1, all_species_mean_on2, all_species_mean_off2, all_fracs_on2, all_fracs_off2)
+f5_rtca = plot_conc_frac(1, all_species_mean_on5, all_species_mean_off5, all_fracs_on5, all_fracs_off5)
+f10_rtca = plot_conc_frac(1, all_species_mean_on10, all_species_mean_off10, all_fracs_on10, all_fracs_off10)
+f_bs_rtca = plot_conc_frac(1, all_species_mean_on_bs, all_species_mean_off_bs, all_fracs_on_bs, all_fracs_off_bs)
+
+f2_rh = plot_conc_frac(3, all_species_mean_on2, all_species_mean_off2, all_fracs_on2, all_fracs_off2)
+f5_rh = plot_conc_frac(3, all_species_mean_on5, all_species_mean_off5, all_fracs_on5, all_fracs_off5)
+f10_rh = plot_conc_frac(3, all_species_mean_on10, all_species_mean_off10, all_fracs_on10, all_fracs_off10)
+f_bs_rh = plot_conc_frac(3, all_species_mean_on_bs, all_species_mean_off_bs, all_fracs_on_bs, all_fracs_off_bs)
+
+f2_rm_a = plot_conc_frac(2, all_species_mean_on2, all_species_mean_off2, all_fracs_on2, all_fracs_off2)
+f5_rm_a = plot_conc_frac(2, all_species_mean_on5, all_species_mean_off5, all_fracs_on5, all_fracs_off5)
+f10_rm_a = plot_conc_frac(2, all_species_mean_on10, all_species_mean_off10, all_fracs_on10, all_fracs_off10)
+f_bs_rm_a = plot_conc_frac(2, all_species_mean_on_bs, all_species_mean_off_bs, all_fracs_on_bs, all_fracs_off_bs)
+
+display(GLMakie.Screen(), f5)
+
+all_species_mean_on2[5]
