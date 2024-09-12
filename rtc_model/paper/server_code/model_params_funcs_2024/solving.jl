@@ -162,3 +162,20 @@ function all_var_df(sol, all_species)
     all_df = DataFrame(:alpha=>alpha,:fa=>fa,:ra=>ra,:Vinit=>Vinit,:tscr_ab=>tscr_ab, :tscr_r=>tscr_r, :tlr_r=>tlr_r, :tlr_b=>tlr_b, :tlr_a=>tlr_a, :rtca1=>rtca1, :rtcb1=>rtcb1, :Vrep=>Vrep, :Vdam=>Vdam, :Vinflux=>Vinflux, :Vtag=>Vtag)
     return all_df
 end
+
+function var_param(model, kdam, params_rtc1, kdam_range, init1)
+    # new_params = deepcopy(params_rtc1)
+    ssvals=[]
+    @show params_rtc1[c], params_rtc1[L]
+    for i in kdam_range
+        params_rtc1[kdam] = i
+        solu_rtc = sol(model, init1, tspan, params_rtc1)
+        df = create_solu_df(solu_rtc, species_rtc)
+        ss = [i[end] for i in eachcol(df[:,2:end])]
+        # ss = steady_states(test, init_rtc, new_params)
+        push!(ssvals, ss)
+    end
+    df_ssvals = DataFrame(vcat(transpose(ssvals)...), :auto)
+    rename!(df_ssvals, species_rtc)
+    return df_ssvals
+end

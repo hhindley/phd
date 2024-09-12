@@ -145,6 +145,8 @@ tlr1 = g_max_val*atp_val/(θtlr_val+atp_val)
 lam_c_val = 8e-7 #8e-7
 kin_c_val = 1.5e-5 #1.5e-5 # this and the above value give pretty much same model concs as other model but kin is a bit high so need to adjust 
 ω_ab_val = 1.3e-5
+# L_val = 100000
+# c_val = 0.1
 
 params_rtc1 = OrderedDict(L=>L_val, c=>c_val, kr=>kr_val, Vmax_init=>Vmax_init_val, Km_init=>Km_init_val, θtscr=>θtscr_val, θtlr=>θtlr_val, na=>nA_val, nb=>nB_val, nr=>nR_val, d=>d_val, krep=>krep_val, ktag=>ktag_val,
 atp=>atp_val, km_a=>km_a_val, km_b=>km_b_val, g_max=>g_max_val, kdeg=>kdeg_val, kin_c=>kin_c_val, ω_ab=>ω_ab_val, ω_r=>ω_r_val, kdam=>kdam_val, lam_c=>lam_c_val, kc=>kc_val, k_diss=>k_diss_val)
@@ -152,6 +154,43 @@ atp=>atp_val, km_a=>km_a_val, km_b=>km_b_val, g_max=>g_max_val, kdeg=>kdeg_val, 
 init_rtc = [test.rm_a=>0.0,test.rtca=>0.0,test.rm_b=>0.0,test.rtcb=>0.0,test.rm_r=>0.0,test.rtcr=>0.0,test.rh=>11.29,test.rd=>0.0,test.rt=>0.0]
 
 ssvals_rtc = steady_states(test, init_rtc, params_rtc1)
+
+kdam_range = range(0,5, length=100) 
+df_ssvals = var_param(test, kdam, params_rtc1, kdam_range, ssvals_rtc)
+plot(scatter(x=kdam_range, y=df_ssvals.rtca), Layout(xaxis_title="kdam", yaxis_title="rh"))
+
+L_range = [10, 100, 1000, 10000, 100000]
+c_range = [1e-6, 1e-5, 1e-4, 1e-3, 1e-2]
+
+L_ssvals = []
+for i in L_range
+    L_params = deepcopy(params_rtc1)
+    L_params[L] = i
+    push!(L_ssvals, var_param(test, kdam, L_params, kdam_range, ssvals_rtc))
+end
+plot([scatter(x=kdam_range, y=i.rtca, name="L = $(L_range[j])", line=attr(color=colours[j])) for (i,j) in zip(L_ssvals, 1:length(L_range))], Layout(xaxis_title="kdam", yaxis_title="rtca"))
+
+c_ssvals = []
+for i in c_range
+    c_params = deepcopy(params_rtc1)
+    c_params[c] = i
+    push!(c_ssvals, var_param(test, kdam, c_params, kdam_range, ssvals_rtc))
+end
+plot([scatter(x=kdam_range, y=i.rtca, name="c = $(c_range[j])", line=attr(color=colours[j])) for (i,j) in zip(c_ssvals, 1:length(c_range))], Layout(xaxis_title="kdam", yaxis_title="rtca"))
+
+Lc_ssvals = []
+Lc_vals = []
+for i in L_range
+    for j in c_range
+        Lc_params = deepcopy(params_rtc1)
+        Lc_params[L] = i
+        Lc_params[c] = j
+        push!(Lc_vals, (i,j))
+        push!(Lc_ssvals, var_param(test, kdam, Lc_params, kdam_range, ssvals_rtc))
+    end
+end
+
+plot([scatter(x=kdam_range, y=Lc_ssvals[i].rtca, name="L,c = $(Lc_vals[i])") for i in eachindex(Lc_vals)], Layout(xaxis_title="kdam", yaxis_title="rtca"))
 
 # concentration no damage 
 solu_rtc = sol(test, init_rtc, tspan, params_rtc1)
@@ -179,7 +218,7 @@ df1 = create_solu_df(solu_rtc1, species_rtc)
 ssvals_rtc
 
 
-species = :rm_a
+species = :rtca
 p = plot([scatter(x=df.time, y=df[:,species], name="init"),
 scatter(x=df1.time, y=df1[:,species], name="ss")],
 Layout(xaxis_title_text="Time (min)", yaxis_title_text="$species", xaxis_type="log", 
@@ -259,7 +298,7 @@ plot(scatter(x=kdam_range, y=df_ssvals1.rh), Layout(xaxis_title="kdam", yaxis_ti
 plot([scatter(x=kdam_range, y=df_ssvals.rh, name="init"), scatter(x=kdam_range, y=df_ssvals1.rh, name="ss")], Layout(xaxis_title="kdam", yaxis_title="rh"))
 
 
-kdam_range = range(0,100, length=100) 
+kdam_range = range(0,10, length=100) 
 kdam_range1 = reverse(kdam_range)
 res = numerical_bistability_analysis(test, params_rtc1, init_rtc, :rtca, species_rtc, kdam_range, kdam)
 res1 = numerical_bistability_analysis(test, params_rtc1, init_rtc, :rtca, species_rtc, kdam_range1, kdam)
