@@ -166,7 +166,7 @@ end
 function var_param(model, kdam, params_rtc1, kdam_range, init1)
     # new_params = deepcopy(params_rtc1)
     ssvals=[]
-    @show params_rtc1[c], params_rtc1[L]
+    # @show params_rtc1[c], params_rtc1[L]
     for i in kdam_range
         params_rtc1[kdam] = i
         solu_rtc = sol(model, init1, tspan, params_rtc1)
