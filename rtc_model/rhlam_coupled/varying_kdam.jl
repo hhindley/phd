@@ -3,7 +3,6 @@ include(joinpath(homedir(), "phd/rtc_model/rhlam_coupled/rhlam_model.jl"))
 colours =["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", :blue]
 
 
-kdam_range = range(0,5, length=100) 
 df_ssvals = var_param(test, kdam, params_rtc1, kdam_range, ssvals_rtc)
 plot(scatter(x=kdam_range, y=df_ssvals.rtca), Layout(xaxis_title="kdam", yaxis_title="rtca"))
 

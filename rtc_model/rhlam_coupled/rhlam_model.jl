@@ -156,5 +156,7 @@ init_rtc = [test.rm_a=>0.0,test.rtca=>0.0,test.rm_b=>0.0,test.rtcb=>0.0,test.rm_
 
 ssvals_rtc = steady_states(test, init_rtc, params_rtc1)
 
+kdam_range = range(0,5, length=100) 
 
+df_ssvals = var_param(test, kdam, params_rtc1, kdam_range, ssvals_rtc)
 
