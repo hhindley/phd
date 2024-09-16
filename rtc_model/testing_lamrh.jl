@@ -233,7 +233,7 @@ for k in eachindex(ssvals_rtc)
 
         df_diff = var_param(test, kdam, params_rtc1, kdam_range, ssvals_diff)
 
-        if df_diff.rtca[end] != round(df_ssvals.rtca[end], digits=6)
+        if round(df_diff.rtca[end], digits=3) != round(df_ssvals.rtca[end], digits=3)
             # println(ssvals_diff)
             push!(res1, df_diff)
             push!(combs, comb)
