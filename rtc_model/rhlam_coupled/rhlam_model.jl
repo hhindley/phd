@@ -160,3 +160,4 @@ kdam_range = range(0,5, length=100)
 
 df_ssvals = var_param(test, kdam, params_rtc1, kdam_range, ssvals_rtc)
 
+jac_sym=calculate_jacobian(test)

@@ -78,7 +78,7 @@ function get_br_molec(model, init, params, kdam_max)
 end
 
 
-function numerical_bistability_analysis(model, params, init, specie, all_species, kdam_range, kdam) # used to be 'checking_bistability' - used when bifurcationkit not working 
+function numerical_bistability_analysis(model, params, init, all_species, kdam_range, kdam; specie=nothing) # used to be 'checking_bistability' - used when bifurcationkit not working 
     param_init = deepcopy(params)
     new_params = deepcopy(params)
     first_params = deepcopy(params)
@@ -89,8 +89,10 @@ function numerical_bistability_analysis(model, params, init, specie, all_species
         ss_vals = get_all_ssvals(solu, all_species)
         ssvals_dict = Dict([i => j for (i,j) in zip(all_species, ss_vals)])
         ss = calc_lam(first_params, ssvals_dict)
-    else
+    elseif typeof(specie) == Symbol
         ss = get_ssval(df_sol, specie)
+    else
+        ss = ss_init_vals(df_sol, all_species)
     end
 
     init_first = ss_init_vals(df_sol, all_species)
@@ -107,11 +109,22 @@ function numerical_bistability_analysis(model, params, init, specie, all_species
             ss_vals_new = get_all_ssvals(solu_new, all_species)
             ssvals_dict_new = Dict([i => j for (i,j) in zip(all_species, ss_vals_new)])
             push!(res, calc_lam(new_params,ssvals_dict_new))
-        else
+        elseif typeof(specie) == Symbol
             push!(res, get_ssval(df_sol_new, specie))
+        else
+            push!(res, ss_init_vals(df_sol_new, all_species))
         end
     end
     pushfirst!(res, ss)
+
+    if isnothing(specie)
+        data_dict = Dict{Symbol, Vector{Float64}}()
+        for (index, species) in enumerate(species_rtc)
+            data_dict[species] = [i[index] for i in res]
+        end
+        res = DataFrame(data_dict)
+    end
+
     return res
 end
 
@@ -484,193 +497,65 @@ function protein_decrease(rtc_inhib_mod, ssvals_inhib, params_inhib, specie, kda
 
     return [perc_deca, perc_decb, perc_dec1]
 end
-# function dashed_lines_species(df, df_bf, colors, type)
-#     kdam1 = findall(x->x==df_bf.kdam[1],df.kdam)[1]
-#     kdam2 = findall(x->x==df_bf.kdam[2],df.kdam)[1]
-#     first=[]
-#     middle=[]
-#     last=[]
-#     names=["RtcBA mRNA","RtcA","RtcB mRNA","RtcB","RtcR mRNA","RtcR"]
-#     if type == ""
-#         for (col,i) in zip(eachcol(df)[1:6],range(1,9))
-#             push!(first,scatter(x=df.kdam[1:kdam1], y=col[1:kdam1], name=(names[i]*" $type"), line=attr(width=3, color=colors[i]), legendgroup="$(names[i])"*"$type"))
-#             push!(middle,scatter(x=df.kdam[kdam1:kdam2], y=col[kdam1:kdam2], name="", line=attr(width=3,dash="dash", color=colors[i]),showlegend=false, legendgroup="$(names[i])"*"$type"))
-#             push!(last,scatter(x=df.kdam[kdam2:end], y=col[kdam2:end], name="", line=attr(width=3, color=colors[i]),showlegend=false, legendgroup="$(names[i])"*"$type"))
-#         end
-#     else
-#         for (col,i) in zip(eachcol(df)[1:6],range(1,9))
-#             push!(first,scatter(x=df.kdam[1:kdam1], y=col[1:kdam1], name=("$type"), line=attr(width=3, color=colors[i]), legendgroup="$(names[i])"*"$type"))
-#             push!(middle,scatter(x=df.kdam[kdam1:kdam2], y=col[kdam1:kdam2], name="", line=attr(width=3,dash="dash", color=colors[i]),showlegend=false, legendgroup="$(names[i])"*"$type"))
-#             push!(last,scatter(x=df.kdam[kdam2:end], y=col[kdam2:end], name="", line=attr(width=3, color=colors[i]),showlegend=false, legendgroup="$(names[i])"*"$type"))
-#         end
-#     end
-#     return first, middle, last
-# end
-# function dashed_lines_ribosomes(df, df_bf, colors, type)
-#     kdam1 = findall(x->x==df_bf.kdam[1],df.kdam)[1]
-#     kdam2 = findall(x->x==df_bf.kdam[2],df.kdam)[1]
-#     first=[]
-#     middle=[]
-#     last=[]
-#     names=["Healthy ribosomes","Damaged ribosomes","Tagged ribosomes"]
-#     if type == ""
-#         for (col,i) in zip(eachcol(df)[7:9],range(1,9))
-#             push!(first,scatter(x=df.kdam[1:kdam1], y=col[1:kdam1], name=(names[i]*" $type"), yaxis="y2", line=attr(width=3, color=colors[i]), legendgroup="$(names[i])"*"$type"))
-#             push!(middle,scatter(x=df.kdam[kdam1:kdam2], y=col[kdam1:kdam2], name="", yaxis="y2", line=attr(width=3,dash="dash", color=colors[i]),showlegend=false, legendgroup="$(names[i])"*"$type"))
-#             push!(last,scatter(x=df.kdam[kdam2:end], y=col[kdam2:end], name="", yaxis="y2", line=attr(width=3, color=colors[i]),showlegend=false, legendgroup="$(names[i])"*"$type"))
-#         end
-#     else
-#         for (col,i) in zip(eachcol(df)[7:9],range(1,9))
-#             push!(first,scatter(x=df.kdam[1:kdam1], y=col[1:kdam1], name=("$type"), line=attr(width=3, color=colors[i]), legendgroup="$(names[i])"*"$type"))
-#             push!(middle,scatter(x=df.kdam[kdam1:kdam2], y=col[kdam1:kdam2], name="", line=attr(width=3,dash="dash", color=colors[i]),showlegend=false, legendgroup="$(names[i])"*"$type"))
-#             push!(last,scatter(x=df.kdam[kdam2:end], y=col[kdam2:end], name="", line=attr(width=3, color=colors[i]),showlegend=false, legendgroup="$(names[i])"*"$type"))
-#         end
-#     end
-#     return first, middle, last
-# end
 
+# calculating stability with eigenvalues
+function calc_eigenvalues(i, param_dict_dam, kdam_val, res)
+    param_dict_dam[kdam] = kdam_val
 
-# function bf_scatter(df_bf, color)
-#     bf_rma = scatter(x=df_bf.kdam, y=df_bf.rm_a, mode="markers", name="", line=attr(color=color),showlegend=false, legendgroup="RtcBA mRNA")
-#     bf_rtca = scatter(x=df_bf.kdam, y=df_bf.rtca, mode="markers", name="", line=attr(color=color),showlegend=false, legendgroup="RtcA")
-#     bf_rmb = scatter(x=df_bf.kdam, y=df_bf.rm_b, mode="markers", name="", line=attr(color=color),showlegend=false, legendgroup="RtcB mRNA")
-#     bf_rtcb = scatter(x=df_bf.kdam, y=df_bf.rtcb, mode="markers", name="", line=attr(color=color),showlegend=false, legendgroup="RtcB")
-#     bf_rmr = scatter(x=df_bf.kdam, y=df_bf.rm_r, mode="markers", name="", line=attr(color=color),showlegend=false, legendgroup="RtcR mRNA")
-#     bf_rtcr = scatter(x=df_bf.kdam, y=df_bf.rtcr, mode="markers", name="", line=attr(color=color),showlegend=false, legendgroup="RtcR")
-#     bf_rh = scatter(x=df_bf.kdam, y=df_bf.rh, mode="markers", yaxis="y2", name="", line=attr(color=color),showlegend=false, legendgroup="Healthy ribosomes")
-#     bf_rd = scatter(x=df_bf.kdam, y=df_bf.rd, mode="markers", yaxis="y2", name="", line=attr(color=color),showlegend=false, legendgroup="Damaged ribosomes")
-#     bf_rt = scatter(x=df_bf.kdam, y=df_bf.rt, mode="markers", yaxis="y2", name="Bifurcation point", line=attr(color=color),showlegend=false, legendgroup="Tagged ribosomes")
-#     return bf_rma, bf_rtca, bf_rmb, bf_rtcb, bf_rmr, bf_rtcr, bf_rh, bf_rd, bf_rt
-# end
+    var_dict = Dict(rm_a(t)=>res[i,:rm_a], rtca(t)=>res[i,:rtca], rm_b(t)=>res[i,:rm_b], rtcb(t)=>res[i,:rtcb], rm_r(t)=>res1[i,:rm_r], rtcr(t)=>res[i,:rtcr],
+    rh(t)=>res[i,:rh], rd(t)=>res[i,:rd], rt(t)=>res[i,:rt])
 
+    all_vals = merge(var_dict, param_dict_dam)
 
-# function full_lines(df,width, colors)
-#     rma_p = scatter(x=df.kdam, y=df.rm_a, name="RtcBA mRNA", line=attr(width=width,color=colors[1]))
-#     rtca_p = scatter(x=df.kdam, y=df.rtca, name="RtcA", line=attr(width=width,color=colors[2]))
-#     rmb_p = scatter(x=df.kdam, y=df.rm_b, name="rm_b", line=attr(width=width,color=colors[3]))
-#     rtcb_p = scatter(x=df.kdam, y=df.rtcb, name="RtcB", line=attr(width=width,color=colors[4]))
-#     rmr_p = scatter(x=df.kdam, y=df.rm_r, name="rm_r", line=attr(width=width,color=colors[5]))
-#     rtcr_p = scatter(x=df.kdam, y=df.rtcr, name="RtcR", line=attr(width=width,color=colors[6]))
-#     rh_p = scatter(x=df.kdam, y=df.rh, name="Rh", yaxis="y2", line=attr(width=width,color=colors[7]))
-#     rd_p = scatter(x=df.kdam, y=df.rd, name="Rd", yaxis="y2", line=attr(width=width,color=colors[8]))
-#     rt_p = scatter(x=df.kdam, y=df.rt, name="Rt", yaxis="y2", line=attr(width=width,color=colors[9]))
-#     return rma_p, rtca_p, rmb_p, rtcb_p, rmr_p, rtcr_p, rh_p, rd_p, rt_p
-# end
+    vals=[]
+    for i in 1:size(jac_sym, 1)
+        for j in 1:size(jac_sym, 2)
+            new1::String = repr(jac_sym[i,j])
+            jac_sym[i,j] = eval(Meta.parse(new1))
+            push!(vals, substitute(jac_sym[i,j], all_vals))
+        end
+    end
 
+    jac_mat = parse.(Float64,string.(transpose(reshape(vals, (9,9)))))
 
-# function split_curves(df, df_bf)
-#     kdam1 = findall(x->x==df_bf.kdam[1],df.kdam)[1]
-#     kdam2 = findall(x->x==df_bf.kdam[2],df.kdam)[1]
-#     first=DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[])
-#     middle=DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[])
-#     last=DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[])
-    
-#     for i in df.kdam[1:kdam1]
-#         push!(first.kdam, i)
-#     end
-#     for i in df.kdam[kdam1:kdam2]
-#         push!(middle.kdam, i)
-#     end
-#     for i in df.kdam[kdam2:end]
-#         push!(last.kdam, i)
-#     end
-#     for (col,col1) in zip(eachcol(df)[1:9],eachcol(first)[2:end])
-#         for i in col[1:kdam1]
-#             push!(col1, i)
-#         end
-#     end
-#     for (col,col1) in zip(eachcol(df)[1:9],eachcol(middle)[2:end])
-#         for i in col[kdam1:kdam2]
-#             push!(col1, i)
-#         end
-#     end
-#     for (col,col1) in zip(eachcol(df)[1:9],eachcol(last)[2:end])
-#         for i in col[kdam2:end]
-#             push!(col1, i)
-#         end
-#     end
-#     return first, middle, last
-# end
+    eigs = eigvals(jac_mat)
 
+    return eigs
+end
 
-# function split_curves_inhib(df, df_bf)
-#     kdam1 = findall(x->x==df_bf.kdam[1],df.kdam)[1]
-#     kdam2 = findall(x->x==df_bf.kdam[2],df.kdam)[1]
-#     first=DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[],rtcb_i=[])
-#     middle=DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[],rtcb_i=[])
-#     last=DataFrame(kdam=[],rm_a=[],rtca=[],rm_b=[],rtcb=[],rm_r=[],rtcr=[],rh=[],rd=[],rt=[],rtcb_i=[])
-    
-#     for i in df.kdam[1:kdam1]
-#         push!(first.kdam, i)
-#     end
-#     for i in df.kdam[kdam1:kdam2]
-#         push!(middle.kdam, i)
-#     end
-#     for i in df.kdam[kdam2:end]
-#         push!(last.kdam, i)
-#     end
-#     for (col,col1) in zip(eachcol(df)[1:10],eachcol(first)[2:end])
-#         for i in col[1:kdam1]
-#             push!(col1, i)
-#         end
-#     end
-#     for (col,col1) in zip(eachcol(df)[1:10],eachcol(middle)[2:end])
-#         for i in col[kdam1:kdam2]
-#             push!(col1, i)
-#         end
-#     end
-#     for (col,col1) in zip(eachcol(df)[1:10],eachcol(last)[2:end])
-#         for i in col[kdam2:end]
-#             push!(col1, i)
-#         end
-#     end
-#     return first, middle, last
-# end
+function calc_unstable_points(kdam_range, res, param_dict_dam)
+    unstable=[]
+    eigenvals = []
+    for i in eachindex(kdam_range)
+        # println(i)
+        eigs = calc_eigenvalues(i, param_dict_dam, kdam_range[i], res)
+        push!(eigenvals, eigs)
+        if all(<(0), real.(eigs)) == true
+            println("all stable")
+            # @show eigs
+        else
+            println("unstable")
+            push!(unstable, i)
+            # @show eigs
+        end
+    end
 
+    return unstable, eigenvals
+end
 
+function eigs_to_df(eigs; real1=true)
+    data_dict = Dict{Symbol, Vector{Float64}}()
 
-# function plot_all_curves_bistable(br, colors2, colors_r, title)
-#     df = create_br_df(br)
-#     bf = bf_point_df(br)
-#     bfp_rma, bfp_rtca, bfp_rmb, bfp_rtcb, bfp_rmr, bfp_rtcr, bfp_rh, bfp_rd, bfp_rt = bf_scatter(bf, "darkblue")
-#     first_r, middle_r, last_r = dashed_lines_ribosomes(df, bf, colors_r, "")
-#     first, middle, last = dashed_lines_species(df, bf, colors2, "")
-#     return plot([first[1],middle[1],last[1], bfp_rma,
-#     first[2],middle[2],last[2], bfp_rtca,
-#     first[3],middle[3],last[3], bfp_rmb,
-#     first[4],middle[4],last[4], bfp_rtcb,
-#     first[6],middle[6],last[6], bfp_rtcr,
-#     first_r[1],middle_r[1],last_r[1], bfp_rh,
-#     first_r[2],middle_r[2],last_r[2], bfp_rd,
-#     first_r[3],middle_r[3],last_r[3], bfp_rt],
-#     Layout(yaxis2=attr(overlaying="y",side="right"), xaxis_title="Damage rate (min<sup>-1</sup>)", 
-#     yaxis_title="Proteins and mRNAs (μM)", yaxis2_title="Ribosomal species (μM)", title="$title"))
-# end
+    for (index, species) in enumerate(species_rtc)
+        if real1
+            data_dict[species] = [real(eigs[i][index]) for i in eachindex(eigs)]
+        else
+            data_dict[species] = [imag(eigs[i][index]) for i in eachindex(eigs)]
+        end
+    end
 
-# function get_all_curves_for_bistab_plotting(br, colors2, colors_r)
-#     df = create_br_df(br)
-#     bf = bf_point_df(br)
-#     bfp_rma, bfp_rtca, bfp_rmb, bfp_rtcb, bfp_rmr, bfp_rtcr, bfp_rh, bfp_rd, bfp_rt = bf_scatter(bf, "darkblue")
-#     first_r, middle_r, last_r = dashed_lines_ribosomes(df, bf, colors_r, "")
-#     first, middle, last = dashed_lines_species(df, bf, colors2, "")
-#     return bfp_rma, bfp_rtca, bfp_rmb, bfp_rtcb, bfp_rmr, bfp_rtcr, bfp_rh, bfp_rd, bfp_rt, first_r, middle_r, last_r, first, middle, last
-# end
+    all_eigs = DataFrame(data_dict)
 
-# function plot_species_separately_ribosomes(br, colors_r, type)
-#     df = create_br_df(br)
-#     bf = bf_point_df(br)
-#     first, middle, last = dashed_lines_ribosomes(df, bf, colors_r, "$type")
-#     return first, middle, last
-# end
+    return all_eigs
 
-# function plot_species_separately(br, colors_r, type)
-#     df = create_br_df(br)
-#     bf = bf_point_df(br)
-#     first, middle, last = dashed_lines_species(df, bf, colors_r, "$type")
-#     return first, middle, last
-# end
-
-
-
-
-
+end
