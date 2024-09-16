@@ -164,12 +164,12 @@ function all_var_df(sol, all_species)
 end
 
 function var_param(model, kdam, params_rtc1, kdam_range, init1)
-    # new_params = deepcopy(params_rtc1)
+    new_params = deepcopy(params_rtc1)
     ssvals=[]
     # @show params_rtc1[c], params_rtc1[L]
     for i in kdam_range
-        params_rtc1[kdam] = i
-        solu_rtc = sol(model, init1, tspan, params_rtc1)
+        new_params[kdam] = i
+        solu_rtc = sol(model, init1, tspan, new_params)
         df = create_solu_df(solu_rtc, species_rtc)
         ss = [i[end] for i in eachcol(df[:,2:end])]
         # ss = steady_states(test, init_rtc, new_params)
