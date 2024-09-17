@@ -12,10 +12,10 @@ plot([scatter(x=kdam_range, y=res.rtca), scatter(x=kdam_range1, y=res1.rtca)])
 plot([scatter(x=kdam_range1, y=res1[!,s], name="$s") for s in species_rtc])
 
 
-res_ss = numerical_bistability_analysis(test, params_rtc1, ssvals_rtc, :rtca, species_rtc, kdam_range, kdam)
-res1_ss = numerical_bistability_analysis(test, params_rtc1, ssvals_rtc, :rtca, species_rtc, kdam_range1, kdam)
+res_ss = numerical_bistability_analysis(test, params_rtc1, init_rtc, species_rtc, kdam_range, kdam)
+res1_ss = numerical_bistability_analysis(test, params_rtc1, ssvals_rtc, species_rtc, kdam_range1, kdam)
 
-plot([scatter(x=kdam_range, y=res_ss), scatter(x=kdam_range1, y=res1_ss)])
+plot([scatter(x=kdam_range, y=res_ss.rtca), scatter(x=kdam_range1, y=res1_ss.rtca)])
 
 
 

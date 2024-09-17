@@ -9,6 +9,12 @@ plot(scatter(x=kdam_range, y=df_ssvals.rtca), Layout(xaxis_title="kdam", yaxis_t
 df_init = var_param(test, kdam, params_rtc1, kdam_range, init_rtc)
 plot(scatter(x=kdam_range, y=df_init.rtca), Layout(xaxis_title="kdam", yaxis_title="rtca"))
 
+df_on = var_param(test, kdam, params_rtc1, kdam_range, init_on)
+plot(scatter(x=kdam_range, y=df_on.rtca), Layout(xaxis_title="kdam", yaxis_title="rtca"))
+
+df_off = var_param(test, kdam, params_rtc1, kdam_range, init_off)
+plot(scatter(x=kdam_range, y=df_off.rtca), Layout(xaxis_title="kdam", yaxis_title="rtca"))
+
 ssvals_diff = deepcopy(ssvals_rtc)
 ssvals_diff[2] = 0
 df_diff = var_param(test, kdam, params_rtc1, kdam_range, ssvals_diff)

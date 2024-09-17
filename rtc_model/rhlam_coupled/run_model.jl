@@ -18,13 +18,29 @@ open("/Users/s2257179/Desktop/dynamic_lam_kin.html", "w") do io
     PlotlyBase.to_html(io, p.plot)
 end
 
+# hysteresis test
 params1 = deepcopy(params_rtc1)
-params1[kdam] = 1
-solu_rtc = sol(test, init_rtc, tspan, params1)
-df = create_solu_df(solu_rtc, species_rtc)
+params1[kdam] = 0.01
+solu_rtc_low = sol(test, ssvals_rtc, tspan, params1)
+df_low = create_solu_df(solu_rtc_low, species_rtc)
 
-solu_rtc1 = sol(test, ssvals_rtc, tspan, params1)
-df1 = create_solu_df(solu_rtc1, species_rtc)
+params1[kdam] = 10
+solu_rtc_high = sol(test, ssvals_rtc, tspan, params1)
+df_high = create_solu_df(solu_rtc_high, species_rtc)
+
+params1[kdam] = 1
+solu_low = sol(test, [df_low[end,s] for s in species_rtc], tspan, params1)
+solu_high = sol(test, [df_high[end,s] for s in species_rtc], tspan, params1)
+
+df_low1 = create_solu_df(solu_low, species_rtc)
+df_high1 = create_solu_df(solu_high, species_rtc)
+
+plot([scatter(x=df_low.time, y=df_low.rtca, name="low: kdam = 0.01"), 
+      scatter(x=df_high.time, y=df_high.rtca, name="high: kdam = 10"), 
+      scatter(x=df_low1.time, y=df_low1.rtca, name="init low: kdam = 1"), 
+      scatter(x=df_high1.time, y=df_high1.rtca, name="init high: kdam = 1")], 
+      Layout(xaxis_type="log", yaxis_title="rtca", xaxis_title="Time (s)", title="hysteresis")
+)
 
 
 
