@@ -116,34 +116,48 @@ ax = Axis(f_frac[1,1], xlabel="kdam", ylabel="fraction of time in state", title=
 axislegend(position=:rc)
 display(GLMakie.Screen(), f_frac)
 
-function plot_conc_frac(specie_plot, all_species_mean_on, all_species_mean_off, all_fracs_on, all_fracs_off)
+
+function plot_conc_frac(specie_plot, all_species_mean_on, all_species_mean_off, all_fracs_on, all_fracs_off, var_name; logz=false)
     specie_plot = specie_plot; species = [:rtca, :rm_a, :rh];
     cmap = :rainbow_bgyr_35_85_c72_n256
     f = Figure()
-    ax = Axis(f[1,1], xlabel="Damage rate (min-1)", ylabel="[$(species[specie_plot])] (μM)")
-    [scatter!(ax, kdams, [all_species_mean_on[i][key][specie_plot] for key in kdams], color=[all_fracs_on[i][key] for key in kdams], colorrange=(0,1), colormap=cmap) for i in eachindex(all_species_mean_on)]
-    [scatter!(ax, kdams, [all_species_mean_off[i][key][specie_plot] for key in kdams], color=[all_fracs_off[i][key] for key in kdams], colorrange=(0,1), colormap=cmap) for i in eachindex(all_species_mean_off)]
-    Colorbar(f[1, 2], limits = (0,1), colormap = cmap, label="fraction of time in state")
+    ax = Axis(f[1,1], xlabel="Damage rate (min-1)", ylabel="[$(species[specie_plot])] (μM)", title="threshold $(var_name)")
+    
+    if !logz
+        max_val = maximum([all_fracs_off[i][key] for i in eachindex(all_fracs_off) for key in kdams])
+        min_val = minimum([all_fracs_on[i][key] for i in eachindex(all_fracs_on) for key in kdams])
 
+        [scatter!(ax, kdams, [all_species_mean_on[i][key][specie_plot] for key in kdams], color=[all_fracs_on[i][key] for key in kdams], colorrange=(min_val,max_val), colormap=cmap) for i in eachindex(all_species_mean_on)]
+        [scatter!(ax, kdams, [all_species_mean_off[i][key][specie_plot] for key in kdams], color=[all_fracs_off[i][key] for key in kdams], colorrange=(min_val,max_val), colormap=cmap) for i in eachindex(all_species_mean_off)]
+        Colorbar(f[1, 2], limits = (min_val,max_val), colormap = cmap, label="fraction of time in state")
+    else 
+        max_val = log10(maximum([all_fracs_off[i][key] for i in eachindex(all_fracs_off) for key in kdams]))
+        min_val = log10(minimum([all_fracs_on[i][key] for i in eachindex(all_fracs_on) for key in kdams]))
+        [scatter!(ax, kdams, [all_species_mean_on[i][key][specie_plot] for key in kdams], color=[log10(all_fracs_on[i][key]) for key in kdams], colorrange=(min_val,max_val), colormap=cmap) for i in eachindex(all_species_mean_on)]
+        [scatter!(ax, kdams, [all_species_mean_off[i][key][specie_plot] for key in kdams], color=[log10(all_fracs_off[i][key]) for key in kdams], colorrange=(min_val,max_val), colormap=cmap) for i in eachindex(all_species_mean_off)]
+        # Colorbar(f[1, 2], limits=(min_val,max_val), colormap=cmap, label="log10(fraction of time in state)")
+        colorbar_ticks = LinRange(min_val, max_val, 5)
+        Colorbar(f[1, 2], limits=(min_val,max_val), colormap=cmap, label="fraction of time in state (logscale)", ticks=(colorbar_ticks, string.(round.(10 .^colorbar_ticks, digits=3))))
+    end
     return f
 end
 
-delete!(all_species_mean_on2, 10)
+# delete!(all_species_mean_on2, 10)
 
-f2_rtca = plot_conc_frac(1, all_species_mean_on2, all_species_mean_off2, all_fracs_on2, all_fracs_off2)
-f5_rtca = plot_conc_frac(1, all_species_mean_on5, all_species_mean_off5, all_fracs_on5, all_fracs_off5)
-f10_rtca = plot_conc_frac(1, all_species_mean_on10, all_species_mean_off10, all_fracs_on10, all_fracs_off10)
-f_bs_rtca = plot_conc_frac(1, all_species_mean_on_bs, all_species_mean_off_bs, all_fracs_on_bs, all_fracs_off_bs)
+f2_rtca = plot_conc_frac(1, all_species_mean_on2, all_species_mean_off2, all_fracs_on2, all_fracs_off2, "2", logz=true)
+f5_rtca = plot_conc_frac(1, all_species_mean_on5, all_species_mean_off5, all_fracs_on5, all_fracs_off5, "5", logz=true)
+f10_rtca = plot_conc_frac(1, all_species_mean_on10, all_species_mean_off10, all_fracs_on10, all_fracs_off10, "10", logz=true)
+f_bs_rtca = plot_conc_frac(1, all_species_mean_on_bs, all_species_mean_off_bs, all_fracs_on_bs, all_fracs_off_bs, "bs", logz=true)
 
-f2_rh = plot_conc_frac(3, all_species_mean_on2, all_species_mean_off2, all_fracs_on2, all_fracs_off2)
-f5_rh = plot_conc_frac(3, all_species_mean_on5, all_species_mean_off5, all_fracs_on5, all_fracs_off5)
-f10_rh = plot_conc_frac(3, all_species_mean_on10, all_species_mean_off10, all_fracs_on10, all_fracs_off10)
-f_bs_rh = plot_conc_frac(3, all_species_mean_on_bs, all_species_mean_off_bs, all_fracs_on_bs, all_fracs_off_bs)
+f2_rh = plot_conc_frac(3, all_species_mean_on2, all_species_mean_off2, all_fracs_on2, all_fracs_off2, "2")
+f5_rh = plot_conc_frac(3, all_species_mean_on5, all_species_mean_off5, all_fracs_on5, all_fracs_off5, "5")
+f10_rh = plot_conc_frac(3, all_species_mean_on10, all_species_mean_off10, all_fracs_on10, all_fracs_off10, "10")
+f_bs_rh = plot_conc_frac(3, all_species_mean_on_bs, all_species_mean_off_bs, all_fracs_on_bs, all_fracs_off_bs, "bs")
 
-f2_rm_a = plot_conc_frac(2, all_species_mean_on2, all_species_mean_off2, all_fracs_on2, all_fracs_off2)
-f5_rm_a = plot_conc_frac(2, all_species_mean_on5, all_species_mean_off5, all_fracs_on5, all_fracs_off5)
-f10_rm_a = plot_conc_frac(2, all_species_mean_on10, all_species_mean_off10, all_fracs_on10, all_fracs_off10)
-f_bs_rm_a = plot_conc_frac(2, all_species_mean_on_bs, all_species_mean_off_bs, all_fracs_on_bs, all_fracs_off_bs)
+f2_rm_a = plot_conc_frac(2, all_species_mean_on2, all_species_mean_off2, all_fracs_on2, all_fracs_off2, "2")
+f5_rm_a = plot_conc_frac(2, all_species_mean_on5, all_species_mean_off5, all_fracs_on5, all_fracs_off5, "5")
+f10_rm_a = plot_conc_frac(2, all_species_mean_on10, all_species_mean_off10, all_fracs_on10, all_fracs_off10, "10")
+f_bs_rm_a = plot_conc_frac(2, all_species_mean_on_bs, all_species_mean_off_bs, all_fracs_on_bs, all_fracs_off_bs, "bs")
 
 display(GLMakie.Screen(), f5)
 
