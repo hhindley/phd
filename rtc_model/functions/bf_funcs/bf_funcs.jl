@@ -543,19 +543,3 @@ function calc_unstable_points(kdam_range, res, param_dict_dam)
     return unstable, eigenvals
 end
 
-function eigs_to_df(eigs; real1=true)
-    data_dict = Dict{Symbol, Vector{Float64}}()
-
-    for (index, species) in enumerate(species_rtc)
-        if real1
-            data_dict[species] = [real(eigs[i][index]) for i in eachindex(eigs)]
-        else
-            data_dict[species] = [imag(eigs[i][index]) for i in eachindex(eigs)]
-        end
-    end
-
-    all_eigs = DataFrame(data_dict)
-
-    return all_eigs
-
-end
