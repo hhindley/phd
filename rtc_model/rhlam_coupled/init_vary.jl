@@ -22,7 +22,7 @@ plot([scatter(x=kdam_range, y=res[i].rtca, name="$(species_rtc[i]) - $minus_num"
 # change all combinations of initial conditions
 res1 = []
 combs = []
-minus_num = 2
+minus_num = 10
 num_conditions = length(ssvals_rtc)
 for k in eachindex(ssvals_rtc)
     println(k)
@@ -50,6 +50,6 @@ for k in eachindex(ssvals_rtc)
 end
 
 p = plot([scatter(x=kdam_range, y=res1[i].rtca, name="change $([species_rtc[s] for s in combs[i]])") for i in eachindex(res1)], Layout(xaxis_title="kdam",yaxis_title="rtca",title="$([round(ssvals_rtc[i], digits=6) for i in eachindex(ssvals_rtc)]) - $minus_num"))
-open("/home/hollie_hindley/phd/rtc_model/rhlam_coupled/minus2.html", "w") do io
+open("/home/hollie_hindley/phd/rtc_model/rhlam_coupled/minus$(minus_num).html", "w") do io
     PlotlyBase.to_html(io, p.plot)
 end
