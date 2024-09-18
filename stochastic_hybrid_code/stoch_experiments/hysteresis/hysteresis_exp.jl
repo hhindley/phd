@@ -64,7 +64,7 @@ for i in eachindex(kdam_range1)
     time_taken = @elapsed run_stoch(X0, 150, kdam_range1[i], joinpath(folderpath,"kdam_$(kdam_range1[i]).dat"))    
     df.time[i] = time_taken 
     df_ss = CSV.read(joinpath(folderpath,"kdam_$(kdam_range1[i]).dat"), DataFrame; header=false)
-    init1 = [df_ss[end,col] for col in names(ss_region[:,3:end-2])]
+    init1 = [df_ss[end,col] for col in names(df_ss[:,3:end-2])]
     global X0 = collect(get_X0(indV, init1)')
     println("calculated new X0 and finished $i, $(Dates.now())")
 end
