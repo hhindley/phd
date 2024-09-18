@@ -267,3 +267,24 @@ function all_concs(folders_dict, species, all_start_indices, all_stop_indices)
     return all_species_mean_on, all_species_mean_off
 end
 
+function calc_mean_std_vars(switch_rates, fracs, kdams)
+    mean_switch_frac = Dict("on"=>Dict("2"=>Dict("switch"=>Dict(), "frac"=>Dict()), "5"=>Dict("switch"=>Dict(), "frac"=>Dict()), "10"=>Dict("switch"=>Dict(), "frac"=>Dict()), "bs"=>Dict("switch"=>Dict(), "frac"=>Dict())), 
+                        "off"=>Dict("2"=>Dict("switch"=>Dict(), "frac"=>Dict()), "5"=>Dict("switch"=>Dict(), "frac"=>Dict()), "10"=>Dict("switch"=>Dict(), "frac"=>Dict()), "bs"=>Dict("switch"=>Dict(), "frac"=>Dict())))
+    std_switch_frac = Dict("on"=>Dict("2"=>Dict("switch"=>Dict(), "frac"=>Dict()), "5"=>Dict("switch"=>Dict(), "frac"=>Dict()), "10"=>Dict("switch"=>Dict(), "frac"=>Dict()), "bs"=>Dict("switch"=>Dict(), "frac"=>Dict())), 
+                        "off"=>Dict("2"=>Dict("switch"=>Dict(), "frac"=>Dict()), "5"=>Dict("switch"=>Dict(), "frac"=>Dict()), "10"=>Dict("switch"=>Dict(), "frac"=>Dict()), "bs"=>Dict("switch"=>Dict(), "frac"=>Dict())))
+
+    for onoff in ["on", "off"]
+        for thresh in ["2", "5", "10", "bs"]
+            for kdam in kdams
+                rates_switch = [switch_rates[onoff][thresh][i][kdam] for i in eachindex(switch_rates[onoff][thresh])]
+                mean_switch_frac[onoff][thresh]["switch"][kdam] = mean(rates_switch)
+                std_switch_frac[onoff][thresh]["switch"][kdam] = std(rates_switch)
+                
+                fracs1 = [fracs[onoff][thresh][i][kdam] for i in eachindex(fracs[onoff][thresh])]
+                mean_switch_frac[onoff][thresh]["frac"][kdam] = mean(fracs1)
+                std_switch_frac[onoff][thresh]["frac"][kdam] = std(fracs1)
+            end
+        end
+    end
+    return mean_switch_frac, std_switch_frac
+end
