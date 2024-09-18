@@ -1,5 +1,5 @@
-function plot_mean_std(mean_switch_frac_on, std_switch_frac_on, mean_switch_frac_off, std_switch_frac_off, switch::String)
-    sorted_keys = sort(collect(keys(mean_switch_frac_off10["switch"])))
+function plot_mean_std(thresh::String, switch::String)
+    sorted_keys = sort(collect(keys(mean_switch_frac["off"][thresh]["switch"])))
 
     f = Figure()
     if switch == "switch"
@@ -9,10 +9,10 @@ function plot_mean_std(mean_switch_frac_on, std_switch_frac_on, mean_switch_frac
         ax = Axis(f[1, 1], xlabel="kdam", ylabel="fraction of time in state", yscale=identity)
         labels = ["on state", "off state"]
     end
-    errorbars!(ax, kdams, [mean_switch_frac_off[switch][key] for key in sorted_keys], [std_switch_frac_off[switch][key] for key in sorted_keys])
-    lines!(ax, kdams, [mean_switch_frac_off[switch][key] for key in sorted_keys], label=labels[1])
-    errorbars!(ax, kdams, [mean_switch_frac_on[switch][key] for key in sorted_keys], [std_switch_frac_on[switch][key] for key in sorted_keys])
-    lines!(ax, kdams, [mean_switch_frac_on[switch][key] for key in sorted_keys], label=labels[2])
+    errorbars!(ax, kdams, [mean_switch_frac["off"][thresh][switch][key] for key in sorted_keys], [std_switch_frac["off"][thresh][switch][key] for key in sorted_keys])
+    lines!(ax, kdams, [mean_switch_frac["off"][thresh][switch][key] for key in sorted_keys], label=labels[1])
+    errorbars!(ax, kdams, [mean_switch_frac["on"][thresh][switch][key] for key in sorted_keys], [std_switch_frac["on"][thresh][switch][key] for key in sorted_keys])
+    lines!(ax, kdams, [mean_switch_frac["on"][thresh][switch][key] for key in sorted_keys], label=labels[2])
     axislegend(position=:rc)
     return f
 end

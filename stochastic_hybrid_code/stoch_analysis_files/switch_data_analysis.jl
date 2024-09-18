@@ -2,10 +2,10 @@ using JLD2, InteractiveViz, GLMakie, Statistics
 
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_switch_funcs.jl"))
 
-@load "/Users/s2257179/Desktop/saved_variables/data_thresh_2.jld2" all_start_indices2 all_stop_indices2 all_switch_rates_on2 all_switch_rates_off2 all_fracs_on2 all_fracs_off2 all_species_mean_on2 all_species_mean_off2
-@load "/Users/s2257179/Desktop/saved_variables/data_thresh_5.jld2" all_start_indices5 all_stop_indices5 all_switch_rates_on5 all_switch_rates_off5 all_fracs_on5 all_fracs_off5 all_species_mean_on5 all_species_mean_off5
-@load "/Users/s2257179/Desktop/saved_variables/data_thresh_10.jld2" all_start_indices10 all_stop_indices10 all_switch_rates_on10 all_switch_rates_off10 all_fracs_on10 all_fracs_off10 all_species_mean_on10 all_species_mean_off10
-@load "/Users/s2257179/Desktop/saved_variables/data_thresh_bs.jld2" all_start_indices_bs all_stop_indices_bs all_switch_rates_on_bs all_switch_rates_off_bs all_fracs_on_bs all_fracs_off_bs all_species_mean_on_bs all_species_mean_off_bs thresholds_rtca thresholds_rtcb
+# @load "/Users/s2257179/Desktop/saved_variables/data_thresh_2.jld2" all_start_indices2 all_stop_indices2 all_switch_rates_on2 all_switch_rates_off2 all_fracs_on2 all_fracs_off2 all_species_mean_on2 all_species_mean_off2
+# @load "/Users/s2257179/Desktop/saved_variables/data_thresh_5.jld2" all_start_indices5 all_stop_indices5 all_switch_rates_on5 all_switch_rates_off5 all_fracs_on5 all_fracs_off5 all_species_mean_on5 all_species_mean_off5
+# @load "/Users/s2257179/Desktop/saved_variables/data_thresh_10.jld2" all_start_indices10 all_stop_indices10 all_switch_rates_on10 all_switch_rates_off10 all_fracs_on10 all_fracs_off10 all_species_mean_on10 all_species_mean_off10
+# @load "/Users/s2257179/Desktop/saved_variables/data_thresh_bs.jld2" all_start_indices_bs all_stop_indices_bs all_switch_rates_on_bs all_switch_rates_off_bs all_fracs_on_bs all_fracs_off_bs all_species_mean_on_bs all_species_mean_off_bs thresholds_rtca thresholds_rtcb
 
 @load "/Users/s2257179/Desktop/saved_variables/data_thresh_all.jld2" all_start_indices all_stop_indices all_switch_rates_on all_switch_rates_off all_fracs_on all_fracs_off all_species_mean_on all_species_mean_off thresholds_rtca thresholds_rtcb
 
@@ -14,26 +14,40 @@ kdams = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
 
 
 # calculate the average and std switch rate but first need to rearrange data so they are in a kdam dict 20 kdam values and in each value there should be 19 numbers 
-mean_switch_frac_on = Dict("2"=>Dict("switch"=>Dict(), "frac"=>Dict()), "5"=>Dict("switch"=>Dict(), "frac"=>Dict()), "10"=>Dict("switch"=>Dict(), "frac"=>Dict()), "bs"=>Dict("switch"=>Dict(), "frac"=>Dict()))
-std_switch_frac_on = Dict("2"=>Dict("switch"=>Dict(), "frac"=>Dict()), "5"=>Dict("switch"=>Dict(), "frac"=>Dict()), "10"=>Dict("switch"=>Dict(), "frac"=>Dict()), "bs"=>Dict("switch"=>Dict(), "frac"=>Dict()))
+dict_struct = Dict("on"=>Dict("2"=>Dict("switch"=>Dict(), "frac"=>Dict()), "5"=>Dict("switch"=>Dict(), "frac"=>Dict()), "10"=>Dict("switch"=>Dict(), "frac"=>Dict()), "bs"=>Dict("switch"=>Dict(), "frac"=>Dict())), "off"=>Dict("2"=>Dict("switch"=>Dict(), "frac"=>Dict()), "5"=>Dict("switch"=>Dict(), "frac"=>Dict()), "10"=>Dict("switch"=>Dict(), "frac"=>Dict()), "bs"=>Dict("switch"=>Dict(), "frac"=>Dict())))
+mean_switch_frac = dict_struct
+std_switch_frac = dict_struct
 
-for thresh in eachindex(mean_switch_frac_on)
-    for kdam in kdams
-        mean_switch_frac_on[thresh]["switch"][kdam] = mean([all_switch_rates_on[thresh][i][kdam] for i in eachindex(all_switch_rates_on[thresh])])
-        std_switch_frac_on[thresh]["switch"][kdam] = std([all_switch_rates_on[thresh][i][kdam] for i in eachindex(all_switch_rates_on[thresh])])
-        mean_switch_frac_on[thresh]["frac"][kdam] = mean([all_fracs_on[thresh][i][kdam] for i in eachindex(all_fracs_on[thresh])])
-        std_switch_frac_on[thresh]["frac"][kdam] = std([all_fracs_on[thresh][i][kdam] for i in eachindex(all_fracs_on[thresh])])
+for onoff in ["on", "off"]
+    for thresh in ["2", "5", "10", "bs"]
+        for fs in ["switch", "frac"]
+            for kdam in kdams
+                mean_switch_frac[onoff][thresh][fs][kdam] = mean([all_switch_rates_on[thresh][i][kdam] for i in eachindex(all_switch_rates_on[thresh])])
+                std_switch_frac[onoff][thresh][fs][kdam] = std([all_switch_rates_on[thresh][i][kdam] for i in eachindex(all_switch_rates_on[thresh])])
+            end
+        end
     end
 end
 
-mean_switch_frac_on10["frac"]
-sorted_keys = sort(collect(keys(mean_switch_frac_off10["switch"])))
-sorted_mean_values = [mean_switch_frac_off10["switch"][key] for key in sorted_keys]
-sorted_std_values = [std_switch_frac_off10["switch"][key] for key in sorted_keys]
+mean_switch_frac
+
+sorted_keys = sort(collect(keys(mean_switch_frac["off"]["2"]["switch"])))
+
+f = Figure()
+ax = Axis(f[1, 1], xlabel="kdam", ylabel="switch rate", yscale=log10)
+labels = ["on → off", "off → on"]
+
+errorbars!(ax, kdams, [mean_switch_frac["off"]["2"]["switch"][key] for key in sorted_keys], [std_switch_frac["off"]["2"]["switch"][key] for key in sorted_keys])
+lines!(ax, kdams, [mean_switch_frac["off"]["2"]["switch"][key] for key in sorted_keys], label=labels[1])
+errorbars!(ax, kdams, [mean_switch_frac["on"]["2"]["switch"][key] for key in sorted_keys], [std_switch_frac["on"]["2"]["switch"][key] for key in sorted_keys])
+lines!(ax, kdams, [mean_switch_frac["on"]["2"]["switch"][key] for key in sorted_keys], label=labels[2])
+axislegend(position=:rc)
 
 
 
-f_switch2 = plot_mean_std(mean_switch_frac_on2, std_switch_frac_on2, mean_switch_frac_off2, std_switch_frac_off2, "switch")
+
+
+f_switch2 = plot_mean_std("2", "switch")
 f_frac2 = plot_mean_std(mean_switch_frac_on2, std_switch_frac_on2, mean_switch_frac_off2, std_switch_frac_off2, "frac")
 
 f_switch5 = plot_mean_std(mean_switch_frac_on5, std_switch_frac_on5, mean_switch_frac_off5, std_switch_frac_off5, "switch")
