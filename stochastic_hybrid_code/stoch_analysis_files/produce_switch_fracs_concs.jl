@@ -41,7 +41,18 @@ all_start_indices_bs, all_stop_indices_bs = all_indices(folders_dict, thresholds
 all_switch_rates_on_bs, all_switch_rates_off_bs, all_fracs_on_bs, all_fracs_off_bs = all_switchrates_fracs(folders_dict, all_start_indices_bs, all_stop_indices_bs)
 all_species_mean_on_bs, all_species_mean_off_bs = all_concs(folders_dict, [:rtca, :rm_a, :rh], all_start_indices_bs, all_stop_indices_bs)
 
-@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_2.jld2" all_start_indices2 all_stop_indices2 all_switch_rates_on2 all_switch_rates_off2 all_fracs_on2 all_fracs_off2 all_species_mean_on2 all_species_mean_off2
-@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_5.jld2" all_start_indices5 all_stop_indices5 all_switch_rates_on5 all_switch_rates_off5 all_fracs_on5 all_fracs_off5 all_species_mean_on5 all_species_mean_off5
-@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_10.jld2" all_start_indices10 all_stop_indices10 all_switch_rates_on10 all_switch_rates_off10 all_fracs_on10 all_fracs_off10 all_species_mean_on10 all_species_mean_off10
-@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_bs.jld2" all_start_indices_bs all_stop_indices_bs all_switch_rates_on_bs all_switch_rates_off_bs all_fracs_on_bs all_fracs_off_bs all_species_mean_on_bs all_species_mean_off_bs thresholds_rtca thresholds_rtcb
+# @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_2.jld2" all_start_indices2 all_stop_indices2 all_switch_rates_on2 all_switch_rates_off2 all_fracs_on2 all_fracs_off2 all_species_mean_on2 all_species_mean_off2
+# @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_5.jld2" all_start_indices5 all_stop_indices5 all_switch_rates_on5 all_switch_rates_off5 all_fracs_on5 all_fracs_off5 all_species_mean_on5 all_species_mean_off5
+# @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_10.jld2" all_start_indices10 all_stop_indices10 all_switch_rates_on10 all_switch_rates_off10 all_fracs_on10 all_fracs_off10 all_species_mean_on10 all_species_mean_off10
+# @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_bs.jld2" all_start_indices_bs all_stop_indices_bs all_switch_rates_on_bs all_switch_rates_off_bs all_fracs_on_bs all_fracs_off_bs all_species_mean_on_bs all_species_mean_off_bs thresholds_rtca thresholds_rtcb
+
+all_start_indices = Dict("2"=>all_start_indices2, "5"=>all_start_indices5, "10"=>all_start_indices10, "bs"=>all_start_indices_bs)
+all_stop_indices = Dict("2"=>all_stop_indices2, "5"=>all_stop_indices5, "10"=>all_stop_indices10, "bs"=>all_stop_indices_bs)
+all_switch_rates_on = Dict("2"=>all_switch_rates_on2, "5"=>all_switch_rates_on5, "10"=>all_switch_rates_on10, "bs"=>all_switch_rates_on_bs)
+all_switch_rates_off = Dict("2"=>all_switch_rates_off2, "5"=>all_switch_rates_off5, "10"=>all_switch_rates_off10, "bs"=>all_switch_rates_off_bs)
+all_fracs_on = Dict("2"=>all_fracs_on2, "5"=>all_fracs_on5, "10"=>all_fracs_on10, "bs"=>all_fracs_on_bs)
+all_fracs_off = Dict("2"=>all_fracs_off2, "5"=>all_fracs_off5, "10"=>all_fracs_off10, "bs"=>all_fracs_off_bs)
+all_species_mean_on = Dict("2"=>all_species_mean_on2, "5"=>all_species_mean_on5, "10"=>all_species_mean_on10, "bs"=>all_species_mean_on_bs)
+all_species_mean_off = Dict("2"=>all_species_mean_off2, "5"=>all_species_mean_off5, "10"=>all_species_mean_off10, "bs"=>all_species_mean_off_bs)
+
+@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_all.jld2" all_start_indices all_stop_indices all_switch_rates_on all_switch_rates_off all_fracs_on all_fracs_off all_species_mean_on all_species_mean_off thresholds_rtca thresholds_rtcb
