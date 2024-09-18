@@ -16,7 +16,7 @@ include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
 
 mount_path, folders, folders_dict = load_file_structure("kdam_testing/keyvals2", server=true)
 folders_dict
-# folders_dict = Dict(filter(pair -> pair.first in [2,4,6,8,10,11,12,13,14,15,16,17,18,19,20], folders_dict))
+folders_dict = Dict(filter(pair -> pair.first in [1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17,18,19,20], folders_dict))
 # folders_dict = Dict(filter(pair -> pair.first in [6], folders_dict))
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = load_data(mount_path, folders, folders_dict, reacts=false, props=false, hists=false)
 
@@ -46,13 +46,18 @@ all_species_mean_on_bs, all_species_mean_off_bs = all_concs(folders_dict, [:rtca
 # @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_10.jld2" all_start_indices10 all_stop_indices10 all_switch_rates_on10 all_switch_rates_off10 all_fracs_on10 all_fracs_off10 all_species_mean_on10 all_species_mean_off10
 # @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_bs.jld2" all_start_indices_bs all_stop_indices_bs all_switch_rates_on_bs all_switch_rates_off_bs all_fracs_on_bs all_fracs_off_bs all_species_mean_on_bs all_species_mean_off_bs thresholds_rtca thresholds_rtcb
 
-all_start_indices = Dict("2"=>all_start_indices2, "5"=>all_start_indices5, "10"=>all_start_indices10, "bs"=>all_start_indices_bs)
-all_stop_indices = Dict("2"=>all_stop_indices2, "5"=>all_stop_indices5, "10"=>all_stop_indices10, "bs"=>all_stop_indices_bs)
-all_switch_rates_on = Dict("2"=>all_switch_rates_on2, "5"=>all_switch_rates_on5, "10"=>all_switch_rates_on10, "bs"=>all_switch_rates_on_bs)
-all_switch_rates_off = Dict("2"=>all_switch_rates_off2, "5"=>all_switch_rates_off5, "10"=>all_switch_rates_off10, "bs"=>all_switch_rates_off_bs)
-all_fracs_on = Dict("2"=>all_fracs_on2, "5"=>all_fracs_on5, "10"=>all_fracs_on10, "bs"=>all_fracs_on_bs)
-all_fracs_off = Dict("2"=>all_fracs_off2, "5"=>all_fracs_off5, "10"=>all_fracs_off10, "bs"=>all_fracs_off_bs)
-all_species_mean_on = Dict("2"=>all_species_mean_on2, "5"=>all_species_mean_on5, "10"=>all_species_mean_on10, "bs"=>all_species_mean_on_bs)
-all_species_mean_off = Dict("2"=>all_species_mean_off2, "5"=>all_species_mean_off5, "10"=>all_species_mean_off10, "bs"=>all_species_mean_off_bs)
+indices = Dict("start"=>Dict("2"=>all_start_indices2, "5"=>all_start_indices5, "10"=>all_start_indices10, "bs"=>all_start_indices_bs),
+                    "stop"=>Dict("2"=>all_stop_indices2, "5"=>all_stop_indices5, "10"=>all_stop_indices10, "bs"=>all_stop_indices_bs))
 
-@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_all.jld2" all_start_indices all_stop_indices all_switch_rates_on all_switch_rates_off all_fracs_on all_fracs_off all_species_mean_on all_species_mean_off thresholds_rtca thresholds_rtcb
+switch_rates = Dict("on"=>Dict("2"=>all_switch_rates_on2, "5"=>all_switch_rates_on5, "10"=>all_switch_rates_on10, "bs"=>all_switch_rates_on_bs),
+                    "off"=>Dict("2"=>all_switch_rates_off2, "5"=>all_switch_rates_off5, "10"=>all_switch_rates_off10, "bs"=>all_switch_rates_off_bs))
+
+fracs = Dict("on"=>Dict("2"=>all_fracs_on2, "5"=>all_fracs_on5, "10"=>all_fracs_on10, "bs"=>all_fracs_on_bs),
+            "off"=>Dict("2"=>all_fracs_off2, "5"=>all_fracs_off5, "10"=>all_fracs_off10, "bs"=>all_fracs_off_bs))
+
+species_mean = Dict("on"=>Dict("2"=>all_species_mean_on2, "5"=>all_species_mean_on5, "10"=>all_species_mean_on10, "bs"=>all_species_mean_on_bs),
+                    "off"=>Dict("2"=>all_species_mean_off2, "5"=>all_species_mean_off5, "10"=>all_species_mean_off10, "bs"=>all_species_mean_off_bs))
+
+thresholds_bs = Dict("rtca"=>thresholds_rtca, "rtcb"=>thresholds_rtcb)
+
+@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_all.jld2" indices switch_rates fracs species_mean thresholds_bs
