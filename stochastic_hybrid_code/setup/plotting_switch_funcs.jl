@@ -1,4 +1,4 @@
-function plot_mean_std(thresh, switch::String)
+function plot_mean_std(mean_switch_frac, std_switch_frac, thresh, switch::String)
 
     f = Figure()
 
