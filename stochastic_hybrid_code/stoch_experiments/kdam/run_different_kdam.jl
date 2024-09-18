@@ -39,8 +39,8 @@ println("finished X0 calc")
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/keyvals2"
 
 date = Dates.format(Dates.now(), "ddmm")
-dir_num = 3
-dir = "$(date)_$dir_num" # change this! 
+dir_num = 1 # change this! 
+dir = "$(date)_$dir_num" 
 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
