@@ -13,13 +13,17 @@ for i in lam_c_vals
             test_params[kin_c] = j
             test_params[ω_ab] = wab
             push!(lamkin_vals, (i,j,wab))
-            push!(lamkin_ssvals, var_param(test, kdam, test_params, kdam_range, ssvals_rtc))
+            res = var_param(test, kdam, test_params, kdam_range, ssvals_rtc)
+            push!(lamkin_ssvals, res.rtca)
         end
     end
 end
 
+
 @save "/home/hollie_hindley/phd/rtc_model/rhlam_coupled/bistab_search/kdam_vary_search.jld2" lamkin_ssvals lamkin_vals
 
-# plot([scatter(x=kdam_range, y=lamkin_ssvals[i].rtca, name="lam_c, kin_c, wab = $(lamkin_vals[i])") for i in eachindex(lamkin_vals)], Layout(xaxis_title="kdam", yaxis_title="rtca"))
+
+# @load "/home/hollie_hindley/phd/rtc_model/rhlam_coupled/bistab_search/kdam_vary_search.jld2" lamkin_ssvals lamkin_vals
 
 
+# plot([scatter(x=kdam_range, y=lamkin_ssvals[i], name="lam_c, kin_c, wab = $(lamkin_vals[i])") for i in eachindex(lamkin_vals)], Layout(xaxis_title="kdam", yaxis_title="rtca"))
