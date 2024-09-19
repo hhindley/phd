@@ -79,7 +79,8 @@ df.rh[end]
 
 
 br = get_br(rtc_model, ssvals_rtc, params_rtc, 1.5)
-
+df = create_br_df(br)
+plot(scatter(x=df.kdam, y=df.rtca), Layout(xaxis_title="kdam", yaxis_title="rtca"))
 
 params_rtc1 = deepcopy(params_rtc)
 params_rtc1[kdam] = 1.1
@@ -87,3 +88,17 @@ kdeg_range=range(0,0.1,length=100)
 df = sweep_param(rtc_model, ssvals_rtc, params_rtc1, kdeg_range, kdeg, species_rtc)
 
 plot(scatter(x=kdeg_range, y=df.rd))
+
+
+kdam_range = range(0,1.5,length=50)
+kdam_range1 = reverse(kdam_range)
+res_ss = numerical_bistability_analysis(rtc_model, params_rtc, init_rtc, species_rtc, kdam_range, kdam)
+res1_ss = numerical_bistability_analysis(rtc_model, params_rtc, ssvals_rtc, species_rtc, kdam_range1, kdam)
+
+plot([scatter(x=kdam_range, y=res_ss.rh), scatter(x=kdam_range1, y=res1_ss.rh)])
+
+
+include(joinpath(homedir(), "phd/rtc_model/paper/server_code/model_params_funcs_2024/solving.jl"))
+
+df_ssvals = var_param(rtc_model, kdam, params_rtc, kdam_range, ssvals_rtc)
+plot(scatter(x=kdam_range, y=df_ssvals.rtca), Layout(xaxis_title="kdam", yaxis_title="rtca"))
