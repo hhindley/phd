@@ -44,7 +44,7 @@ function plot_mean_std(mean_switch_frac, std_switch_frac, thresh, switch::String
     return f
 end
 
-function plot_conc_frac(specie_plot, thresh; logz=false)
+function plot_conc_frac(species_mean, fracs, kdams, specie_plot, thresh; logz=false)
     specie_plot = specie_plot; species = [:rtca, :rm_a, :rh];
     cmap = :rainbow_bgyr_35_85_c72_n256
     f = Figure()

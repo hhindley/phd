@@ -1,6 +1,7 @@
-using JLD2, InteractiveViz, GLMakie, Statistics
+using JLD2, InteractiveViz, GLMakie, Statistics, DataFrames
 
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_switch_funcs.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/switching_funcs.jl"))
 
 # hysteresis data
 @load "/Users/s2257179/Desktop/saved_variables/hysteresis_high.jld2" indices switch_rates fracs species_mean thresholds_bs
@@ -62,7 +63,7 @@ highs = [tot_mean_species["high"]["on"]["2"][kdam] for kdam in kdams_high]
 
 
 f = Figure()
-ax = Axis(f[1,1], xticks=(1:4, ["0.01", "0.8", "0.8", "1.5"]))
+ax = Axis(f[1,1], xticks=([0.01, 0.8, 0.8, 1.5], ["0.01", "0.8", "0.8", "1.5"]))
 barplot!(ax, vcat(kdams_low, reverse(kdams_high)), vcat(lows, highs))
 
 
@@ -70,6 +71,34 @@ f = Figure()
 ax = Axis(f[1,1])
 [scatter!(ax, kdams_high, [species_mean_high["on"]["2"][i][key][1] for key in kdams_high], color=:blue) for i in eachindex(species_mean_high["on"]["2"])]
 [scatter!(ax, kdams_low, [species_mean_low["on"]["2"][i][key][1] for key in kdams_low], color=:red) for i in eachindex(species_mean_low["on"]["2"])]
+
+
+df_data = DataFrame("low_0.01"=>[species_mean_low["on"]["2"][i][0.01][1] for i in eachindex(species_mean_low["on"]["2"])],
+                "low_0.8"=>[species_mean_low["on"]["2"][i][0.8][1] for i in eachindex(species_mean_low["on"]["2"])],
+                "high_0.8"=>[species_mean_high["on"]["2"][i][0.8][1] for i in eachindex(species_mean_high["on"]["2"])],
+                "high_1.5"=>[species_mean_high["on"]["2"][i][1.5][1] for i in eachindex(species_mean_high["on"]["2"])],
+)
+df_t = permutedims(df)
+df_t.group = ["low_0.01", "low_0.8", "high_0.8", "high_1.5"]
+df_t.group1 = [1,2,3,4]
+df_t
+df = DataFrame("data"=>[(df_data[:,"low_0.01"]...), (df_data[:, "low_0.8"]...), (df_data[:, "high_0.8"]...), (df_data[:, "high_1.5"]...)], 
+                "group"=>[1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4],
+                "num"=>1:20)
+
+f = Figure()
+ax = Axis(f[1,1])#, xticks=(1:4, ["low_0.01", "low_0.8", "high_0.8", "high_1.5"]))
+barplot!(ax, df.num, df.data, color=:blue)
+
+tot_mean_species["high"]["on"]["2"]
+df = DataFrame("group"=>[1,2,3,4],
+            "data"=>[tot_mean_species["low"]["on"]["2"][0.01], tot_mean_species["low"]["on"]["2"][0.8], tot_mean_species["high"]["on"]["2"][0.8], tot_mean_species["high"]["on"]["2"][1.5]],
+            "color"=>["red", "purple", "purple", "blue"]
+)    
+
+f = Figure()
+ax = Axis(f[1,1], xticks=(1:4, ["0.01", "low_0.8", "high_0.8", "1.5"]), xlabel="kdam", ylabel="average RtcA (μM)", title="Hysteresis experiement")
+barplot!(ax, df.group, df.data, color=df.color)
 
 
 # plotting all results
@@ -88,7 +117,7 @@ axislegend(position=:rc)
 display(GLMakie.Screen(), f_frac)
 
 # plotting dots of average concentrations with fraction of time in state as colour
-f2_rtca = plot_conc_frac(1, "2", logz=true)
+f2_rtca = plot_conc_frac(species_mean_high, fracs_high, kdams_high, 1, "2", logz=true)
 f5_rtca = plot_conc_frac(1, "5", logz=true)
 f10_rtca = plot_conc_frac(1, "10", logz=true)
 f_bs_rtca = plot_conc_frac(1, "bs", logz=true)

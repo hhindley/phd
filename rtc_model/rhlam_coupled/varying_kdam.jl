@@ -53,3 +53,35 @@ for i in L_range
 end
 
 plot([scatter(x=kdam_range, y=Lc_ssvals[i].rtca, name="L,c = $(Lc_vals[i])") for i in eachindex(Lc_vals)], Layout(xaxis_title="kdam", yaxis_title="rtca"))
+
+
+
+
+lam_c_val = range(1e-8,1, length=20) #8e-7
+kin_c_val = range(1e-8,1, length=20) #1.5e-5
+kdam_range = range(0,100,length=20)
+kdam_range1 = reverse(kdam_range)
+lamkin_ssvals = []
+lamkin_ssvals_vals = []
+inc = []
+dec = []
+for i in lam_c_val
+    for j in kin_c_val
+        lamkin_ssvals_params = deepcopy(params_rtc1)
+        lamkin_ssvals_params[lam_c] = i
+        lamkin_ssvals_params[kin_c] = j
+        push!(lamkin_ssvals_vals, (i,j))
+        # push!(lamkin_ssvals, var_param(test, kdam, lamkin_ssvals_params, kdam_range, ssvals_rtc))
+        res_ss = numerical_bistability_analysis(test, lamkin_ssvals_params, init_rtc, species_rtc, kdam_range, kdam)
+        res1_ss = numerical_bistability_analysis(test, lamkin_ssvals_params, ssvals_rtc, species_rtc, kdam_range1, kdam)
+        push!(inc, res_ss)
+        push!(dec, res1_ss)
+
+    end
+end
+plot([[scatter(x=kdam_range, y=inc[i].rtca, name="lam_c, kin_c = $(lamkin_ssvals_vals[i])") for i in eachindex(lamkin_ssvals_vals)],
+[scatter(x=kdam_range, y=inc[i].rtca, name="lam_c, kin_c = $(lamkin_ssvals_vals[i])") for i in eachindex(lamkin_ssvals_vals)]],
+ Layout(xaxis_title="kdam", yaxis_title="rtca"))
+
+
+plot([scatter(x=kdam_range, y=lamkin_ssvals[i].rtca, name="lam_c, kin_c = $(lamkin_ssvals_vals[i])") for i in eachindex(lamkin_ssvals_vals)], Layout(xaxis_title="kdam", yaxis_title="rtca"))
