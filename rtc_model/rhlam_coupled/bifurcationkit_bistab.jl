@@ -1,6 +1,7 @@
 include(joinpath(homedir(), "phd/rtc_model/rhlam_coupled/rhlam_model.jl"))
 
-br = get_br(test, ssvals_rtc, params_rtc1, 1.5)
+
+br = get_br(test, ssvals_rtc, params_rtc1, 100.)
 bf = bf_point_df(br)
 df = create_br_df(br)
 kdam1 = findall(x->x==bf.kdam[1],df.kdam)[1]
@@ -27,7 +28,10 @@ p_conc = plot(scatter(x=df.kdam, y=df.rtca, name="RtcA"),
         
 
 
-prob_bf = ODEProblem(test, init_off, tspan, params_rtc1; jac=true)
+
+
+
+prob_bf = ODEProblem(test, ssvals_rtc, tspan, params_rtc1; jac=true)
 odefun = prob_bf.f
 F = (u,p) -> odefun(u,p,0)
 J = (u,p) -> odefun.jac(u,p,0)
@@ -38,22 +42,34 @@ id_kdam = indexof(0.0, par_tm)
 
 prob = BifurcationProblem(F, prob_bf.u0, (par_tm), (@lens _[id_kdam]); J=J,
 record_from_solution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-opts_br = ContinuationPar(p_min = 0., p_max = 0.5, ds = 1e-4, #a=0.1,
-dsmax = 0.5, dsmin = 1e-6, # 0.15
+opts_br = ContinuationPar(p_min = 0., p_max = 50., ds = 1e-4, #a=0.1,
+dsmax = 0.0005, dsmin = 1e-6, # 0.15
 # options to detect bifurcations
 detect_bifurcation = 3, n_inversion = 2, max_bisection_steps = 50, #3,2,10
 # number of eigenvalues
-nev = 5, 
+nev = 3, 
 # maximum number of continuation steps
-max_steps = 100000,)# dsminBisection=1e-30, tolBisectionEigenvalue=1e-30)# a=0.9, )
+max_steps = 1000000,)# dsminBisection=1e-30, tolBisectionEigenvalue=1e-30)# a=0.9, )
 # tolStability=1e-10, tolBisectionEigenvalue=1e-10)#,tolParamBisectionEvent=1e-1)
 # only using parameters that make a difference to solution
 # continuation of equilibria
 norminf(x) = norm(x, Inf)
 
+
 br = continuation(prob, PALC(θ=0.5), opts_br; plot = false, bothside=true, normC = norminf)
 
 df1 = create_br_df(br)
+bf = bf_point_df(br)
+kdam1 = findall(x->x==bf.kdam[1],df1.kdam)[1]
+kdam2 = findall(x->x==bf.kdam[2],df1.kdam)[1]
+kdam3 = findall(x->x==bf.kdam[3],df1.kdam)[1]
 
-plot(scatter(x=df1.kdam, y=df1.rtca, name="RtcA"), 
-      Layout(xaxis_title="Damage rate (min<sup>-1</sup>)",yaxis_title="Concentration μM"))
+f = Figure()
+ax = Axis(f[1,1], xlabel="kdam", ylabel="rtca")
+lines!(ax, df1.kdam, df1.rtca)
+scatter!(ax, [df1.kdam[kdam1]], [df1.rtca[kdam1]])
+scatter!(ax, [df1.kdam[kdam2]], [df1.rtca[kdam2]])
+scatter!(ax, [df1.kdam[kdam3]], [df1.rtca[kdam3]])
+
+# plot(scatter(x=df1.kdam, y=df1.rtca, name="RtcA"), 
+#       Layout(xaxis_title="Damage rate (min<sup>-1</sup>)",yaxis_title="Concentration μM"))

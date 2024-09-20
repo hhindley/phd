@@ -21,7 +21,7 @@ for i in lam_c_vals
     end
 end
 
-@save "/home/hollie_hindley/phd/rtc_model/rhlam_coupled/bistab_search/numerical_bistab_search.jld2" lamkin_vals inc dec 
+@save "/home/hollie_hindley/phd/rtc_model/rhlam_coupled/bistab_search/numerical_bistab_search_smaller.jld2" lamkin_vals inc dec 
 
 # all_res = vcat(inc, dec)
 # inc_lamkin_vals = [("inc",lamkin_vals[i]...) for i in eachindex(lamkin_vals)]

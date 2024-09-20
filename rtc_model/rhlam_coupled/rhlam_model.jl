@@ -1,4 +1,4 @@
-using ModelingToolkit, DifferentialEquations, PlotlyJS, LinearAlgebra, DataFrames, LabelledArrays, Printf, BifurcationKit, OrderedCollections, ProgressBars, Combinatorics
+using ModelingToolkit, DifferentialEquations, LinearAlgebra, DataFrames, LabelledArrays, Printf, BifurcationKit, OrderedCollections, ProgressBars, Combinatorics
 
 include(joinpath(homedir(), "phd/general_funcs/all_model_funcs.jl"))
 include(joinpath(homedir(), "phd/general_funcs/solving.jl"))
