@@ -23,7 +23,40 @@ end
 @save "/home/hollie_hindley/phd/rtc_model/rhlam_coupled/bistab_search/kdam_vary_search.jld2" lamkin_ssvals lamkin_vals
 
 
-# @load "/home/hollie_hindley/phd/rtc_model/rhlam_coupled/bistab_search/kdam_vary_search.jld2" lamkin_ssvals lamkin_vals
+@load "/home/hollie_hindley/phd/rtc_model/rhlam_coupled/bistab_search/kdam_vary_search.jld2" lamkin_ssvals lamkin_vals
 
 
-# plot([scatter(x=kdam_range, y=lamkin_ssvals[i], name="lam_c, kin_c, wab = $(lamkin_vals[i])") for i in eachindex(lamkin_vals)], Layout(xaxis_title="kdam", yaxis_title="rtca"))
+plot([scatter(x=kdam_range, y=lamkin_ssvals[i], name="lam_c, kin_c, wab = $(lamkin_vals[i])") for i in eachindex(lamkin_vals)], Layout(xaxis_title="kdam", yaxis_title="rtca"))
+
+lamkin_ssvals[1]
+
+function bistab_check(ssvals, threshold)
+    differences = diff(ssvals)
+
+    for diff in differences 
+        if diff > -threshold
+            return true
+        end
+    end
+    return false
+end
+lamkin_ssvals[1]
+indices = []
+for i in eachindex(lamkin_ssvals)
+    if bistab_check(lamkin_ssvals[i], 100)
+        push!(indices, i)
+    end
+end
+
+indices
+
+plot(scatter(x=kdam_range, y=lamkin_ssvals[699]))
+
+a=[1,2,34,100,12]
+as=diff(a)
+for diff in as
+    if diff < -10
+        println(diff)
+        return true
+    end
+end
