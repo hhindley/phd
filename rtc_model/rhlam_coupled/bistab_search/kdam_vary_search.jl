@@ -9,13 +9,13 @@ kdam_range = range(0,100,length=20)
 
 lamkin_ssvals = []
 lamkin_vals = []
-iteration = 0
+iteration_num = 0
 println("starting loop")
 for i in lam_c_vals
     for j in kin_c_vals
         for wab in wab_vals
-            iteration += 1
-            println("iteration: $iteration")
+            iteration_num += 1
+            println("iteration: $iteration_num")
             test_params = deepcopy(params_rtc1)
             test_params[lam_c] = i
             test_params[kin_c] = j
@@ -29,7 +29,7 @@ for i in lam_c_vals
 end
 
 println("saving variables")
-@save "/home/hollie_hindley/phd/rtc_model/rhlam_coupled/bistab_search/kdam_vary_search.jld2" lamkin_ssvals lamkin_vals
+@save joinpath(homedir(), "phd/rtc_model/rhlam_coupled/bistab_search/kdam_vary_search.jld2") lamkin_ssvals lamkin_vals
 println("finished!")
 
 # @load joinpath(homedir(),"phd/rtc_model/rhlam_coupled/bistab_search/kdam_vary_search.jld2") lamkin_ssvals lamkin_vals
