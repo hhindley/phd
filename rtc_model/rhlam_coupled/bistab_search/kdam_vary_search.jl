@@ -1,5 +1,5 @@
 using JLD2
-using GLMakie, InteractiveViz
+# using GLMakie, InteractiveViz
 model = "lamkin_coupled"
 include(joinpath(homedir(), "phd/rtc_model/rhlam_coupled/models/$model.jl"))
 lam_c_vals = 10 .^range(log10(1e-8),log10(0.1), length=5) #8e-7
