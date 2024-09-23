@@ -1,5 +1,5 @@
 using JLD2
-# using GLMakie, InteractiveViz
+using GLMakie, InteractiveViz
 model = "lamkin_coupled"
 include(joinpath(homedir(), "phd/rtc_model/rhlam_coupled/models/$model.jl"))
 lam_c_vals = 10 .^range(log10(1e-8),log10(0.1), length=5) #8e-7
@@ -9,25 +9,28 @@ kdam_range = range(0,100,length=20)
 
 lamkin_ssvals = []
 lamkin_vals = []
-
+iteration = 0
+println("starting loop")
 for i in lam_c_vals
     for j in kin_c_vals
         for wab in wab_vals
+            iteration += 1
+            println("iteration: $iteration")
             test_params = deepcopy(params_rtc1)
             test_params[lam_c] = i
             test_params[kin_c] = j
             test_params[ω_ab] = wab
             push!(lamkin_vals, (i,j,wab))
-            ssvals_rtc = steady_states(lamkin_coupled, init_rtc, test_params)
-            res = var_param(lamkin_coupled, kdam, test_params, kdam_range, ssvals_rtc)
+            ssvals_rtc_test = steady_states(lamkin_coupled, init_rtc, test_params)
+            res = var_param(lamkin_coupled, kdam, test_params, kdam_range, ssvals_rtc_test)
             push!(lamkin_ssvals, res.rtca)
         end
     end
 end
 
-
+println("saving variables")
 @save "/home/hollie_hindley/phd/rtc_model/rhlam_coupled/bistab_search/kdam_vary_search.jld2" lamkin_ssvals lamkin_vals
-
+println("finished!")
 
 # @load joinpath(homedir(),"phd/rtc_model/rhlam_coupled/bistab_search/kdam_vary_search.jld2") lamkin_ssvals lamkin_vals
 
@@ -60,7 +63,7 @@ end
 
 # lamkin_vals[indices]
 
-
+# lamkin_ssvals[indices[4]]
 # f = Figure()
 # ax = Axis(f[1, 1])
 # lines!(ax, kdam_range, lamkin_ssvals[indices[4]])
