@@ -1,19 +1,27 @@
-include(joinpath(homedir(), "phd/rtc_model/rhlam_coupled/rhlam_model.jl"))
+using GLMakie
+# decide which model you want to test and set it as variable name
+# model = "lamkin_coupled"
+model = "lam_coupled"
+# model = "kin_coupled" # get model errors - not needed anyway
+include(joinpath(homedir(), "phd/rtc_model/rhlam_coupled/models/$model.jl"))
 
 colours =["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", :blue]
 
-kdam_range = range(0.0, 5, length=100)
+kdam_range = range(0.0, 100, length=100)
 kdam_range1 = reverse(kdam_range)
-res = numerical_bistability_analysis(test, params_rtc1, init_rtc, species_rtc, kdam_range, kdam)
-res1 = numerical_bistability_analysis(test, params_rtc1, init_rtc, species_rtc, kdam_range1, kdam)
+res = numerical_bistability_analysis(model, params_rtc1, init_rtc, species_rtc, kdam_range, kdam)
+res1 = numerical_bistability_analysis(model, params_rtc1, ssvals_rtc, species_rtc, kdam_range1, kdam)
 
-plot([scatter(x=kdam_range, y=res.rtca), scatter(x=kdam_range1, y=res1.rtca)])
+lines(kdam_range, res.rtca)
+lines!(kdam_range1, res1.rtca)
 
-plot([scatter(x=kdam_range1, y=res1[!,s], name="$s") for s in species_rtc])
+
+# plot([scatter(x=kdam_range, y=res.rtca), scatter(x=kdam_range1, y=res1.rtca)])
+# plot([scatter(x=kdam_range1, y=res1[!,s], name="$s") for s in species_rtc])
 
 
-res_ss = numerical_bistability_analysis(test, params_rtc1, init_rtc, species_rtc, kdam_range, kdam)
-res1_ss = numerical_bistability_analysis(test, params_rtc1, ssvals_rtc, species_rtc, kdam_range1, kdam)
+res_ss = numerical_bistability_analysis(model, params_rtc1, init_rtc, species_rtc, kdam_range, kdam)
+res1_ss = numerical_bistability_analysis(model, params_rtc1, ssvals_rtc, species_rtc, kdam_range1, kdam)
 
 plot([scatter(x=kdam_range, y=res_ss.rtca), scatter(x=kdam_range1, y=res1_ss.rtca)])
 
