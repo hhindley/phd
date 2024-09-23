@@ -1,10 +1,11 @@
-using JLD2
+using JLD2, Dates
+println("starting at $(Dates.now())")
 # using GLMakie, InteractiveViz
 model = "lamkin_coupled"
 include(joinpath(homedir(), "phd/rtc_model/rhlam_coupled/models/$model.jl"))
-lam_c_vals = 10 .^range(log10(1e-8),log10(0.1), length=5) #8e-7
-kin_c_vals = 10 .^range(log10(1e-6),log10(0.1), length=5) #1.5e-5
-wab_vals = 10 .^range(log10(1e-6),log10(0.1), length=5) #1.3e-5
+lam_c_vals = 10 .^range(log10(1e-8),log10(0.1), length=10) #8e-7
+kin_c_vals = 10 .^range(log10(1e-6),log10(0.1), length=10) #1.5e-5
+wab_vals = 10 .^range(log10(1e-6),log10(0.1), length=10) #1.3e-5
 kdam_range = range(0,100,length=20)
 
 lamkin_ssvals = []
@@ -30,7 +31,7 @@ end
 
 println("saving variables")
 @save joinpath(homedir(), "phd/rtc_model/rhlam_coupled/bistab_search/kdam_vary_search.jld2") lamkin_ssvals lamkin_vals
-println("finished!")
+println("finished at $(Dates.now())")
 
 # @load joinpath(homedir(),"phd/rtc_model/rhlam_coupled/bistab_search/kdam_vary_search.jld2") lamkin_ssvals lamkin_vals
 
