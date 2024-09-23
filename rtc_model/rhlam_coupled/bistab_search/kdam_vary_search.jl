@@ -9,7 +9,7 @@ kdam_range = range(0,100,length=20)
 
 lamkin_ssvals = []
 lamkin_vals = []
-iteration_num = 0
+global iteration_num = 0
 println("starting loop")
 for i in lam_c_vals
     for j in kin_c_vals
