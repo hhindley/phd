@@ -14,7 +14,7 @@ println("starting loop")
 for i in lam_c_vals
     for j in kin_c_vals
         for wab in wab_vals
-            iteration_num += 1
+            global iteration_num += 1
             println("iteration: $iteration_num")
             test_params = deepcopy(params_rtc1)
             test_params[lam_c] = i
