@@ -1,7 +1,9 @@
-include(joinpath(homedir(), "phd/rtc_model/rhlam_coupled/rhlam_model.jl"))
+model = "lam_coupled"
+include(joinpath(homedir(), "phd/rtc_model/rhlam_coupled/models/$model.jl"))
 
 colours =["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", :blue]
 
+using GLMakie
 
 # concentration no damage 
 solu_rtc = sol(test, init_rtc, tspan, params_rtc1)
@@ -17,6 +19,13 @@ legend=attr(x=0.1, y=0.9)))
 open("/Users/s2257179/Desktop/dynamic_lam_kin.html", "w") do io
     PlotlyBase.to_html(io, p.plot)
 end
+
+# vary damage
+kdam_range = range(0,1000, length=200)
+res = var_param(model, kdam, params_rtc1, kdam_range, ssvals_rtc)
+f = Figure()
+ax = Axis(f[1,1], xlabel="kdam", ylabel="rtca")
+lines!(ax, kdam_range, res.rtca)
 
 # hysteresis test
 params1 = deepcopy(params_rtc1)
