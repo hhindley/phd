@@ -21,7 +21,7 @@ for i in lam_c_vals
         test_params[ω_ab] = wab
         test_params[kdam] = 0
         push!(lamkin_vals1, (i,wab))
-        solu = sol(lamkin_coupled, init_rtc, tspan, test_params)
+        solu = sol(lam_coupled, init_rtc, tspan, test_params)
         df = create_solu_df(solu, species_rtc)
         push!(lamkin_ssvals1, df.rtca)
         # push!(times_df, df.time)
