@@ -1,4 +1,4 @@
-
+include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
 model = "lamkin_coupled"
 include(joinpath(homedir(), "phd/rtc_model/rhlam_coupled/models/$model.jl"))
 lam_c_val = 2.15e-6
@@ -51,7 +51,7 @@ function bifurcation(mdoel, init_vals, param_vals; p_max=200., ds=1e-4, dsmax=0.
     return br
 end
 
-br = bifurcation(model, ssvals_rtc_test, test_params; θ=0.01, dsmin=1e-8)
+br = get_br(model, ssvals_rtc_test, test_params; p_max=200., ds=1e-4, dsmax=0.0005, dsmin=1e-8, detect_bifurcation=3, n_inversion=2, max_bisection_steps=50, nev=3, max_steps=1000000, θ=0.01)
 
 df1 = create_br_df(br)
 bf = bf_point_df(br)
