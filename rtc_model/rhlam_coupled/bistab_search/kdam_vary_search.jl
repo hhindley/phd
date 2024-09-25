@@ -63,30 +63,28 @@ f = Figure()
 ax = Axis(f[1, 1])
 [ilines!(ax, kdam_range, lamkin_ssvals[i]) for i in indices]
 
-bigger_res = []
-for i in eachindex(lamkin_ssvals)
-    if maximum(lamkin_ssvals[i]) > 0.001 && maximum(lamkin_ssvals[i]) < 10
-        push!(bigger_res, i)
-    end
-end
-bigger_res
+# bigger_res = []
+# for i in eachindex(lamkin_ssvals)
+#     if maximum(lamkin_ssvals[i]) > 0.001 && maximum(lamkin_ssvals[i]) < 10
+#         push!(bigger_res, i)
+#     end
+# end
+# bigger_res
+# f = Figure()
+# ax = Axis(f[1, 1])
+# [ilines!(ax, kdam_range, lamkin_ssvals[i]) for i in bigger_res]
+
+
+
 f = Figure()
 ax = Axis(f[1, 1])
-[ilines!(ax, kdam_range, lamkin_ssvals[i]) for i in bigger_res]
-
-
-lamkin_vals[bigger_res]
-
-lamkin_ssvals[indices[4]]
-f = Figure()
-ax = Axis(f[1, 1])
-lines!(ax, kdam_range, lamkin_ssvals[indices[1]])
+lines!(ax, kdam_range, lamkin_ssvals[indices[3]])
 
 lamkin_vals[indices[5]]
 
-lam_c_val = lamkin_vals[indices[1]][1]
-kin_c_val = lamkin_vals[indices[1]][2]
-ω_ab_val = lamkin_vals[indices[1]][3]
+lam_c_val = lamkin_vals[indices[3]][1]
+kin_c_val = lamkin_vals[indices[3]][2]
+ω_ab_val = lamkin_vals[indices[3]][3]
 
 kdam_range1 = range(0,200,length=1000)
 

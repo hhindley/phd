@@ -4,7 +4,7 @@ const BK = BifurcationKit
 # sup norm
 norminf(x) = norm(x, Inf)
 
-function get_br(model, init, params, kdam_max)
+function get_br(model, init, params; kdam_max=1.5, ds=0.001, a=0.1, dsmax=0.05, detect_bifurcation=3, n_inversion=4, max_bisection_steps=20, nev=2, max_steps=50000, θ=0.5)
     prob = ODEProblem(model, init, tspan, params; jac=true)
     odefun = prob.f
     F = (u,p) -> odefun(u,p,0)
@@ -17,18 +17,18 @@ function get_br(model, init, params, kdam_max)
         # print("original rtc model")
         prob = BifurcationProblem(F, prob.u0, (par_tm), (@lens _[id_kdam]); J=J,
         record_from_solution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-        opts_br = ContinuationPar(p_min = 0., p_max = kdam_max, ds = 0.001, a=0.1,
-        dsmax = 0.05, # 0.15
+        opts_br = ContinuationPar(p_min = 0., p_max = kdam_max, ds = ds, a=a,
+        dsmax = dsmax, # 0.15
         # options to detect bifurcations
-        detect_bifurcation = 3, n_inversion = 4, max_bisection_steps = 20, #3,2,10
+        detect_bifurcation = detect_bifurcation, n_inversion = n_inversion, max_bisection_steps = max_bisection_steps, #3,2,10
         # number of eigenvalues
-        nev = 2, 
+        nev = nev, 
         # maximum number of continuation steps
-        max_steps = 50000,)# dsminBisection=1e-30, tolBisectionEigenvalue=1e-30)# a=0.9, )
+        max_steps = max_steps,)# dsminBisection=1e-30, tolBisectionEigenvalue=1e-30)# a=0.9, )
         # tolStability=1e-10, tolBisectionEigenvalue=1e-10)#,tolParamBisectionEvent=1e-1)
         # only using parameters that make a difference to solution
         # continuation of equilibria
-        br = continuation(prob, PALC(θ=0.5), opts_br; plot = false, bothside=true, normC = norminf)
+        br = continuation(prob, PALC(θ=θ), opts_br; plot = false, bothside=true, normC = norminf)
     else
         # print("tRNA rtc model")
         prob = BifurcationProblem(F, prob.u0, (par_tm), (@lens _[id_kdam]); J=J,
