@@ -48,7 +48,7 @@ function plot_conc_frac(species_mean, fracs, kdams, specie_plot, thresh; logz=fa
     specie_plot = specie_plot; species = [:rtca, :rm_a, :rh];
     cmap = :rainbow_bgyr_35_85_c72_n256
     f = Figure()
-    ax = Axis(f[1,1], xlabel="Damage rate (min-1)", ylabel="[$(species[specie_plot])] (μM)", title="threshold $(thresh)")
+    ax = Axis(f[1,1], xlabel="Damage rate (min⁻¹)", ylabel="[$(species[specie_plot])] (μM)", title="threshold $(thresh)")
     
     if !logz
         max_val = maximum([fracs["off"][thresh][i][key] for i in eachindex(fracs["off"][thresh]) for key in kdams])

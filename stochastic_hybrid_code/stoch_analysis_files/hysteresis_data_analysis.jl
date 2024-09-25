@@ -122,31 +122,31 @@ df_fracs_off = DataFrame(
     "group" => repeat([1, 2, 3, 4], inner=length(fracs_low["off"]["2"]))
 )
 f = Figure()
-ax = Axis(f[1,1], xticks=(1:4, ["0.01", "low_0.8", "high_0.8", "1.5"]), xlabel="kdam", ylabel="Fraction of time in off state", title="Hysteresis experiement")
+ax = Axis(f[1,1], xticks=(1:4, ["0.01", "0.8", "0.8", "1.5"]), xlabel="Damage rate (min⁻¹)", ylabel="Fraction of time in off state", title="Hysteresis experiement")
 boxplot!(ax, df_fracs_off.group, df_fracs_off.data)
 
 df_means_concs_on = combine(groupby(df_concs_on, :group), :data => mean => :mean_data)
 df_means_concs_on.color = ["red", "purple", "purple", "blue"]
 f = Figure()
-ax = Axis(f[1,1], xticks=(1:4, ["0.01", "low_0.8", "high_0.8", "1.5"]), xlabel="kdam", ylabel="average RtcA in on state (μM)", title="Hysteresis experiement")
+ax = Axis(f[1,1], xticks=(1:4, ["0.01", "0.8", "0.8", "1.5"]), xlabel="Damage rate (min⁻¹)", ylabel="average RtcA in on state (μM)", title="Hysteresis experiement")
 barplot!(ax, df_means_concs_on.group, df_means_concs_on.mean_data, color=df_means_concs_on.color)
 
 df_means_concs_off = combine(groupby(df_concs_off, :group), :data => mean => :mean_data)
 df_means_concs_off.color = ["red", "purple", "purple", "blue"]
 f = Figure()
-ax = Axis(f[1,1], xticks=(1:4, ["0.01", "low_0.8", "high_0.8", "1.5"]), xlabel="kdam", ylabel="average RtcA in off state (μM)", title="Hysteresis experiement")
+ax = Axis(f[1,1], xticks=(1:4, ["0.01", "0.8", "0.8", "1.5"]), xlabel="Damage rate (min⁻¹)", ylabel="average RtcA in off state (μM)", title="Hysteresis experiement")
 barplot!(ax, df_means_concs_off.group, df_means_concs_off.mean_data, color=df_means_concs_off.color)
 
 df_means_fracs_on = combine(groupby(df_fracs_on, :group), :data => mean => :mean_data)
 df_means_fracs_on.color = ["red", "purple", "purple", "blue"]
 f = Figure()
-ax = Axis(f[1,1], xticks=(1:4, ["0.01", "low_0.8", "high_0.8", "1.5"]), xlabel="kdam", ylabel="Fraction of time in on state", title="Hysteresis experiement")
+ax = Axis(f[1,1], xticks=(1:4, ["0.01", "0.8", "0.8", "1.5"]), xlabel="Damage rate (min⁻¹)", ylabel="Fraction of time in on state", title="Hysteresis experiement")
 barplot!(ax, df_means_fracs_on.group, df_means_fracs_on.mean_data, color=df_means_fracs_on.color)
 
 df_means_fracs_off = combine(groupby(df_fracs_off, :group), :data => mean => :mean_data)
 df_means_fracs_off.color = ["red", "purple", "purple", "blue"]
 f = Figure()
-ax = Axis(f[1,1], xticks=(1:4, ["0.01", "low_0.8", "high_0.8", "1.5"]), xlabel="kdam", ylabel="Fraction of time in off state", title="Hysteresis experiement")
+ax = Axis(f[1,1], xticks=(1:4, ["0.01", "0.8", "0.8", "1.5"]), xlabel="Damage rate (min⁻¹)", ylabel="Fraction of time in off state", title="Hysteresis experiement")
 barplot!(ax, df_means_fracs_off.group, df_means_fracs_off.mean_data, color=df_means_fracs_off.color)
 
 
