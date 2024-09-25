@@ -3,8 +3,9 @@ const BK = BifurcationKit
 
 # sup norm
 norminf(x) = norm(x, Inf)
-
-function get_br(model, init, params; kdam_max=1.5, ds=0.001, a=0.1, dsmax=0.05, dsmin=0.001, detect_bifurcation=3, n_inversion=4, max_bisection_steps=20, nev=2, max_steps=50000, θ=0.5)
+# continuation params for rtc model and inhib models = kdam_max=1.5, ds=0.001, a=0.1, dsmax=0.05, dsmin=0.001, detect_bifurcation=3, n_inversion=4, max_bisection_steps=20, nev=2, max_steps=50000, θ=0.5
+# continuation params for tRNA model = kdam_max=1.5, ds=0.001, dsmax=0.15, dsmin=0.0001, detect_bifurcation=3, n_inversion=4, max_bisection_steps=20, nev=2, max_steps=50000, θ=0.5
+function get_br(model, init, params; kdam_max=1.5, ds=0.001, a=0.1, dsmax=0.05, dsmin=0.001, detect_bifurcation=3, n_inversion=2, max_bisection_steps=20, nev=2, max_steps=50000, θ=0.5, tol_stability=1e-10, tol_bisection_eigenvalue=1e-16)
     prob = ODEProblem(model, init, tspan, params; jac=true)
     odefun = prob.f
     F = (u,p) -> odefun(u,p,0)
@@ -13,41 +14,25 @@ function get_br(model, init, params; kdam_max=1.5, ds=0.001, a=0.1, dsmax=0.05, 
     # id_kdam = indexof(kdam, parameters(model))
     id_kdam = indexof(0.0, par_tm)
     # Bifurcation Problem
-    if nameof(model) == :rtc_model || nameof(model) == :rtc_inhib_model
-        # print("original rtc model")
-        prob = BifurcationProblem(F, prob.u0, (par_tm), (@lens _[id_kdam]); J=J,
-        record_from_solution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-        opts_br = ContinuationPar(p_min = 0., p_max = kdam_max, ds = ds, a=a,
-        dsmax = dsmax, # 0.15
-        dsmin = dsmin,
-        # options to detect bifurcations
-        detect_bifurcation = detect_bifurcation, n_inversion = n_inversion, max_bisection_steps = max_bisection_steps, #3,2,10
-        # number of eigenvalues
-        nev = nev, 
-        # maximum number of continuation steps
-        max_steps = max_steps,)# dsminBisection=1e-30, tolBisectionEigenvalue=1e-30)# a=0.9, )
-        # tolStability=1e-10, tolBisectionEigenvalue=1e-10)#,tolParamBisectionEvent=1e-1)
-        # only using parameters that make a difference to solution
-        # continuation of equilibria
-        br = continuation(prob, PALC(θ=θ), opts_br; plot = false, bothside=true, normC = norminf)
-    else
-        # print("tRNA rtc model")
-        prob = BifurcationProblem(F, prob.u0, (par_tm), (@lens _[id_kdam]); J=J,
-        record_from_solution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], trna = x[7], rd = x[8], rt = x[9]),)
-        opts_br = ContinuationPar(p_min = 0., p_max = kdam_max, ds = 0.001,# a=0.1,
-        dsmax = 0.15, dsmin = 0.0001,# 0.15
-        # options to detect bifurcations
-        detect_bifurcation = 3, n_inversion = 2, max_bisection_steps = 20, #3,2,10
-        # number of eigenvalues
-        # nev =100, #tolParamBisectionEvent=1e-30, 
-        # maximum number of continuation steps
-        max_steps = 50000,)# dsmin_bisection=1e-30)#, tol_bisection_eigenvalue=1e-10)# a=0.9, )
-        # tolStability=1e-10, tolBisectionEigenvalue=1e-10)#,tolParamBisectionEvent=1e-1)
-        # only using parameters that make a difference to solution
-        # continuation of equilibria
+    prob = BifurcationProblem(F, prob.u0, (par_tm), (@lens _[id_kdam]); J=J,
+    record_from_solution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
+    opts_br = ContinuationPar(p_min = 0., p_max = kdam_max, ds = ds, a=a,
+    dsmax = dsmax, # 0.15
+    dsmin = dsmin,
+    
+    # options to detect bifurcations
+    detect_bifurcation = detect_bifurcation, n_inversion = n_inversion, max_bisection_steps = max_bisection_steps, #3,2,10
+    # number of eigenvalues
+    nev = nev, 
+    # maximum number of continuation steps
+    max_steps = max_steps,
+    tol_stability = tol_stability,
+    tol_bisection_eigenvalue = tol_bisection_eigenvalue,)# dsminBisection=1e-30, tolBisectionEigenvalue=1e-30)# a=0.9, )
+    # tolStability=1e-10, tolBisectionEigenvalue=1e-10)#,tolParamBisectionEvent=1e-1)
+    # only using parameters that make a difference to solution
+    # continuation of equilibria
+    br = continuation(prob, PALC(θ=θ), opts_br; plot = false, bothside=true, normC = norminf)
 
-        br = continuation(prob, PALC(θ=0.5), opts_br; plot = false, bothside=true, normC = norminf)
-    end
     return br
 end
 

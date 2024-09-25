@@ -22,36 +22,16 @@ lines(kdam_range, res_n.rtca)
 lines!(reverse(kdam_range), res_n1.rtca)
 
 
-function bifurcation(mdoel, init_vals, param_vals; p_max=200., ds=1e-4, dsmax=0.0005, dsmin=1e-6, detect_bifurcation=3, n_inversion=2, max_bisection_steps=50, nev=3, max_steps=1000000, θ=0.5)
-    prob_bf = ODEProblem(mdoel, init_vals, tspan, param_vals; jac=true)
-    odefun = prob_bf.f
-    F = (u,p) -> odefun(u,p,0)
-    J = (u,p) -> odefun.jac(u,p,0)
-    par_tm = prob_bf.p[1]
-    # id_kdam = indexof(kdam, parameters(model))
-    id_kdam = indexof(0.0, par_tm)
-    # Bifurcation Problem
-
-    prob = BifurcationProblem(F, prob_bf.u0, (par_tm), (@lens _[id_kdam]); J=J,
-    record_from_solution = (x, p) -> (rm_a = x[1], rtca = x[2], rm_b = x[3], rtcb = x[4], rm_r = x[5], rtcr = x[6], rh = x[7], rd = x[8], rt = x[9]),)
-    opts_br = ContinuationPar(p_min = 0., p_max = p_max, ds = ds, #a=0.1,
-    dsmax = dsmax, dsmin = dsmin, # 0.15
-    # options to detect bifurcations
-    detect_bifurcation = detect_bifurcation, n_inversion = n_inversion, max_bisection_steps = max_bisection_steps, #3,2,10
-    # number of eigenvalues
-    nev = nev, 
-    # maximum number of continuation steps
-    max_steps = max_steps,)# dsminBisection=1e-30, tolBisectionEigenvalue=1e-30)# a=0.9, )
-    # tolStability=1e-10, tolBisectionEigenvalue=1e-10)#,tolParamBisectionEvent=1e-1)
-    # only using parameters that make a difference to solution
-    # continuation of equilibria
-    norminf(x) = norm(x, Inf)
-
-    br = continuation(prob, PALC(θ=θ), opts_br; plot = false, bothside=true, normC = norminf)
-    return br
-end
-
-br = get_br(model, ssvals_rtc_test, test_params; p_max=200., ds=1e-4, dsmax=0.0005, dsmin=1e-8, detect_bifurcation=3, n_inversion=2, max_bisection_steps=50, nev=3, max_steps=1000000, θ=0.01)
+br = get_br(model, ssvals_rtc_test, test_params; 
+            kdam_max=200., 
+            ds=1e-4, dsmax=0.0005, dsmin=1e-8, 
+            detect_bifurcation=3, 
+            n_inversion=2, 
+            max_bisection_steps=50, 
+            nev=3, 
+            max_steps=1000000, 
+            θ=0.01
+)
 
 df1 = create_br_df(br)
 bf = bf_point_df(br)
@@ -71,6 +51,58 @@ scatter!(ax, [df1.kdam[kdam3]], [df1.rtca[kdam3]])
 scatter!(ax, [df1.kdam[kdam4]], [df1.rtca[kdam4]])
 scatter!(ax, [df1.kdam[kdam5]], [df1.rtca[kdam5]])
 scatter!(ax, [df1.kdam[kdam6]], [df1.rtca[kdam6]])
+
+lamkin_vals[indices]
+
+new_params = []
+new_ssvals = []
+for i in lamkin_vals[indices]
+    test_params = deepcopy(params_rtc1)
+    test_params[lam_c] = i[1]
+    test_params[kin_c] = i[2]
+    test_params[ω_ab] = i[3]
+    ssvals_rtc_test = steady_states(model, init_rtc, test_params)
+    push!(new_params, test_params)
+    push!(new_ssvals, ssvals_rtc_test)
+end
+lamkin_vals[indices][20]
+x=20
+br = get_br(model, new_ssvals[x], new_params[x]; 
+            kdam_max=500., 
+            ds=0.0001, dsmax=0.005, dsmin=0.000001, 
+            detect_bifurcation=3, 
+            n_inversion=2, 
+            max_bisection_steps=20, 
+            nev=2, 
+            max_steps=1000000, 
+            θ=0.5,
+            tol_stability=1e-12,
+            tol_bisection_eigenvalue=1e-20
+)
+
+df1 = create_br_df(br)
+lines(df1.kdam, df1.rtca)
+bf = bf_point_df(br)
+
+kdam1 = findall(x->x==bf.kdam[1],df1.kdam)[1]
+kdam2 = findall(x->x==bf.kdam[2],df1.kdam)[1]
+
+scatter!([df1.kdam[kdam1]], [df1.rtca[kdam1]])
+scatter!([df1.kdam[kdam2]], [df1.rtca[kdam2]])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 model = "lam_coupled" # don't see "bistability" in this version so there is a difference 
 include(joinpath(homedir(), "phd/rtc_model/rhlam_coupled/models/$model.jl"))

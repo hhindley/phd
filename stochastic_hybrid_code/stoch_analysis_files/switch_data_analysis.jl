@@ -1,7 +1,7 @@
 using JLD2, InteractiveViz, GLMakie, Statistics
 
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_switch_funcs.jl"))
-
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/switching_funcs.jl"))
 # kdam data
 @load "/Users/s2257179/Desktop/saved_variables/data_thresh_all.jld2" indices switch_rates fracs species_mean thresholds_bs
 kdams = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
@@ -38,20 +38,20 @@ axislegend(position=:rc)
 display(GLMakie.Screen(), f_frac)
 
 # plotting dots of average concentrations with fraction of time in state as colour
-f2_rtca = plot_conc_frac(1, "2", logz=true)
-f5_rtca = plot_conc_frac(1, "5", logz=true)
-f10_rtca = plot_conc_frac(1, "10", logz=true)
-f_bs_rtca = plot_conc_frac(1, "bs", logz=true)
+f2_rtca = plot_conc_frac(species_mean, fracs, kdams, 1, "2", logz=true)
+f5_rtca = plot_conc_frac(species_mean, fracs, kdams, 1, "5", logz=true)
+f10_rtca = plot_conc_frac(species_mean, fracs, kdams, 1, "10", logz=true)
+f_bs_rtca = plot_conc_frac(species_mean, fracs, kdams, 1, "bs", logz=true)
 
-f2_rh = plot_conc_frac(3, "2", logz=true)
-f5_rh = plot_conc_frac(3, "5", logz=true)
-f10_rh = plot_conc_frac(3, "10", logz=true)
-f_bs_rh = plot_conc_frac(3, "bs", logz=true)
+f2_rh = plot_conc_frac(species_mean, fracs, kdams, 3, "2", logz=true)
+f5_rh = plot_conc_frac(species_mean, fracs, kdams, 3, "5", logz=true)
+f10_rh = plot_conc_frac(species_mean, fracs, kdams, 3, "10", logz=true)
+f_bs_rh = plot_conc_frac(species_mean, fracs, kdams, 3, "bs", logz=true)
 
-f2_rm_a = plot_conc_frac(2, "2", logz=true)
-f5_rm_a = plot_conc_frac(2, "5", logz=true)
-f10_rm_a = plot_conc_frac(2, "10", logz=true)
-f_bs_rm_a = plot_conc_frac(2, "bs", logz=true)
+f2_rm_a = plot_conc_frac(species_mean, fracs, kdams, 2, "2", logz=true)
+f5_rm_a = plot_conc_frac(species_mean, fracs, kdams, 2, "5", logz=true)
+f10_rm_a = plot_conc_frac(species_mean, fracs, kdams, 2, "10", logz=true)
+f_bs_rm_a = plot_conc_frac(species_mean, fracs, kdams, 2, "bs", logz=true)
 
 
 

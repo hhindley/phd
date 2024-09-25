@@ -45,7 +45,7 @@ println("saving variables")
 function bistab_check(ssvals)
     m, m_ind = findmax(ssvals)
     for i in ssvals[m_ind:end]
-        if ((i-m)/m*100) < -50
+        if ((i-m)/m*100) < -50 && m > 0.005
             return true
         end
     end
@@ -63,17 +63,88 @@ f = Figure()
 ax = Axis(f[1, 1])
 [ilines!(ax, kdam_range, lamkin_ssvals[i]) for i in indices]
 
-# bigger_res = []
-# for i in eachindex(lamkin_ssvals)
-#     if maximum(lamkin_ssvals[i]) > 0.001 && maximum(lamkin_ssvals[i]) < 10
-#         push!(bigger_res, i)
-#     end
-# end
-# bigger_res
-# f = Figure()
-# ax = Axis(f[1, 1])
-# [ilines!(ax, kdam_range, lamkin_ssvals[i]) for i in bigger_res]
+lines(kdam_range, lamkin_ssvals[indices[19]])
 
+kdam_range = range(0,100,length=100)
+new_res = []
+global iteration_num = 0
+for i in indices
+    global iteration_num += 1
+    println("iteration: $iteration_num")
+    test_params = deepcopy(params_rtc1)
+    test_params[lam_c] = lamkin_vals[i][1]
+    test_params[kin_c] = lamkin_vals[i][2]
+    test_params[ω_ab] = lamkin_vals[i][3]
+
+    ssvals_rtc_test = steady_states(lamkin_coupled, init_rtc, test_params)
+    res = var_param(lamkin_coupled, kdam, test_params, kdam_range, ssvals_rtc_test)
+    push!(new_res, res.rtca)
+end
+
+for i in eachindex(new_res)
+    display(lines(kdam_range, new_res[i]))
+    sleep(2)
+end
+lines(kdam_range, new_res[20])
+
+kdam_range = range(0,200,length=100)
+new_res_ss = []
+global iteration_num = 0
+for i in indices
+    global iteration_num += 1
+    println("iteration: $iteration_num")
+    test_params = deepcopy(params_rtc1)
+    test_params[lam_c] = lamkin_vals[i][1]
+    test_params[kin_c] = lamkin_vals[i][2]
+    test_params[ω_ab] = lamkin_vals[i][3]
+
+    ssvals_rtc_test = steady_states(lamkin_coupled, init_rtc, test_params)
+    res_ss = numerical_bistability_analysis(lamkin_coupled, test_params, init_rtc, species_rtc, kdam_range, kdam, specie=:rtca)
+    res1_ss = numerical_bistability_analysis(lamkin_coupled, test_params, ssvals_rtc_test, species_rtc, reverse(kdam_range), kdam, specie=:rtca)
+
+    push!(new_res_ss, (res_ss, res1_ss))
+end
+x=1
+lines(kdam_range, new_res_ss[x][1])
+lines!(reverse(kdam_range), new_res_ss[x][2])
+
+lams = [lamkin_vals[indices][i][1] for i in eachindex(indices)]
+kins = [lamkin_vals[indices][i][2] for i in eachindex(indices)]
+wabs = [lamkin_vals[indices][i][3] for i in eachindex(indices)]
+
+f = Figure()
+ax = Axis(f[1, 1])
+scatter!(ax, 1, 1e-8, color=:black)
+scatter!(ax, 1, 0.1, color=:black)
+scatter!(ax, fill(1, length(lams)), lams)
+
+f = Figure()
+ax = Axis(f[1, 1])
+scatter!(ax, 1, 1e-6, color=:black)
+scatter!(ax, 1, 0.1, color=:black)
+scatter!(ax, fill(1, length(kins)), kins)
+
+f = Figure()
+ax = Axis(f[1, 1])
+scatter!(ax, 1, 1e-6, color=:black)
+scatter!(ax, 1, 0.1, color=:black)
+scatter!(ax, fill(1, length(wabs)), wabs)
+
+lamkin_vals[indices][20]
+test_params = deepcopy(params_rtc1)
+test_params[lam_c] = lamkin_vals[indices][20][1]
+test_params[kin_c] = lamkin_vals[indices][20][2]
+test_params[ω_ab] = lamkin_vals[indices][20][3]
+kdam_range = range(0,500,length=100)
+ssvals_rtc_test = steady_states(lamkin_coupled, init_rtc, test_params)
+res = var_param(lamkin_coupled, kdam, test_params, kdam_range, ssvals_rtc_test)
+
+lines(kdam_range, res.rh)
+
+res_ss = numerical_bistability_analysis(lamkin_coupled, test_params, init_rtc, species_rtc, kdam_range, kdam)
+res1_ss = numerical_bistability_analysis(lamkin_coupled, test_params, ssvals_rtc_test, species_rtc, reverse(kdam_range), kdam)
+lines(kdam_range, res_ss.rtca)
+lines!(reverse(kdam_range), res1_ss.rtca)
 
 
 f = Figure()

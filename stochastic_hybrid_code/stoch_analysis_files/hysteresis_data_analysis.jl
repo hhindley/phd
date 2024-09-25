@@ -2,6 +2,8 @@ using JLD2, InteractiveViz, GLMakie, Statistics, DataFrames
 
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_switch_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/switching_funcs.jl"))
+fontsize_theme = Theme(fontsize = 25)
+set_theme!(fontsize_theme)
 
 # hysteresis data
 @load "/Users/s2257179/Desktop/saved_variables/hysteresis_high.jld2" indices switch_rates fracs species_mean thresholds_bs
@@ -31,74 +33,125 @@ f_frac_bs = plot_mean_std(mean_switch_frac, std_switch_frac, "bs", "frac")
 switch_all = plot_mean_std(mean_switch_frac, std_switch_frac, ["2", "5", "10", "bs"], "switch")
 fracs_all = plot_mean_std(mean_switch_frac, std_switch_frac, ["2", "5", "10", "bs"], "frac")
 
-fracs
-species_mean
-
-tot_mean_species = Dict("high"=>Dict("on"=>Dict("2"=>Dict(), "5"=>Dict(), "10"=>Dict(), "bs"=>Dict()), "off"=>Dict("2"=>Dict(), "5"=>Dict(), "10"=>Dict(), "bs"=>Dict())),
-                        "low"=>Dict("on"=>Dict("2"=>Dict(), "5"=>Dict(), "10"=>Dict(), "bs"=>Dict()), "off"=>Dict("2"=>Dict(), "5"=>Dict(), "10"=>Dict(), "bs"=>Dict())))
-tot_std_species = Dict("on"=>Dict("2"=>Dict(), "5"=>Dict(), "10"=>Dict(), "bs"=>Dict()), 
-                        "off"=>Dict("2"=>Dict(), "5"=>Dict(), "10"=>Dict(), "bs"=>Dict()))
-tot_mean_species["on"]["2"]
-
-species_mean_high["on"]["2"][1][0.8][1]
-for onoff in ["on", "off"]
-    for thresh in ["2", "5", "10", "bs"]
-        for kdam in eachindex(kdams_high)
-            concs_high = [species_mean_high[onoff][thresh][i][kdams_high[kdam]][1] for i in eachindex(species_mean_high[onoff][thresh])]
-            tot_mean_species["high"][onoff][thresh][kdams_high[kdam]] = mean(concs_high)
-            # tot_std_species[onoff][thresh][kdam] = std(rates_switch)
-            concs_low = [species_mean_low[onoff][thresh][i][kdams_low[kdam]][1] for i in eachindex(species_mean_low[onoff][thresh])]
-            tot_mean_species["low"][onoff][thresh][kdams_low[kdam]] = mean(concs_low)
-        end
-    end
-end
-
-tot_mean_species["high"]["on"]["2"]
-tot_mean_species["low"]["on"]["2"]
-vcat(kdams_low, reverse(kdams_high))
-
-lows = [tot_mean_species["low"]["on"]["2"][kdam] for kdam in kdams_low]
-
-highs = [tot_mean_species["high"]["on"]["2"][kdam] for kdam in kdams_high]
 
 
-f = Figure()
-ax = Axis(f[1,1], xticks=([0.01, 0.8, 0.8, 1.5], ["0.01", "0.8", "0.8", "1.5"]))
-barplot!(ax, vcat(kdams_low, reverse(kdams_high)), vcat(lows, highs))
+# tot_mean_species = Dict("high"=>Dict("on"=>Dict("2"=>Dict(), "5"=>Dict(), "10"=>Dict(), "bs"=>Dict()), "off"=>Dict("2"=>Dict(), "5"=>Dict(), "10"=>Dict(), "bs"=>Dict())),
+#                         "low"=>Dict("on"=>Dict("2"=>Dict(), "5"=>Dict(), "10"=>Dict(), "bs"=>Dict()), "off"=>Dict("2"=>Dict(), "5"=>Dict(), "10"=>Dict(), "bs"=>Dict())))
+# tot_std_species = Dict("on"=>Dict("2"=>Dict(), "5"=>Dict(), "10"=>Dict(), "bs"=>Dict()), 
+#                         "off"=>Dict("2"=>Dict(), "5"=>Dict(), "10"=>Dict(), "bs"=>Dict()))
+# tot_mean_species["on"]["2"]
+
+# species_mean_high["on"]["2"][1][0.8][1]
+# for onoff in ["on", "off"]
+#     for thresh in ["2", "5", "10", "bs"]
+#         for kdam in eachindex(kdams_high)
+#             concs_high = [species_mean_high[onoff][thresh][i][kdams_high[kdam]][1] for i in eachindex(species_mean_high[onoff][thresh])]
+#             tot_mean_species["high"][onoff][thresh][kdams_high[kdam]] = mean(concs_high)
+#             # tot_std_species[onoff][thresh][kdam] = std(rates_switch)
+#             concs_low = [species_mean_low[onoff][thresh][i][kdams_low[kdam]][1] for i in eachindex(species_mean_low[onoff][thresh])]
+#             tot_mean_species["low"][onoff][thresh][kdams_low[kdam]] = mean(concs_low)
+#         end
+#     end
+# end
+
+# tot_mean_species["high"]["on"]["2"]
+# tot_mean_species["low"]["on"]["2"]
+# vcat(kdams_low, reverse(kdams_high))
+
+# lows = [tot_mean_species["low"]["on"]["2"][kdam] for kdam in kdams_low]
+
+# highs = [tot_mean_species["high"]["on"]["2"][kdam] for kdam in kdams_high]
 
 
-f = Figure()
-ax = Axis(f[1,1])
-[scatter!(ax, kdams_high, [species_mean_high["on"]["2"][i][key][1] for key in kdams_high], color=:blue) for i in eachindex(species_mean_high["on"]["2"])]
-[scatter!(ax, kdams_low, [species_mean_low["on"]["2"][i][key][1] for key in kdams_low], color=:red) for i in eachindex(species_mean_low["on"]["2"])]
+# f = Figure()
+# ax = Axis(f[1,1], xticks=([0.01, 0.8, 0.8, 1.5], ["0.01", "0.8", "0.8", "1.5"]))
+# barplot!(ax, vcat(kdams_low, reverse(kdams_high)), vcat(lows, highs))
 
 
-df_data = DataFrame("low_0.01"=>[species_mean_low["on"]["2"][i][0.01][1] for i in eachindex(species_mean_low["on"]["2"])],
-                "low_0.8"=>[species_mean_low["on"]["2"][i][0.8][1] for i in eachindex(species_mean_low["on"]["2"])],
-                "high_0.8"=>[species_mean_high["on"]["2"][i][0.8][1] for i in eachindex(species_mean_high["on"]["2"])],
-                "high_1.5"=>[species_mean_high["on"]["2"][i][1.5][1] for i in eachindex(species_mean_high["on"]["2"])],
+# f = Figure()
+# ax = Axis(f[1,1])
+# [scatter!(ax, kdams_high, [species_mean_high["on"]["2"][i][key][1] for key in kdams_high], color=:blue) for i in eachindex(species_mean_high["on"]["2"])]
+# [scatter!(ax, kdams_low, [species_mean_low["on"]["2"][i][key][1] for key in kdams_low], color=:red) for i in eachindex(species_mean_low["on"]["2"])]
+
+df_concs_on = DataFrame(
+    "data" => vcat(
+        [species_mean_low["on"]["2"][i][0.01][1] for i in eachindex(species_mean_low["on"]["2"])],
+        [species_mean_low["on"]["2"][i][0.8][1] for i in eachindex(species_mean_low["on"]["2"])],
+        [species_mean_high["on"]["2"][i][0.8][1] for i in eachindex(species_mean_high["on"]["2"])],
+        [species_mean_high["on"]["2"][i][1.5][1] for i in eachindex(species_mean_high["on"]["2"])]
+    ),
+    "group" => repeat([1, 2, 3, 4], inner=length(species_mean_low["on"]["2"]))
 )
-df_t = permutedims(df)
-df_t.group = ["low_0.01", "low_0.8", "high_0.8", "high_1.5"]
-df_t.group1 = [1,2,3,4]
-df_t
-df = DataFrame("data"=>[(df_data[:,"low_0.01"]...), (df_data[:, "low_0.8"]...), (df_data[:, "high_0.8"]...), (df_data[:, "high_1.5"]...)], 
-                "group"=>[1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4],
-                "num"=>1:20)
-
 f = Figure()
-ax = Axis(f[1,1])#, xticks=(1:4, ["low_0.01", "low_0.8", "high_0.8", "high_1.5"]))
-barplot!(ax, df.num, df.data, color=:blue)
+ax = Axis(f[1,1], xticks=(1:4, ["0.01", "low_0.8", "high_0.8", "1.5"]), xlabel="kdam", ylabel="RtcA in on state (μM)", title="Hysteresis experiement")
+boxplot!(ax, df_concs_on.group, df_concs_on.data)
 
-tot_mean_species["high"]["on"]["2"]
-df = DataFrame("group"=>[1,2,3,4],
-            "data"=>[tot_mean_species["low"]["on"]["2"][0.01], tot_mean_species["low"]["on"]["2"][0.8], tot_mean_species["high"]["on"]["2"][0.8], tot_mean_species["high"]["on"]["2"][1.5]],
-            "color"=>["red", "purple", "purple", "blue"]
-)    
-
+df_concs_off = DataFrame(
+    "data" => vcat(
+        [species_mean_low["off"]["2"][i][0.01][1] for i in eachindex(species_mean_low["off"]["2"])],
+        [species_mean_low["off"]["2"][i][0.8][1] for i in eachindex(species_mean_low["off"]["2"])],
+        [species_mean_high["off"]["2"][i][0.8][1] for i in eachindex(species_mean_high["off"]["2"])],
+        [species_mean_high["off"]["2"][i][1.5][1] for i in eachindex(species_mean_high["off"]["2"])]
+    ),
+    "group" => repeat([1, 2, 3, 4], inner=length(species_mean_low["off"]["2"]))
+)
 f = Figure()
-ax = Axis(f[1,1], xticks=(1:4, ["0.01", "low_0.8", "high_0.8", "1.5"]), xlabel="kdam", ylabel="average RtcA (μM)", title="Hysteresis experiement")
-barplot!(ax, df.group, df.data, color=df.color)
+ax = Axis(f[1,1], xticks=(1:4, ["0.01", "low_0.8", "high_0.8", "1.5"]), xlabel="kdam", ylabel="RtcA in off state (μM)", title="Hysteresis experiement")
+boxplot!(ax, df_concs_off.group, df_concs_off.data)
+
+df_fracs_on = DataFrame(
+    "data" => vcat(
+        [fracs_low["on"]["2"][i][0.01] for i in eachindex(fracs_low["on"]["2"])],
+        [fracs_low["on"]["2"][i][0.8] for i in eachindex(fracs_low["on"]["2"])],
+        [fracs_high["on"]["2"][i][0.8] for i in eachindex(fracs_high["on"]["2"])],
+        [fracs_high["on"]["2"][i][1.5] for i in eachindex(fracs_high["on"]["2"])]
+    ),
+    "group" => repeat([1, 2, 3, 4], inner=length(fracs_low["on"]["2"]))
+)
+f = Figure()
+ax = Axis(f[1,1], xticks=(1:4, ["0.01", "low_0.8", "high_0.8", "1.5"]), xlabel="kdam", ylabel="Fraction of time in on state", title="Hysteresis experiement")
+boxplot!(ax, df_fracs_on.group, df_fracs_on.data)
+
+df_fracs_off = DataFrame(
+    "data" => vcat(
+        [fracs_low["off"]["2"][i][0.01] for i in eachindex(fracs_low["off"]["2"])],
+        [fracs_low["off"]["2"][i][0.8] for i in eachindex(fracs_low["off"]["2"])],
+        [fracs_high["off"]["2"][i][0.8] for i in eachindex(fracs_high["off"]["2"])],
+        [fracs_high["off"]["2"][i][1.5] for i in eachindex(fracs_high["off"]["2"])]
+    ),
+    "group" => repeat([1, 2, 3, 4], inner=length(fracs_low["off"]["2"]))
+)
+f = Figure()
+ax = Axis(f[1,1], xticks=(1:4, ["0.01", "low_0.8", "high_0.8", "1.5"]), xlabel="kdam", ylabel="Fraction of time in off state", title="Hysteresis experiement")
+boxplot!(ax, df_fracs_off.group, df_fracs_off.data)
+
+df_means_concs_on = combine(groupby(df_concs_on, :group), :data => mean => :mean_data)
+df_means_concs_on.color = ["red", "purple", "purple", "blue"]
+f = Figure()
+ax = Axis(f[1,1], xticks=(1:4, ["0.01", "low_0.8", "high_0.8", "1.5"]), xlabel="kdam", ylabel="average RtcA in on state (μM)", title="Hysteresis experiement")
+barplot!(ax, df_means_concs_on.group, df_means_concs_on.mean_data, color=df_means_concs_on.color)
+
+df_means_concs_off = combine(groupby(df_concs_off, :group), :data => mean => :mean_data)
+df_means_concs_off.color = ["red", "purple", "purple", "blue"]
+f = Figure()
+ax = Axis(f[1,1], xticks=(1:4, ["0.01", "low_0.8", "high_0.8", "1.5"]), xlabel="kdam", ylabel="average RtcA in off state (μM)", title="Hysteresis experiement")
+barplot!(ax, df_means_concs_off.group, df_means_concs_off.mean_data, color=df_means_concs_off.color)
+
+df_means_fracs_on = combine(groupby(df_fracs_on, :group), :data => mean => :mean_data)
+df_means_fracs_on.color = ["red", "purple", "purple", "blue"]
+f = Figure()
+ax = Axis(f[1,1], xticks=(1:4, ["0.01", "low_0.8", "high_0.8", "1.5"]), xlabel="kdam", ylabel="Fraction of time in on state", title="Hysteresis experiement")
+barplot!(ax, df_means_fracs_on.group, df_means_fracs_on.mean_data, color=df_means_fracs_on.color)
+
+df_means_fracs_off = combine(groupby(df_fracs_off, :group), :data => mean => :mean_data)
+df_means_fracs_off.color = ["red", "purple", "purple", "blue"]
+f = Figure()
+ax = Axis(f[1,1], xticks=(1:4, ["0.01", "low_0.8", "high_0.8", "1.5"]), xlabel="kdam", ylabel="Fraction of time in off state", title="Hysteresis experiement")
+barplot!(ax, df_means_fracs_off.group, df_means_fracs_off.mean_data, color=df_means_fracs_off.color)
+
+
+
+
 
 
 # plotting all results
