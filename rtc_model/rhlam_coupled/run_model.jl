@@ -21,11 +21,14 @@ open("/Users/s2257179/Desktop/dynamic_lam_kin.html", "w") do io
 end
 
 # vary damage
+fontsize_theme = Theme(fontsize = 25)
+set_theme!(fontsize_theme)
+
 kdam_range = range(0,1000, length=200)
 res = var_param(model, kdam, params_rtc1, kdam_range, ssvals_rtc)
 f = Figure()
-ax = Axis(f[1,1], xlabel="kdam", ylabel="rtca")
-lines!(ax, kdam_range, res.rtca)
+ax = Axis(f[1,1], xlabel="Damage rate (min⁻¹)", ylabel="RtcA (μM)")
+lines!(ax, kdam_range, res.rtca, linewidth=5)
 
 # hysteresis test
 params1 = deepcopy(params_rtc1)
