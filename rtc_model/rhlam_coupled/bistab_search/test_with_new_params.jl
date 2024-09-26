@@ -1,3 +1,8 @@
+using GLMakie
+fontsize_theme = Theme(fontsize = 25)
+set_theme!(fontsize_theme)
+
+
 include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
 model = "lamkin_coupled"
 include(joinpath(homedir(), "phd/rtc_model/rhlam_coupled/models/$model.jl"))
@@ -52,6 +57,27 @@ scatter!(ax, [df1.kdam[kdam4]], [df1.rtca[kdam4]])
 scatter!(ax, [df1.kdam[kdam5]], [df1.rtca[kdam5]])
 scatter!(ax, [df1.kdam[kdam6]], [df1.rtca[kdam6]])
 
+
+
+@load joinpath(homedir(),"phd/rtc_model/rhlam_coupled/bistab_search/kdam_vary_search.jld2") lamkin_ssvals lamkin_vals
+
+function bistab_check(ssvals)
+    m, m_ind = findmax(ssvals)
+    for i in ssvals[m_ind:end]
+        if ((i-m)/m*100) < -50 && m > 0.005
+            return true
+        end
+    end
+    return false
+end
+indices=[]
+for i in eachindex(lamkin_ssvals)
+    if bistab_check(lamkin_ssvals[i])
+        push!(indices, i)
+    end
+end
+indices
+
 lamkin_vals[indices]
 
 new_params = []
@@ -87,14 +113,23 @@ bf = bf_point_df(br)
 kdam1 = findall(x->x==bf.kdam[1],df1.kdam)[1]
 kdam2 = findall(x->x==bf.kdam[2],df1.kdam)[1]
 
-scatter!([df1.kdam[kdam1]], [df1.rtca[kdam1]])
-scatter!([df1.kdam[kdam2]], [df1.rtca[kdam2]])
+f = Figure()
+ax = Axis(f[1,1], xlabel="Damage rate (min⁻¹)", ylabel="RtcA (μM)")
+lines!(ax, df1.kdam, df1.rtca, linewidth=5)
+scatter!(ax, [df1.kdam[kdam1]], [df1.rtca[kdam1]], color=:red, markersize=10)
+scatter!(ax, [df1.kdam[kdam2]], [df1.rtca[kdam2]], color=:red, markersize=10)
 
+kdam_range = range(0,500,length=100)
+res = var_param(lamkin_coupled, kdam, new_params[x], kdam_range, new_ssvals[x])
 
+f = Figure()
+ax = Axis(f[1,1], xlabel="Damage rate (min⁻¹)", ylabel="RtcA (μM)")
+lines!(ax, kdam_range, res.rtca, linewidth=5)
 
-
-
-
+res_ss = numerical_bistability_analysis(lamkin_coupled, test_params, init_rtc, species_rtc, kdam_range, kdam)
+res1_ss = numerical_bistability_analysis(lamkin_coupled, test_params, ssvals_rtc_test, species_rtc, reverse(kdam_range), kdam)
+lines(kdam_range, res_ss.rtca)
+lines!(reverse(kdam_range), res1_ss.rtca)
 
 
 
