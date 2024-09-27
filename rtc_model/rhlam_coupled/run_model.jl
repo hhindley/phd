@@ -1,4 +1,5 @@
-model = "lamkin_coupled"
+model = "lam_coupled"
+
 include(joinpath(homedir(), "phd/rtc_model/rhlam_coupled/models/$model.jl"))
 
 colours =["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", :blue]
@@ -6,14 +7,23 @@ colours =["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e3
 using GLMakie
 
 # concentration no damage 
-params_rtc1[kdam]
+params_rtc1[kdam] = 0.1
 solu_rtc = sol(model, init_rtc, tspan, params_rtc1)
 df = create_solu_df(solu_rtc, species_rtc)
-lam = @. df.rh * tlr_el * lam_c_val
-lines(df.time, lam)
-lam[end]
+f=Figure()
+ax=Axis(f[1,1], xlabel="Time", ylabel="Concentration (μM)",xscale=log10)
+lines!(ax, df.time, df.rtca)
+df.rh
 
-p_rtc1 = plot([scatter(x=df.time, y=col, name="$(names(df)[i])", legendgroup="$i", marker_color=colours[i]) for (col, i) in zip(eachcol(df[:,2:end]), range(2,length(names(df))))], Layout(xaxis_type="log", title="kdam = $(params_rtc1[kdam])", xaxis_title="Time (s)", yaxis_title="Concentration (μM)"))
+tlr_el = g_max_val*atp_val/(θtlr_val+atp_val)
+lam_orig = @. df.rh * tlr_el * lam_c_val
+lam_new = @. lam_c_val * (rh_max_val-df.rh)
+f=Figure()
+ax=Axis(f[1,1],xscale=log10)
+lines!(ax, df.time, lam_new)
+lines!(ax, df.time, lam_orig)
+lines(lam_new, df.rh)
+# p_rtc1 = plot([scatter(x=df.time, y=col, name="$(names(df)[i])", legendgroup="$i", marker_color=colours[i]) for (col, i) in zip(eachcol(df[:,2:end]), range(2,length(names(df))))], Layout(xaxis_type="log", title="kdam = $(params_rtc1[kdam])", xaxis_title="Time (s)", yaxis_title="Concentration (μM)"))
 
 p = plot([scatter(x=df.time, y=df.rh*lam_c_val*tlr1, name="λ"),
 scatter(x=df.time, y=df.rh*kin_c_val, yaxis="y2", name="kin")],
@@ -29,22 +39,43 @@ end
 fontsize_theme = Theme(fontsize = 25)
 set_theme!(fontsize_theme)
 
-kdam_range = range(0,500, length=200)
+kdam_range = range(0,2, length=200)
 res = var_param(model, kdam, params_rtc1, kdam_range, ssvals_rtc)
+lam_new = @. lam_c_val * (rh_max_val-res.rh)
+lines(lam_new, res.rh)
+
 f = Figure()
 ax = Axis(f[1,1], xlabel="Damage rate (min⁻¹)", ylabel="RtcA (μM)")
 lines!(ax, kdam_range, res.rtca, linewidth=5)
 
-tlr_el = g_max_val*atp_val/(θtlr_val+atp_val)
-lam_orig = @. res.rh * tlr_el * lam_c_val
+# lam_orig = @. res.rh * tlr_el * lam_c_val
 # lam = @. 0.075 * (res.rh - 0.087)
-lam_new = @. 0.001*(maximum(res.rh)[1] -res.rh)
+# lam_new = @. 0.001*(maximum(res.rh)[1] -res.rh)
+# lam = @. lam_c_val * (res.rh-20)
+
+br = get_br(model, ssvals_rtc, params_rtc1, 
+kdam_max=1.5)
+
+f = Figure()
+ax = Axis(f[1,1], xlabel="kdam", ylabel="rtca")
+df = create_br_df(br)
+bf = bf_point_df(br)
+lines!(ax, df.kdam, df.rtca)
+scatter!(ax, bf.kdam[1], bf.rtca[1])
+scatter!(ax, bf.kdam[2], bf.rtca[2])
 
 
+
+
+
+
+
+lines(kdam_range, lam_new)
 
 f = Figure()
 ax = Axis(f[1,1], xlabel="λ", ylabel="Rh")
-lines!(ax, lam_orig, res.rh, linewidth=5)
+# lines!(ax, lam, res.rh, linewidth=5)
+# lines!(ax, lam_orig, res.rh, linewidth=5)
 lines!(ax, lam_new, res.rh, linewidth=5)
 
 
