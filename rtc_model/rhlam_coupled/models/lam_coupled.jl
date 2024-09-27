@@ -103,7 +103,8 @@ D = Differential(t)
 
         tlr_el ~ g_max*atp/(θtlr+atp)
 
-        lam ~ rh*tlr_el*lam_c
+        # lam ~ rh*tlr_el*lam_c
+        lam ~ lam_c*(20 -res.rh)
 
         # # ribosomes
         Vrep ~ rtcb*rt*krep/(rt+km_b) # uM min-1 
@@ -138,8 +139,8 @@ end
 tlr1 = g_max_val*atp_val/(θtlr_val+atp_val)
 
 
-lam_c_val = 8e-7 #8e-7
-ω_ab_val = 1.3e-5
+lam_c_val = 0.001 #8e-7
+# ω_ab_val = 1.3e-5
 # L_val = 100000
 # c_val = 0.1
 

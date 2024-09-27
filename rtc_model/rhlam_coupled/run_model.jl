@@ -6,8 +6,13 @@ colours =["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e3
 using GLMakie
 
 # concentration no damage 
-solu_rtc = sol(test, init_rtc, tspan, params_rtc1)
+params_rtc1[kdam]
+solu_rtc = sol(model, init_rtc, tspan, params_rtc1)
 df = create_solu_df(solu_rtc, species_rtc)
+lam = @. df.rh * tlr_el * lam_c_val
+lines(df.time, lam)
+lam[end]
+
 p_rtc1 = plot([scatter(x=df.time, y=col, name="$(names(df)[i])", legendgroup="$i", marker_color=colours[i]) for (col, i) in zip(eachcol(df[:,2:end]), range(2,length(names(df))))], Layout(xaxis_type="log", title="kdam = $(params_rtc1[kdam])", xaxis_title="Time (s)", yaxis_title="Concentration (μM)"))
 
 p = plot([scatter(x=df.time, y=df.rh*lam_c_val*tlr1, name="λ"),
@@ -24,11 +29,24 @@ end
 fontsize_theme = Theme(fontsize = 25)
 set_theme!(fontsize_theme)
 
-kdam_range = range(0,1000, length=200)
+kdam_range = range(0,500, length=200)
 res = var_param(model, kdam, params_rtc1, kdam_range, ssvals_rtc)
 f = Figure()
 ax = Axis(f[1,1], xlabel="Damage rate (min⁻¹)", ylabel="RtcA (μM)")
 lines!(ax, kdam_range, res.rtca, linewidth=5)
+
+tlr_el = g_max_val*atp_val/(θtlr_val+atp_val)
+lam_orig = @. res.rh * tlr_el * lam_c_val
+# lam = @. 0.075 * (res.rh - 0.087)
+lam_new = @. 0.001*(maximum(res.rh)[1] -res.rh)
+
+
+
+f = Figure()
+ax = Axis(f[1,1], xlabel="λ", ylabel="Rh")
+lines!(ax, lam_orig, res.rh, linewidth=5)
+lines!(ax, lam_new, res.rh, linewidth=5)
+
 
 # hysteresis test
 params1 = deepcopy(params_rtc1)
