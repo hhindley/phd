@@ -1,5 +1,7 @@
 model = "negative_proportional/lam_prop"
 model = "lam_coupled"
+model = "negative_proportional/lam_both_prop"
+
 
 include(joinpath(homedir(), "phd/rtc_model/rhlam_coupled/models/$model.jl"))
 
@@ -10,9 +12,19 @@ using GLMakie
 
 ssvals_lam_coupled = ssvals_rtc
 # concentration no damage 
-params_rtc1[kdam] = 0.1
-solu_rtc = sol(model, ssvals_lam_coupled, tspan, params_rtc1)
+params_rtc1[kdam] = 0.08
+solu_rtc = sol(model, ssvals_rtc, tspan, params_rtc1)
 df = create_solu_df(solu_rtc, species_rtc)
+
+tlr_el = params_rtc1[g_max]*params_rtc1[atp]/(params_rtc1[θtlr]+params_rtc1[atp])
+n_kdam = 1/(1+exp(50*(params_rtc1[kdam]-0.05)))
+lam_z = @. df.rh*tlr_el*params_rtc1[lam_c_pos]
+lam_nz = @. params_rtc1[lam_c_neg]*(params_rtc1[rh_max] - df.rh)
+lam = @. n_kdam*lam_z + (1-n_kdam)*lam_nz
+
+lines(lam, df.rh)
+
+
 # f=Figure()
 # ax=Axis(f[1,1], xlabel="Time", ylabel="Concentration (μM)",xscale=log10)
 # lines!(ax, df.time, df.rtca)
