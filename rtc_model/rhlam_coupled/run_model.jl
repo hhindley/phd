@@ -54,10 +54,15 @@ end
 fontsize_theme = Theme(fontsize = 25)
 set_theme!(fontsize_theme)
 
-kdam_range = range(0,2, length=200)
+kdam_range = range(0,1.5, length=200)
 res = var_param(model, kdam, params_rtc1, kdam_range, ssvals_rtc)
-lam_new = @. lam_c_val * (rh_max_val-res.rh)
-lines(lam_new, res.rh)
+tlr_el = params_rtc1[g_max]*params_rtc1[atp]/(params_rtc1[θtlr]+params_rtc1[atp])
+n_kdam = [1/(1+exp(50*(i-0.05))) for i in collect(kdam_range)]
+lam_z = @. res.rh*tlr_el*params_rtc1[lam_c_pos]
+lam_nz = @. params_rtc1[lam_c_neg]*(params_rtc1[rh_max] - res.rh)
+lam = @. n_kdam*lam_z + (1-n_kdam)*lam_nz
+lines(lam, res.rh)
+
 
 f = Figure()
 ax = Axis(f[1,1], xlabel="Damage rate (min⁻¹)", ylabel="RtcA (μM)")
