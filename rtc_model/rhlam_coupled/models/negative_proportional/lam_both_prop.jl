@@ -17,13 +17,13 @@ colours =["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e3
 indexof(sym, syms) = findfirst(isequal(sym),syms)
 
 @independent_variables t 
-@parameters L c kr Vmax_init Km_init ω_ab ω_r θtscr g_max θtlr km_a km_b d krep kdam ktag kdeg kin atp na nb nr lam_c kc k_diss 
+@parameters L c kr Vmax_init Km_init ω_ab ω_r θtscr g_max θtlr km_a km_b d krep kdam ktag kdeg kin atp na nb nr lam_c kc k_diss rh_max
 species_rtc1 = @syms rm_a(t) rtca(t) rm_b(t) rtcb(t) rm_r(t) rtcr(t) rh(t) rd(t) rt(t) 
 species_rtc = [Symbol(i) for i in species_rtc1]
   
 D = Differential(t)
 
-@mtkmodel LAM_COUPLED begin
+@mtkmodel LAM_PROP begin
     @parameters begin
         L 
         c 
@@ -50,6 +50,7 @@ D = Differential(t)
         lam_c
         kc 
         k_diss 
+        rh_max
     end
     @variables begin
         rm_a(t) 
@@ -103,7 +104,11 @@ D = Differential(t)
 
         tlr_el ~ g_max*atp/(θtlr+atp)
 
-        lam ~ rh*tlr_el*lam_c
+        n_kdam ~ 1/(1+exp(50*(kdam-0.05)))
+        lam_z ~ rh*tlr_el*lam_c
+        lam_nz ~ lam_c*(rh_max - rh)
+        lam ~ n_kdam*lam_z + (1-n_kdam)*lam_nz
+        # lam ~ lam_c*(rh - 20)
 
         # # ribosomes
         Vrep ~ rtcb*rt*krep/(rt+km_b) # uM min-1 
@@ -133,29 +138,29 @@ D = Differential(t)
     end
 end
 
-@mtkbuild lam_coupled = LAM_COUPLED()
+@mtkbuild lam_prop = LAM_PROP()
 
 tlr1 = g_max_val*atp_val/(θtlr_val+atp_val)
 
 
-lam_c_val = 8e-7
+lam_c_val = 0.001 #0.007 #8e-7
+rh_max_val = 40
 
 # lam_c_val = 8e-7 #8e-7
 # kin_c_val = 1.5e-5 #1.5e-5 # this and the above value give pretty much same model concs as other model but kin is a bit high so need to adjust 
-ω_ab_val = 1.3e-5
-
+# ω_ab_val = 1.3e-5 #6e-5 #3e-4
 
 params_rtc1 = OrderedDict(L=>L_val, c=>c_val, kr=>kr_val, Vmax_init=>Vmax_init_val, Km_init=>Km_init_val, θtscr=>θtscr_val, θtlr=>θtlr_val, na=>nA_val, nb=>nB_val, nr=>nR_val, d=>d_val, krep=>krep_val, ktag=>ktag_val,
-atp=>atp_val, km_a=>km_a_val, km_b=>km_b_val, g_max=>g_max_val, kdeg=>kdeg_val, kin=>kin_val, ω_ab=>ω_ab_val, ω_r=>ω_r_val, kdam=>kdam_val, lam_c=>lam_c_val, kc=>kc_val, k_diss=>k_diss_val)
+atp=>atp_val, km_a=>km_a_val, km_b=>km_b_val, g_max=>g_max_val, kdeg=>kdeg_val, kin=>kin_val, ω_ab=>ω_ab_val, ω_r=>ω_r_val, kdam=>kdam_val, lam_c=>lam_c_val, kc=>kc_val, k_diss=>k_diss_val, rh_max=>rh_max_val)
 
-init_rtc = [lam_coupled.rm_a=>0.0,lam_coupled.rtca=>0.0,lam_coupled.rm_b=>0.0,lam_coupled.rtcb=>0.0,lam_coupled.rm_r=>0.0,lam_coupled.rtcr=>0.0,lam_coupled.rh=>11.29,lam_coupled.rd=>0.0,lam_coupled.rt=>0.0]
+init_rtc = [lam_prop.rm_a=>0.0,lam_prop.rtca=>0.0,lam_prop.rm_b=>0.0,lam_prop.rtcb=>0.0,lam_prop.rm_r=>0.0,lam_prop.rtcr=>0.0,lam_prop.rh=>11.29,lam_prop.rd=>0.0,lam_prop.rt=>0.0]
 
-ssvals_rtc = steady_states(lam_coupled, init_rtc, params_rtc1)
+ssvals_rtc = steady_states(lam_prop, init_rtc, params_rtc1)
 
 kdam_range = range(0,5, length=100) 
 
-df_ssvals = var_param(lam_coupled, kdam, params_rtc1, kdam_range, ssvals_rtc)
+df_ssvals = var_param(lam_prop, kdam, params_rtc1, kdam_range, ssvals_rtc)
 
-jac_sym=calculate_jacobian(lam_coupled)
+jac_sym=calculate_jacobian(lam_prop)
 
-model = lam_coupled
+model = lam_prop
