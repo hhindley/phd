@@ -10,7 +10,7 @@ end
 
 function prop(X)
     nx = indV.nrOfItems - 1
-    propen(X[1:nx]) 
+    return propen(X[1:nx]) 
 end
 function run_stoch(X0, thresh, kdam, file)
     par[pidx(:kdam)] = kdam
@@ -21,6 +21,7 @@ function run_stoch(X0, thresh, kdam, file)
     global propen, S, propList  = defineStochModel(par, indV)    
     solu = hybrid_algo(X0, options, prop, S, out=fout)
     close(fout)
+    return solu
 end
 
 function flooring(X0)
