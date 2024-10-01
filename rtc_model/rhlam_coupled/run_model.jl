@@ -10,7 +10,7 @@ colours =["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e3
 using PlotlyJS
 using GLMakie
 
-ssvals_lam_coupled = ssvals_rtc
+ssvals_rtc
 # concentration no damage 
 params_rtc1[kdam] = 0.08
 solu_rtc = sol(model, ssvals_rtc, tspan, params_rtc1)
@@ -54,14 +54,17 @@ end
 fontsize_theme = Theme(fontsize = 25)
 set_theme!(fontsize_theme)
 
-kdam_range = range(0,1.5, length=200)
+kdam_range = range(0,1.5, length=100)
 res = var_param(model, kdam, params_rtc1, kdam_range, ssvals_rtc)
+lines(kdam_range, res.rtca)
 tlr_el = params_rtc1[g_max]*params_rtc1[atp]/(params_rtc1[θtlr]+params_rtc1[atp])
 n_kdam = [1/(1+exp(50*(i-0.05))) for i in collect(kdam_range)]
 lam_z = @. res.rh*tlr_el*params_rtc1[lam_c_pos]
 lam_nz = @. params_rtc1[lam_c_neg]*(params_rtc1[rh_max] - res.rh)
 lam = @. n_kdam*lam_z + (1-n_kdam)*lam_nz
-lines(lam, res.rh)
+f = Figure()
+ax = Axis(f[1,1], xlabel="λ", ylabel="rh")
+lines!(ax, lam, res.rh)
 
 
 f = Figure()
@@ -72,6 +75,12 @@ lines!(ax, kdam_range, res.rtca, linewidth=5)
 # lam = @. 0.075 * (res.rh - 0.087)
 # lam_new = @. 0.001*(maximum(res.rh)[1] -res.rh)
 # lam = @. lam_c_val * (res.rh-20)
+
+res_ss = numerical_bistability_analysis(model, params_rtc1, init_rtc, species_rtc, kdam_range, kdam; specie=:rtca)
+res1_ss = numerical_bistability_analysis(model, params_rtc1, ssvals_rtc, species_rtc, reverse(kdam_range), kdam, specie=:rtca)
+lines(kdam_range, res_ss)
+lines!(reverse(kdam_range), res1_ss)
+
 
 br = get_br(model, ssvals_rtc, params_rtc1, 
 kdam_max=1.5)

@@ -147,7 +147,7 @@ end
 tlr1 = g_max_val*atp_val/(θtlr_val+atp_val)
 
 lam_c_neg_val = 0.0007 #0.007 #8e-7
-rh_max_val = 38.2 # or 39
+rh_max_val = 38.2 
 
 lam_c_pos_val = 8e-7
 ω_ab_val = 1.3e-5

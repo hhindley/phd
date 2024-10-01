@@ -142,12 +142,12 @@ end
 tlr1 = g_max_val*atp_val/(θtlr_val+atp_val)
 
 
-lam_c_val = 0.0007 #0.007 #8e-7
-rh_max_val = 38.2 # or 39
+lam_c_val = 0.001 #0.007 #8e-7
+rh_max_val = 40 # or 39
 
 # lam_c_val = 8e-7 #8e-7
 # kin_c_val = 1.5e-5 #1.5e-5 # this and the above value give pretty much same model concs as other model but kin is a bit high so need to adjust 
-# ω_ab_val = 6e-5 #3e-4
+ω_ab_val = 3e-4
 
 params_rtc1 = OrderedDict(L=>L_val, c=>c_val, kr=>kr_val, Vmax_init=>Vmax_init_val, Km_init=>Km_init_val, θtscr=>θtscr_val, θtlr=>θtlr_val, na=>nA_val, nb=>nB_val, nr=>nR_val, d=>d_val, krep=>krep_val, ktag=>ktag_val,
 atp=>atp_val, km_a=>km_a_val, km_b=>km_b_val, g_max=>g_max_val, kdeg=>kdeg_val, kin=>kin_val, ω_ab=>ω_ab_val, ω_r=>ω_r_val, kdam=>kdam_val, lam_c=>lam_c_val, kc=>kc_val, k_diss=>k_diss_val, rh_max=>rh_max_val)
