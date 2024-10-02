@@ -27,7 +27,7 @@ df_concs_on = DataFrame(
 )
 df_concs_on.color = vcat(fill("red",10), fill("purple",20), fill("blue",10))
 f = Figure()
-ax = Axis(f[1,1], xticks=(1:4, ["0.01", "0.8", "0.8", "1.5"]), xlabel="kdam", ylabel="RtcA in on state (μM)", title="Hysteresis experiement")
+ax = Axis(f[1,1], xticks=(1:4, ["0.01", "0.8", "0.8", "1.5"]), xlabel="Damage rate (min⁻¹)", ylabel="RtcA in on state (μM)", title="Hysteresis experiement")
 boxplot!(ax, df_concs_on.group, df_concs_on.data, color=df_concs_on.color)
 save("/Users/s2257179/Library/CloudStorage/OneDrive-UniversityofEdinburgh/Documents/rtc/stochastic/plots/analysis/switching/thresh2/concs_on_box.png", f)
 
@@ -43,7 +43,7 @@ df_concs_off = DataFrame(
 df_concs_off.color = vcat(fill("red",10), fill("purple",20), fill("blue",10))
 
 f = Figure()
-ax = Axis(f[1,1], xticks=(1:4, ["0.01", "0.8", "0.8", "1.5"]), xlabel="kdam", ylabel="RtcA in off state (μM)", title="Hysteresis experiement")
+ax = Axis(f[1,1], xticks=(1:4, ["0.01", "0.8", "0.8", "1.5"]), xlabel="Damage rate (min⁻¹)", ylabel="RtcA in off state (μM)", title="Hysteresis experiement")
 boxplot!(ax, df_concs_off.group, df_concs_off.data, color=df_concs_on.color)
 save("/Users/s2257179/Library/CloudStorage/OneDrive-UniversityofEdinburgh/Documents/rtc/stochastic/plots/analysis/switching/thresh2/concs_off_box.png", f)
 
@@ -59,7 +59,7 @@ df_fracs_on = DataFrame(
 df_fracs_on.color = vcat(fill("red",10), fill("purple",20), fill("blue",10))
 
 f = Figure()
-ax = Axis(f[1,1], xticks=(1:4, ["0.01", "low_0.8", "high_0.8", "1.5"]), xlabel="kdam", ylabel="Fraction of time in on state", title="Hysteresis experiement")
+ax = Axis(f[1,1], xticks=(1:4, ["0.01", "0.8", "0.8", "1.5"]), xlabel="Damage rate (min⁻¹)", ylabel="Fraction of time in on state", title="Hysteresis experiement")
 boxplot!(ax, df_fracs_on.group, df_fracs_on.data, color=df_concs_on.color)
 save("/Users/s2257179/Library/CloudStorage/OneDrive-UniversityofEdinburgh/Documents/rtc/stochastic/plots/analysis/switching/thresh2/fracs_on_box.png", f)
 
@@ -78,6 +78,7 @@ f = Figure()
 ax = Axis(f[1,1], xticks=(1:4, ["0.01", "0.8", "0.8", "1.5"]), xlabel="Damage rate (min⁻¹)", ylabel="Fraction of time in off state", title="Hysteresis experiement")
 boxplot!(ax, df_fracs_off.group, df_fracs_off.data, color=df_concs_on.color)
 save("/Users/s2257179/Library/CloudStorage/OneDrive-UniversityofEdinburgh/Documents/rtc/stochastic/plots/analysis/switching/thresh2/fracs_off_box.png", f)
+
 
 df_means_concs_on = combine(groupby(df_concs_on, :group), :data => mean => :mean_data)
 df_means_concs_on.color = ["red", "purple", "purple", "blue"]
