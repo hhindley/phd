@@ -8,7 +8,7 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/stoch_model.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/stoch_analysis_files/histograms/make_hists.jl"))
 
-high_kdam = true
+high_kdam = false
 
 n= 10000 # number of cell cycles
 options = Dict(
@@ -42,9 +42,11 @@ if high_kdam
     X0_high = run_stoch(X0, options["threshold"], 1.5, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
     X0_high[vidx(:V)] = 1
     X0 = X0_high
+    mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/keyvals2_high_kdam"
+else
+    mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/keyvals2_low_kdam"
 end
 
-mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/keyvals2_high_kdam"
 
 date = Dates.format(Dates.now(), "ddmm")
 dir_num = 9 # change this! 

@@ -40,8 +40,8 @@ println("finished X0 calc, X0: $X0")
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/hysteresis/"
 date = Dates.format(Dates.now(), "ddmm")
 
-high = true
-num = 5
+high = false
+num = 10
 
 if high 
     dir_num = "high_$num"
