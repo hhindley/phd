@@ -4,24 +4,24 @@ function plot_mean_std(mean_switch_frac, std_switch_frac, thresh, switch::String
 
     if typeof(thresh) == String
         if switch == "switch"
-            ax = Axis(f[1, 1], xlabel="kdam", ylabel="switch rate", title="threshold $thresh", yscale=log10)
+            ax = Axis(f[1, 1], xlabel="Damage rate (min⁻¹)", ylabel="Switch rate (min⁻¹)", title="threshold $thresh", yscale=log10)
             labels = ["on → off", "off → on"]
         else
-            ax = Axis(f[1, 1], xlabel="kdam", ylabel="fraction of time in state", title="threshold $thresh", yscale=identity)
+            ax = Axis(f[1, 1], xlabel="Damage rate (min⁻¹)", ylabel="Fraction of time in state", title="threshold $thresh", yscale=identity)
             labels = ["on state", "off state"]
         end
 
         sorted_keys = sort(collect(keys(mean_switch_frac["off"][thresh]["switch"])))
 
-        errorbars!(ax, kdams, [mean_switch_frac["off"][thresh][switch][key] for key in sorted_keys], [std_switch_frac["off"][thresh][switch][key] for key in sorted_keys])
-        lines!(ax, kdams, [mean_switch_frac["off"][thresh][switch][key] for key in sorted_keys], label=labels[1])
         errorbars!(ax, kdams, [mean_switch_frac["on"][thresh][switch][key] for key in sorted_keys], [std_switch_frac["on"][thresh][switch][key] for key in sorted_keys])
-        lines!(ax, kdams, [mean_switch_frac["on"][thresh][switch][key] for key in sorted_keys], label=labels[2])
+        lines!(ax, kdams, [mean_switch_frac["on"][thresh][switch][key] for key in sorted_keys], label=labels[1])
+        errorbars!(ax, kdams, [mean_switch_frac["off"][thresh][switch][key] for key in sorted_keys], [std_switch_frac["off"][thresh][switch][key] for key in sorted_keys])
+        lines!(ax, kdams, [mean_switch_frac["off"][thresh][switch][key] for key in sorted_keys], label=labels[2])
     else
         if switch == "switch"
-            ax = Axis(f[1, 1], xlabel="kdam", ylabel="switch rate", title="threshold $thresh", yscale=log10)
+            ax = Axis(f[1, 1], xlabel="Damage rate (min⁻¹)", ylabel="Switch rate (min⁻¹)", title="threshold $thresh", yscale=log10)
         else
-            ax = Axis(f[1, 1], xlabel="kdam", ylabel="fraction of time in state", title="threshold $thresh", yscale=identity)
+            ax = Axis(f[1, 1], xlabel="Damage rate (min⁻¹)", ylabel="Fraction of time in state", title="threshold $thresh", yscale=identity)
         end
 
         sorted_keys = sort(collect(keys(mean_switch_frac["off"][thresh[1]]["switch"])))
@@ -33,10 +33,10 @@ function plot_mean_std(mean_switch_frac, std_switch_frac, thresh, switch::String
                 labels = ["$i: on", "$i: off"]
             end
 
-            errorbars!(ax, kdams, [mean_switch_frac["off"][i][switch][key] for key in sorted_keys], [std_switch_frac["off"][i][switch][key] for key in sorted_keys])
-            lines!(ax, kdams, [mean_switch_frac["off"][i][switch][key] for key in sorted_keys], label=labels[1])
             errorbars!(ax, kdams, [mean_switch_frac["on"][i][switch][key] for key in sorted_keys], [std_switch_frac["on"][i][switch][key] for key in sorted_keys])
-            lines!(ax, kdams, [mean_switch_frac["on"][i][switch][key] for key in sorted_keys], label=labels[2])
+            lines!(ax, kdams, [mean_switch_frac["on"][i][switch][key] for key in sorted_keys], label=labels[1])
+            errorbars!(ax, kdams, [mean_switch_frac["off"][i][switch][key] for key in sorted_keys], [std_switch_frac["off"][i][switch][key] for key in sorted_keys])
+            lines!(ax, kdams, [mean_switch_frac["off"][i][switch][key] for key in sorted_keys], label=labels[2])
         end
     end
     axislegend(position=:rc)

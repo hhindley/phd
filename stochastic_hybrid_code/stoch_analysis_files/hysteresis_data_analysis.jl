@@ -16,63 +16,6 @@ mean_switch_frac_high, std_switch_frac_high = calc_mean_std_vars(switch_rates_hi
 kdams_low = [0.01, 0.8]
 mean_switch_frac_low, std_switch_frac_low = calc_mean_std_vars(switch_rates_low, fracs_low, kdams_low)
 
-f_switch2_high = plot_mean_std(mean_switch_frac_high, std_switch_frac_high, "2", "switch")
-f_switch2_low = plot_mean_std(mean_switch_frac_low, std_switch_frac_low, "2", "switch")
-
-f_frac2 = plot_mean_std(mean_switch_frac, std_switch_frac, "2", "frac")
-
-f_switch5 = plot_mean_std(mean_switch_frac, std_switch_frac, "5", "switch")
-f_frac5 = plot_mean_std(mean_switch_frac, std_switch_frac, "5", "frac")
-
-f_switch10 = plot_mean_std(mean_switch_frac, std_switch_frac, "10", "switch")
-f_frac10 = plot_mean_std(mean_switch_frac, std_switch_frac, "10", "frac")
-
-f_switch_bs = plot_mean_std(mean_switch_frac, std_switch_frac, "bs", "switch")
-f_frac_bs = plot_mean_std(mean_switch_frac, std_switch_frac, "bs", "frac")
-
-switch_all = plot_mean_std(mean_switch_frac, std_switch_frac, ["2", "5", "10", "bs"], "switch")
-fracs_all = plot_mean_std(mean_switch_frac, std_switch_frac, ["2", "5", "10", "bs"], "frac")
-
-
-
-# tot_mean_species = Dict("high"=>Dict("on"=>Dict("2"=>Dict(), "5"=>Dict(), "10"=>Dict(), "bs"=>Dict()), "off"=>Dict("2"=>Dict(), "5"=>Dict(), "10"=>Dict(), "bs"=>Dict())),
-#                         "low"=>Dict("on"=>Dict("2"=>Dict(), "5"=>Dict(), "10"=>Dict(), "bs"=>Dict()), "off"=>Dict("2"=>Dict(), "5"=>Dict(), "10"=>Dict(), "bs"=>Dict())))
-# tot_std_species = Dict("on"=>Dict("2"=>Dict(), "5"=>Dict(), "10"=>Dict(), "bs"=>Dict()), 
-#                         "off"=>Dict("2"=>Dict(), "5"=>Dict(), "10"=>Dict(), "bs"=>Dict()))
-# tot_mean_species["on"]["2"]
-
-# species_mean_high["on"]["2"][1][0.8][1]
-# for onoff in ["on", "off"]
-#     for thresh in ["2", "5", "10", "bs"]
-#         for kdam in eachindex(kdams_high)
-#             concs_high = [species_mean_high[onoff][thresh][i][kdams_high[kdam]][1] for i in eachindex(species_mean_high[onoff][thresh])]
-#             tot_mean_species["high"][onoff][thresh][kdams_high[kdam]] = mean(concs_high)
-#             # tot_std_species[onoff][thresh][kdam] = std(rates_switch)
-#             concs_low = [species_mean_low[onoff][thresh][i][kdams_low[kdam]][1] for i in eachindex(species_mean_low[onoff][thresh])]
-#             tot_mean_species["low"][onoff][thresh][kdams_low[kdam]] = mean(concs_low)
-#         end
-#     end
-# end
-
-# tot_mean_species["high"]["on"]["2"]
-# tot_mean_species["low"]["on"]["2"]
-# vcat(kdams_low, reverse(kdams_high))
-
-# lows = [tot_mean_species["low"]["on"]["2"][kdam] for kdam in kdams_low]
-
-# highs = [tot_mean_species["high"]["on"]["2"][kdam] for kdam in kdams_high]
-
-
-# f = Figure()
-# ax = Axis(f[1,1], xticks=([0.01, 0.8, 0.8, 1.5], ["0.01", "0.8", "0.8", "1.5"]))
-# barplot!(ax, vcat(kdams_low, reverse(kdams_high)), vcat(lows, highs))
-
-
-# f = Figure()
-# ax = Axis(f[1,1])
-# [scatter!(ax, kdams_high, [species_mean_high["on"]["2"][i][key][1] for key in kdams_high], color=:blue) for i in eachindex(species_mean_high["on"]["2"])]
-# [scatter!(ax, kdams_low, [species_mean_low["on"]["2"][i][key][1] for key in kdams_low], color=:red) for i in eachindex(species_mean_low["on"]["2"])]
-
 df_concs_on = DataFrame(
     "data" => vcat(
         [species_mean_low["on"]["2"][i][0.01][1] for i in eachindex(species_mean_low["on"]["2"])],
