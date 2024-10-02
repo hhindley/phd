@@ -53,5 +53,6 @@ f5_rm_a = plot_conc_frac(species_mean, fracs, kdams, 2, "5", logz=true)
 f10_rm_a = plot_conc_frac(species_mean, fracs, kdams, 2, "10", logz=true)
 f_bs_rm_a = plot_conc_frac(species_mean, fracs, kdams, 2, "bs", logz=true)
 
+save("/Users/s2257179/Library/CloudStorage/OneDrive-UniversityofEdinburgh/Documents/rtc/stochastic/plots/analysis/switching/thresh_bs/conc_frac_rtca_bs.png", f_bs_rtca)
 
 
