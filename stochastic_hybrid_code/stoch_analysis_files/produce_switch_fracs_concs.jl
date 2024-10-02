@@ -18,7 +18,9 @@ mount_path, folders, folders_dict = load_file_structure("kdam_testing/keyvals2",
 # mount_path, folders, folders_dict = load_file_structure("hysteresis", server=true)
 folders_dict
 # folders_dict = Dict(filter(pair -> pair.first in [1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17,18,19,20], folders_dict))
-folders_dict = Dict(filter(pair -> pair.first in [6,7,8,9,10], folders_dict))
+# folders_dict = Dict(filter(pair -> pair.first in [16,7,20,8,17,19,6,10,9,18], folders_dict))
+# folders_dict = Dict(filter(pair -> pair.first in [5,12,1,4,13,2,11,15,14,3], folders_dict))
+
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = load_data(mount_path, folders, folders_dict, reacts=false, props=false, hists=false)
 
 # @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/keyvals2_raw_data.jld2" folders_dict dict_times dict_kdamvals dict_titles dict_results dict_reacts dict_props dict_counts dict_hists
@@ -61,5 +63,5 @@ species_mean = Dict("on"=>Dict("2"=>all_species_mean_on2, "5"=>all_species_mean_
 
 thresholds_bs = Dict("rtca"=>thresholds_rtca, "rtcb"=>thresholds_rtcb)
 
-# @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/hysteresis_low.jld2" indices switch_rates fracs species_mean thresholds_bs
+# @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/hysteresis_high.jld2" indices switch_rates fracs species_mean thresholds_bs
 @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_all.jld2" indices switch_rates fracs species_mean thresholds_bs
