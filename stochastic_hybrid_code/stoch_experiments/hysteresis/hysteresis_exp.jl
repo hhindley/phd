@@ -11,34 +11,36 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/stoch_analysis_files/his
 
 n= 10000 # number of cell cycles
 options = Dict(
-"threshold"  =>  0.,       # Threshold to decide between determinisitic or stochastic reaction
+"threshold"  =>  150.,       # Threshold to decide between determinisitic or stochastic reaction
 "FixDetReact"=> [14],# [10,11,12,13,14,15,16,17,18],       # Reactions to be treated determinisitically
     "tspan"     =>   n*log(2)/lam_val,     # Max time for cell cycle
     "samplingFreq"  => 1 # for sampling every x mins
 )
 
-X0 = collect(get_X0(indV, init_molec)')
+X0_init = collect(get_X0(indV, init_molec)')
 par = collect(get_par(indP)')
 
 println("starting X0 calc")
-getssX0 = true
-if getssX0
-    fout=open("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat","w")
-    propen, S, propList = defineStochModel(par, indV)
-    nx = indV.nrOfItems-1
-    prop(X) = propen(X[1:nx])
-    X0 = hybrid_algo(X0, options, prop, S, out=fout)
-    X0[vidx(:V)] = 1 #1e-15
-    CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", DataFrame(X0,:auto), header=false)
-else
-    X0 = CSV.read("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", Tables.matrix, header=false)
-end
+X0 = run_stoch(X0_init, options["threshold"], 0, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
+X0[vidx(:V)] = 1
+# getssX0 = true
+# if getssX0
+#     fout=open("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat","w")
+#     propen, S, propList = defineStochModel(par, indV)
+#     nx = indV.nrOfItems-1
+#     prop(X) = propen(X[1:nx])
+#     X0 = hybrid_algo(X0, options, prop, S, out=fout)
+#     X0[vidx(:V)] = 1 #1e-15
+#     CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", DataFrame(X0,:auto), header=false)
+# else
+#     X0 = CSV.read("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", Tables.matrix, header=false)
+# end
 println("finished X0 calc, X0: $X0")
 
 mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/hysteresis/"
 date = Dates.format(Dates.now(), "ddmm")
 
-high = false
+high = true
 num = 5
 
 if high 
