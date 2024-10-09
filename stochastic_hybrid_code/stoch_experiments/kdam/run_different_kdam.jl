@@ -44,12 +44,15 @@ if high_kdam
     X0 = X0_high
     mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/keyvals2_high_kdam"
 else
+    X0_low = run_stoch(X0, options["threshold"], 0.01, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
+    X0_low[vidx(:V)] = 1
+    X0 = X0_low
     mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/keyvals2_low_kdam"
 end
 
 
 date = Dates.format(Dates.now(), "ddmm")
-dir_num = 9 # change this! 
+dir_num = 1 # change this! 
 dir = "$(date)_$dir_num" 
 
 folderpath = joinpath(mainpath, dir)
