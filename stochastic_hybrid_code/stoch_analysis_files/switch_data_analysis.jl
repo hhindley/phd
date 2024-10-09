@@ -7,7 +7,7 @@ fontsize_theme = Theme(fontsize = 25)
 set_theme!(fontsize_theme)
 
 # kdam data
-@load "/Users/s2257179/Desktop/saved_variables/data_thresh_all.jld2" indices switch_rates fracs species_mean thresholds_bs
+@load "/Users/s2257179/Desktop/saved_variables/0210/high_kdam.jld2" indices switch_rates fracs species_mean thresholds_bs
 kdams = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
 mean_switch_frac, std_switch_frac = calc_mean_std_vars(switch_rates, fracs, kdams)
 
@@ -43,6 +43,8 @@ display(GLMakie.Screen(), f_frac)
 
 # plotting dots of average concentrations with fraction of time in state as colour
 f2_rtca = plot_conc_frac(species_mean, fracs, kdams, 1, "2", logz=true)
+save("/Users/s2257179/Library/CloudStorage/OneDrive-UniversityofEdinburgh/Documents/rtc/stochastic/plots/analysis/switching/thresh2_high_kdam/conc_frac_rtca2.png", f2_rtca)
+
 f5_rtca = plot_conc_frac(species_mean, fracs, kdams, 1, "5", logz=true)
 f10_rtca = plot_conc_frac(species_mean, fracs, kdams, 1, "10", logz=true)
 f_bs_rtca = plot_conc_frac(species_mean, fracs, kdams, 1, "bs", logz=true)
