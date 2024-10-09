@@ -6,9 +6,9 @@ fontsize_theme = Theme(fontsize = 25)
 set_theme!(fontsize_theme)
 
 # hysteresis data
-@load "/Users/s2257179/Desktop/saved_variables/hysteresis_high.jld2" indices switch_rates fracs species_mean thresholds_bs
+@load "/Users/s2257179/Desktop/saved_variables/0210/hysteresis_high_0210.jld2" indices switch_rates fracs species_mean thresholds_bs
 indices_high = indices; switch_rates_high = switch_rates; fracs_high = fracs; species_mean_high = species_mean; thresholds_bs_high = thresholds_bs;
-@load "/Users/s2257179/Desktop/saved_variables/hysteresis_low.jld2" indices switch_rates fracs species_mean thresholds_bs
+@load "/Users/s2257179/Desktop/saved_variables/0210/hysteresis_low_0210.jld2" indices switch_rates fracs species_mean thresholds_bs
 indices_low = indices; switch_rates_low = switch_rates; fracs_low = fracs; species_mean_low = species_mean; thresholds_bs_low = thresholds_bs;
 
 kdams_high = [1.5, 0.8]
@@ -25,7 +25,11 @@ df_concs_on = DataFrame(
     ),
     "group" => repeat([1, 2, 3, 4], inner=length(species_mean_low["on"]["2"]))
 )
-df_concs_on.color = vcat(fill("red",10), fill("purple",20), fill("blue",10))
+total_length = nrow(df_concs_on)
+purple_length = total_length ÷ 2  # Half of the total length for purple
+red_blue_length = purple_length ÷ 2  
+df_concs_on.color = vcat(fill("red",red_blue_length), fill("purple",purple_length), fill("blue",red_blue_length))
+
 f = Figure()
 ax = Axis(f[1,1], xticks=(1:4, ["0.01", "0.8", "0.8", "1.5"]), xlabel="Damage rate (min⁻¹)", ylabel="RtcA in on state (μM)", title="Hysteresis experiement")
 boxplot!(ax, df_concs_on.group, df_concs_on.data, color=df_concs_on.color)
@@ -40,7 +44,8 @@ df_concs_off = DataFrame(
     ),
     "group" => repeat([1, 2, 3, 4], inner=length(species_mean_low["off"]["2"]))
 )
-df_concs_off.color = vcat(fill("red",10), fill("purple",20), fill("blue",10))
+
+df_concs_off.color = vcat(fill("red",red_blue_length), fill("purple",purple_length), fill("blue",red_blue_length))
 
 f = Figure()
 ax = Axis(f[1,1], xticks=(1:4, ["0.01", "0.8", "0.8", "1.5"]), xlabel="Damage rate (min⁻¹)", ylabel="RtcA in off state (μM)", title="Hysteresis experiement")
@@ -56,7 +61,7 @@ df_fracs_on = DataFrame(
     ),
     "group" => repeat([1, 2, 3, 4], inner=length(fracs_low["on"]["2"]))
 )
-df_fracs_on.color = vcat(fill("red",10), fill("purple",20), fill("blue",10))
+df_fracs_on.color = vcat(fill("red",red_blue_length), fill("purple",purple_length), fill("blue",red_blue_length))
 
 f = Figure()
 ax = Axis(f[1,1], xticks=(1:4, ["0.01", "0.8", "0.8", "1.5"]), xlabel="Damage rate (min⁻¹)", ylabel="Fraction of time in on state", title="Hysteresis experiement")
@@ -72,7 +77,7 @@ df_fracs_off = DataFrame(
     ),
     "group" => repeat([1, 2, 3, 4], inner=length(fracs_low["off"]["2"]))
 )
-df_fracs_off.color = vcat(fill("red",10), fill("purple",20), fill("blue",10))
+df_fracs_off.color = vcat(fill("red",red_blue_length), fill("purple",purple_length), fill("blue",red_blue_length))
 
 f = Figure()
 ax = Axis(f[1,1], xticks=(1:4, ["0.01", "0.8", "0.8", "1.5"]), xlabel="Damage rate (min⁻¹)", ylabel="Fraction of time in off state", title="Hysteresis experiement")
