@@ -8,7 +8,7 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/stoch_model.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/stoch_analysis_files/histograms/make_hists.jl"))
 
-high_kdam = false
+high_kdam = true
 
 n= 10000 # number of cell cycles
 options = Dict(
@@ -38,22 +38,28 @@ X0[vidx(:V)] = 1
 # end
 println("finished X0 calc")
 
+date = Dates.format(Dates.now(), "ddmmyy")
+
+println("starting getting init conditions for low or high damage")
 if high_kdam
     X0_high = run_stoch(X0, options["threshold"], 1.5, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
     X0_high[vidx(:V)] = 1
     X0 = X0_high
-    mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/keyvals2_high_kdam"
+    mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/high_kdam/$date"
 else
     X0_low = run_stoch(X0, options["threshold"], 0.01, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
     X0_low[vidx(:V)] = 1
     X0 = X0_low
-    mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/keyvals2_low_kdam"
+    mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/low_kdam/$date"
+end
+println("finished getting init conditions for low or high damage")
+
+if !isdir(mainpath)
+    mkdir(mainpath)
 end
 
-
-date = Dates.format(Dates.now(), "ddmm")
-dir_num = 1 # change this! 
-dir = "$(date)_$dir_num" 
+dir_num = 9 # change this! 
+dir = "run_$dir_num" 
 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
@@ -86,12 +92,10 @@ println("making histograms for $dir")
 
 create_histogram_files(mainpath, final_path)
 
-print("finished making histograms for $dir")
+println("finished making histograms for $dir")
 
 
-
-
-dir = "$(date)_$(dir_num+1)" 
+dir = "run_$(dir_num+1)" 
 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
@@ -122,4 +126,21 @@ println("making histograms for $dir")
 
 create_histogram_files(mainpath, final_path)
 
-print("finished making histograms for $dir")
+println("finished making histograms for $dir")
+
+# moving time files to final_files folders
+entries = readdir(mainpath)
+csv_files = filter(x -> endswith(x, "_times.csv"), entries)
+folders = filter(x -> isdir(joinpath(mainpath, x)), entries)
+for csv_file in csv_files
+    base_name = replace(csv_file, "times.csv" => "final_files")
+    corresponding_folder = joinpath(mainpath, base_name)
+    if isdir(corresponding_folder)
+        source_file = joinpath(mainpath, csv_file)
+        destination_file = joinpath(corresponding_folder, csv_file)
+        mv(source_file, destination_file)
+        println("Moved $csv_file to $corresponding_folder")
+    else
+        println("No corresponding folder found for $csv_file")
+    end
+end
