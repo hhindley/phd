@@ -1,7 +1,7 @@
 model = "negative_proportional/lam_prop"
 model = "lam_coupled"
 model = "negative_proportional/lam_both_prop"
-
+model = "negative_proportional/lam_kin"
 
 include(joinpath(homedir(), "phd/rtc_model/rhlam_coupled/models/$model.jl"))
 
@@ -12,9 +12,10 @@ using GLMakie
 
 ssvals_rtc
 # concentration no damage 
-params_rtc1[kdam] = 0.08
-solu_rtc = sol(model, ssvals_rtc, tspan, params_rtc1)
+params_rtc1[kdam] = 1
+solu_rtc = sol(model, init_rtc, tspan, params_rtc1)
 df = create_solu_df(solu_rtc, species_rtc)
+lines(df.time, df.rh)
 
 tlr_el = params_rtc1[g_max]*params_rtc1[atp]/(params_rtc1[θtlr]+params_rtc1[atp])
 n_kdam = 1/(1+exp(50*(params_rtc1[kdam]-0.05)))
@@ -25,9 +26,9 @@ lam = @. n_kdam*lam_z + (1-n_kdam)*lam_nz
 lines(lam, df.rh)
 
 
-# f=Figure()
-# ax=Axis(f[1,1], xlabel="Time", ylabel="Concentration (μM)",xscale=log10)
-# lines!(ax, df.time, df.rtca)
+f=Figure()
+ax=Axis(f[1,1], xlabel="Time", ylabel="Concentration (μM)",xscale=log10)
+lines!(ax, df.time, df.rh)
 # df.rh
 
 # tlr_el = g_max_val*atp_val/(θtlr_val+atp_val)
@@ -54,7 +55,7 @@ end
 fontsize_theme = Theme(fontsize = 25)
 set_theme!(fontsize_theme)
 
-kdam_range = range(0,1.5, length=100)
+kdam_range = range(0,20, length=20)
 res = var_param(model, kdam, params_rtc1, kdam_range, ssvals_rtc)
 lines(kdam_range, res.rtca)
 tlr_el = params_rtc1[g_max]*params_rtc1[atp]/(params_rtc1[θtlr]+params_rtc1[atp])
@@ -80,7 +81,6 @@ res_ss = numerical_bistability_analysis(model, params_rtc1, init_rtc, species_rt
 res1_ss = numerical_bistability_analysis(model, params_rtc1, ssvals_rtc, species_rtc, reverse(kdam_range), kdam, specie=:rtca)
 lines(kdam_range, res_ss)
 lines!(reverse(kdam_range), res1_ss)
-
 
 br = get_br(model, ssvals_rtc, params_rtc1, 
 kdam_max=1.5)
