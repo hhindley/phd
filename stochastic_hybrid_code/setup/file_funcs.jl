@@ -131,8 +131,14 @@ end
 function LoadDataVars(folder; reacts=true, results=true, props=true)
     folder = folder
     filepath = joinpath(mount_path, folder)
-    if isfile(joinpath(filepath, replace(folder, "final_files" => "") * "times.csv"))
-        df_times = CSV.File(joinpath(filepath, replace(folder, "final_files" => "") * "times.csv")) |> DataFrame
+    times_file = (replace(folder, "final_files" => "") * "times.csv")[8:end]
+    # if isfile(joinpath(filepath, replace(folder, "final_files" => "") * "times.csv"))
+    #     df_times = CSV.File(joinpath(filepath, replace(folder, "final_files" => "") * "times.csv")) |> DataFrame
+    # else
+    #     df_times = []#CSV.File(timefilepath) |> DataFrame
+    # end
+    if isfile(joinpath(filepath, times_file))
+        df_times = CSV.File(joinpath(filepath, times_file)) |> DataFrame
     else
         df_times = []#CSV.File(timefilepath) |> DataFrame
     end
@@ -210,26 +216,37 @@ function load_file_structure(main_folder; server=false)
     else
         mount_path = "/Users/s2257179/stoch_files/$main_folder/"
     end
+    
+    # all_items = readdir(mount_path)
+    # folders = [item for item in all_items if isdir(joinpath(mount_path, item)) && !occursin("DS", item)]
+    # folders_dict = Dict(i => folder for (i, folder) in enumerate(folders))
+
     all_items = readdir(mount_path)
-    folders = [item for item in all_items if isdir(joinpath(mount_path, item)) && !occursin("DS", item)]
-    folders_dict = Dict(i => folder for (i, folder) in enumerate(folders))
-    return mount_path, folders, folders_dict
+    folders = [item for item in all_items if !occursin("DS", item)]
+    data_folders = [readdir(joinpath(mount_path, folders[i])) for i in eachindex(folders)]
+    all_folders = [joinpath(folders[folder], readdir(joinpath(mount_path, folders[folder]))[i]) for folder in eachindex(folders) for i in eachindex(data_folders[folder])]
+    folders_dict = Dict(i => folder for (i, folder) in enumerate(all_folders))
+
+    # return mount_path, folders, folders_dict
+    return mount_path, all_folders, folders_dict
 end
 
 function load_data(mount_path, folders, folders_dict; reacts=true, results=true, props=true, hists=true)
     dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = setup_dicts(folders_dict)
-
+    
     for i in eachindex(folders_dict)
-        println(i)
-        dict_times[i], dict_kdamvals[i], dict_titles[i], dict_results[i], dict_reacts[i], dict_props[i] = LoadDataVars(folders[i]; reacts=reacts, results=results, props=props);
-        if hists && reacts
-            dict_hists[i] = load_hist_files(joinpath(mount_path, folders_dict[i], "hists"))
-            dict_counts[i] = prod_tot_count(dict_reacts[i])
-        elseif hists 
-            dict_hists[i] = load_hist_files(joinpath(mount_path, folders_dict[i], "hists"))
-        elseif reacts
-            dict_counts[i] = prod_tot_count(dict_reacts[i])
-        end
+        # for i in folders_dict[folder]
+            println(i)
+            dict_times[i], dict_kdamvals[i], dict_titles[i], dict_results[i], dict_reacts[i], dict_props[i] = LoadDataVars(folders[i]; reacts=reacts, results=results, props=props);
+            if hists && reacts
+                dict_hists[i] = load_hist_files(joinpath(mount_path, folders_dict[i], "hists"))
+                dict_counts[i] = prod_tot_count(dict_reacts[i])
+            elseif hists 
+                dict_hists[i] = load_hist_files(joinpath(mount_path, folders_dict[i], "hists"))
+            elseif reacts
+                dict_counts[i] = prod_tot_count(dict_reacts[i])
+            end
+        # end
     end
     return dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists
 end

@@ -16,11 +16,34 @@ include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
 
 # mount_path, folders, folders_dict = load_file_structure("kdam_testing/keyvals2_low_kdam", server=true)
 # mount_path, folders, folders_dict = load_file_structure("hysteresis/low", server=true)
-mount_path, folders, folders_dict = load_file_structure("kdam_testing/low_kdam/091024", server=true)
+mount_path, folders, folders_dict = load_file_structure("kdam_testing/high_kdam", server=true)
 folders_dict
-# folders_dict = Dict(filter(pair -> pair.first in [1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17,18,19,20], folders_dict))
-# folders_dict = Dict(filter(pair -> pair.first in [16,7,20,8,17,19,6,10,9,18], folders_dict))
-# folders_dict = Dict(filter(pair -> pair.first in [5,12,1,4,13,2,11,15,14,3], folders_dict))
+# folders
+
+# mount_path = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/high_kdam"
+# all_items = readdir("/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/high_kdam")
+# folders = [item for item in all_items if !occursin("DS", item)]
+# data_folders = [readdir(joinpath("/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/high_kdam", folders[i])) for i in eachindex(folders)]
+# all_folders = [joinpath(folders[folder], readdir(joinpath("/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/high_kdam", folders[folder]))[i]) for folder in eachindex(folders) for i in eachindex(data_folders[folder])]
+# folders_dict = Dict(i => folder for (i, folder) in enumerate(all_folders))
+
+# folder = folders_dict[1]
+# filepath = joinpath(mount_path, folder)
+# times_file = (replace(folder, "final_files" => "") * "times.csv")[8:end]
+# if isfile(joinpath(filepath, times_file))
+#     df_times = CSV.File(joinpath(filepath, times_file)) |> DataFrame
+# else
+#     df_times = []#CSV.File(timefilepath) |> DataFrame
+# end
+# joinpath(filepath, times_file)
+
+
+
+# LoadDataVars(folders_dict[1])
+
+# joinpath("/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/high_kdam", folders_dict[1][1])
+
+
 
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = load_data(mount_path, folders, folders_dict, reacts=false, props=false, hists=false)
 
@@ -63,5 +86,5 @@ species_mean = Dict("on"=>Dict("2"=>all_species_mean_on2, "5"=>all_species_mean_
 
 thresholds_bs = Dict("rtca"=>thresholds_rtca, "rtcb"=>thresholds_rtcb)
 
-@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/low_kdam.jld2" indices switch_rates fracs species_mean thresholds_bs
+@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam.jld2" indices switch_rates fracs species_mean thresholds_bs
 # @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/low_kdam.jld2" indices switch_rates fracs species_mean thresholds_bs
