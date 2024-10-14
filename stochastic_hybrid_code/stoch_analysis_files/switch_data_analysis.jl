@@ -6,7 +6,7 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/switching_funcs.jl
 fontsize_theme = Theme(fontsize = 25)
 set_theme!(fontsize_theme)
 
-high_kdam = true
+high_kdam = false
 if high_kdam
     @load "/Users/s2257179/Desktop/saved_variables/1410/high_kdam.jld2" indices switch_rates fracs species_mean thresholds_bs
 else
@@ -17,7 +17,7 @@ end
 kdams = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
 mean_switch_frac, std_switch_frac = calc_mean_std_vars(switch_rates, fracs, kdams)
 
-tosave = false
+tosave = true
 
 f_switch2 = plot_mean_std(mean_switch_frac, std_switch_frac, "2", "switch", tosave=tosave)
 f_frac2 = plot_mean_std(mean_switch_frac, std_switch_frac, "2", "frac", tosave=tosave)
@@ -50,9 +50,9 @@ axislegend(position=:rc)
 display(GLMakie.Screen(), f_frac)
 
 # plotting dots of average concentrations with fraction of time in state as colour
-logz = true
-includeoff = true
-tosave = false
+logz = false
+includeoff = false
+tosave = true
 
 f2_rtca = plot_conc_frac(species_mean, fracs, kdams, 1, "2", logz=logz, includeoff=includeoff, tosave=tosave)
 f5_rtca = plot_conc_frac(species_mean, fracs, kdams, 1, "5", logz=logz, includeoff=includeoff, tosave=tosave)
@@ -91,8 +91,8 @@ log_fracs_low = log.(ordered_fracs_low)
 combined_log_fracs = vcat(log_fracs_low, log_fracs_high)
 min_log_frac = minimum(combined_log_fracs)
 max_log_frac = maximum(combined_log_fracs)
-normalized_log_fracs_high = (log_fracs_high .- min_log_frac) ./ (max_log_frac_high - min_log_frac)
-normalized_log_fracs_low = (log_fracs_low .- min_log_frac) ./ (max_log_frac_low - min_log_frac)
+normalized_log_fracs_high = (log_fracs_high .- min_log_frac) ./ (max_log_frac - min_log_frac)
+normalized_log_fracs_low = (log_fracs_low .- min_log_frac) ./ (max_log_frac - min_log_frac)
 colors_high = [get(ColorSchemes.rainbow_bgyr_35_85_c72_n256, frac) for frac in normalized_log_fracs_high]
 colors_low = [get(ColorSchemes.rainbow_bgyr_35_85_c72_n256, frac) for frac in normalized_log_fracs_low]
 
@@ -116,14 +116,139 @@ df_concs_on_high = DataFrame(
 
 f = Figure()
 ax = Axis(f[1,1], xlabel="Damage rate (min⁻¹)", ylabel="RtcA in on state (μM)", title="Hysteresis experiement")
-violin!(ax, df_concs_on_low.kdam, df_concs_on_low.data, side=:left, color=df_concs_on_low.color)
-violin!(ax, df_concs_on_high.kdam, df_concs_on_high.data, side=:right, color=df_concs_on_high.color)
+violin!(ax, df_concs_on_low.group, df_concs_on_low.data, side=:left, color=df_concs_on_low.color)
+violin!(ax, df_concs_on_high.group, df_concs_on_high.data, side=:right, color=df_concs_on_high.color)
 
 
 f = Figure() 
 ax = Axis(f[1,1], xlabel="Damage rate (min⁻¹)", ylabel="RtcA in on state (μM)", title="Hysteresis experiement")
 boxplot!(ax, df_concs_on_low.group, df_concs_on_low.data, color=df_concs_on_low.color)
-boxplot!(ax, df_concs_on_high.kdam, df_concs_on_high.data, side=:right, color=df_concs_on_high.color)
+boxplot!(ax, df_concs_on_high.group, df_concs_on_high.data, side=:right, color=df_concs_on_high.color)
+
+
+
+f = Figure() 
+ax = Axis(f[1,1], xlabel="Damage rate (min⁻¹)", ylabel="RtcA in on state (μM)", title="Hysteresis experiement")
+boxplot!(ax, df_concs_on_low.group, df_concs_on_low.data, color=df_concs_on_low.color)
+violin!(ax, df_concs_on_low.group, df_concs_on_low.data, color=df_concs_on_low.color)
+
+
+f = Figure()
+Axis3(f[1,1])
+[Point3(filter(row -> row.group == i, df_concs_on_high).data) for i in 1:10]
+
+filter(row -> row.group == 1, df_concs_on_high)
+
+# Example Data
+spectra = [sin.(1:0.1:10) for _ in 1:7]
+x_values = 1:1:10
+
+filter(row -> row.group == 1, df_concs_on_high).data
+
+# Figure
+fig = Figure()
+
+# 3D-Axis
+ax = Axis3(fig[1, 1], title="Waterfallplot", xlabel="X-Axis", ylabel="Y-Axis", zlabel="Z-Axis")
+
+points = Point3.(x_values, 9, filter(row -> row.group == 1, df_concs_on_high).data)
+# Plot Data
+for i in 10:-1:1
+    y_shift = i-1  # Shift along y-axis
+    points = Point3.(x_values, y_shift, filter(row -> row.group == i, df_concs_on_high).data)  # Data to Point3
+    # base   = Point3.(x_values, y_shift, minimum(spectra[i]))
+    # band!(ax, base, points,alpha=0.5,color=Makie.wong_colors()[i])  # Plot each spectrum
+    violin!(ax, points, linewidth=2)  # Plot each spectrum
+end
+# Show figure
+fig
+
+
+
+
+
+
+function waterfall_makie(x, y, z; zmin = minimum(z), lw = 1., colmap = :linear_bgy_10_95_c74_n256, colorband = (:white, 1.), xlab = "x", ylab = "y", zlab = "z")
+    # Initialisation
+    fig = Figure()
+    ax = Axis3(fig[1,1], xlabel = xlab, ylabel = ylab, zlabel = zlab)
+    for (j, yv) in enumerate(y)
+        zj = z[j, :]
+        lower = Point3f.(x, yv, zmin)
+        upper = Point3f.(x, yv, zj)
+        edge_start = [Point3f(x[1], yv, zmin), Point3f(x[1], yv, zj[1])]
+        edge_end = [Point3f(x[end], yv, zmin), Point3f(x[end], yv, zj[end])]
+
+        # # Surface
+        # band!(ax, lower, upper, color = colorband)
+
+        # Line
+        lines!(ax, upper, color = zj, colormap = colmap, linewidth = lw)
+        
+        # Edges
+        # lines!(ax, edge_start, color = zj[1]*ones(2), colormap = colmap, linewidth = lw)
+        # lines!(ax, edge_end, color = zj[end]*ones(2), colormap = colmap, linewidth = lw)
+    end
+
+    # Set axes limits
+    xlims!(ax, minimum(x), maximum(x))
+    ylims!(ax, minimum(y), maximum(y))
+    zlims!(ax, zmin, maximum(z))
+
+    fig
+end
+
+
+x = range(0., 2π, 100)
+y = range(0., 1., 5)
+
+nx = length(x)
+ny = length(y)
+z = zeros(ny, nx)
+
+for i in eachindex(y)
+    z[i, :] = sin.(i*x/2.)
+end
+z
+
+fig = waterfall_makie(x, y, z)
+
+# x = conc
+# y = freq
+# z = dam
+
+
+
+
+using KernelDensity  # For KDE (Kernel Density Estimate)
+
+
+# Generate 5 different datasets
+data1 = randn(100) .+ 2  # Normal distribution, mean = 2
+data2 = randn(100) .+ 0  # Normal distribution, mean = 0
+data3 = randn(100) .* 2  # Normal distribution, larger variance
+data4 = 3 .+ rand(100) * 2  # Uniform distribution, between 3 and 5
+data5 = exp.(randn(100) .* 0.5)  # Log-normal distribution
+
+datasets = [data1, data2, data3, data4, data5]
+kdes = [kde(data) for data in datasets]
+x = kdes[1].x
+y=1:length(datasets)
+z = hcat([kde.density for kde in kdes]...)
+nx=length(x)
+ny=length(y)
+# Create the figure and axis
+fig = Figure(resolution = (800, 600))
+ax = Axis(fig[1, 1], xlabel = "X", ylabel = "Density", title = "KDEs of 5 Different Datasets")
+
+# Plot the KDE of each dataset
+lines!(ax, kde1.x, kde1.density, color = :blue, linewidth = 2, label = "Dataset 1")
+lines!(ax, kde2.x, kde2.density, color = :green, linewidth = 2, label = "Dataset 2")
+lines!(ax, kde3.x, kde3.density, color = :red, linewidth = 2, label = "Dataset 3")
+lines!(ax, kde4.x, kde4.density, color = :purple, linewidth = 2, label = "Dataset 4")
+lines!(ax, kde5.x, kde5.density, color = :orange, linewidth = 2, label = "Dataset 5")
+
+
 
 
 
