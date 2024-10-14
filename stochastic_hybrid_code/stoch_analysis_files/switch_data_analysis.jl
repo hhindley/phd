@@ -1,4 +1,4 @@
-using JLD2, InteractiveViz, GLMakie, Statistics, DataFrames, ColorSchemes
+using JLD2, InteractiveViz, GLMakie, Statistics, DataFrames, ColorSchemes, KernelDensity
 
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_switch_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/switching_funcs.jl"))
@@ -127,46 +127,6 @@ boxplot!(ax, df_concs_on_high.group, df_concs_on_high.data, side=:right, color=d
 
 
 
-f = Figure() 
-ax = Axis(f[1,1], xlabel="Damage rate (min⁻¹)", ylabel="RtcA in on state (μM)", title="Hysteresis experiement")
-boxplot!(ax, df_concs_on_low.group, df_concs_on_low.data, color=df_concs_on_low.color)
-violin!(ax, df_concs_on_low.group, df_concs_on_low.data, color=df_concs_on_low.color)
-
-
-f = Figure()
-Axis3(f[1,1])
-[Point3(filter(row -> row.group == i, df_concs_on_high).data) for i in 1:10]
-
-filter(row -> row.group == 1, df_concs_on_high)
-
-# Example Data
-spectra = [sin.(1:0.1:10) for _ in 1:7]
-x_values = 1:1:10
-
-filter(row -> row.group == 1, df_concs_on_high).data
-
-# Figure
-fig = Figure()
-
-# 3D-Axis
-ax = Axis3(fig[1, 1], title="Waterfallplot", xlabel="X-Axis", ylabel="Y-Axis", zlabel="Z-Axis")
-
-points = Point3.(x_values, 9, filter(row -> row.group == 1, df_concs_on_high).data)
-# Plot Data
-for i in 10:-1:1
-    y_shift = i-1  # Shift along y-axis
-    points = Point3.(x_values, y_shift, filter(row -> row.group == i, df_concs_on_high).data)  # Data to Point3
-    # base   = Point3.(x_values, y_shift, minimum(spectra[i]))
-    # band!(ax, base, points,alpha=0.5,color=Makie.wong_colors()[i])  # Plot each spectrum
-    violin!(ax, points, linewidth=2)  # Plot each spectrum
-end
-# Show figure
-fig
-
-
-
-
-
 
 function waterfall_makie(x, y, z; zmin = minimum(z), lw = 1., colmap = :linear_bgy_10_95_c74_n256, colorband = (:white, 1.), xlab = "x", ylab = "y", zlab = "z")
     # Initialisation
@@ -202,28 +162,23 @@ function waterfall_makie(x, y, z; zmin = minimum(z), lw = 1., colmap = :linear_b
 end
 
 
-x = range(0., 2π, 100)
-y = range(0., 1., 5)
+# x = range(0., 2π, 100)
+# y = range(0., 1., 5)
 
-nx = length(x)
-ny = length(y)
-z = zeros(ny, nx)
+# nx = length(x)
+# ny = length(y)
+# z = zeros(ny, nx)
 
-for i in eachindex(y)
-    z[i, :] = sin.(i*x/2.)
-end
-z
+# for i in eachindex(y)
+#     z[i, :] = sin.(i*x/2.)
+# end
+# z
 
-fig = waterfall_makie(x, y, z)
+# fig = waterfall_makie(x, y, z)
 
 # x = conc
 # y = freq
 # z = dam
-
-
-
-
-using KernelDensity  # For KDE (Kernel Density Estimate)
 
 
 # Generate 5 different datasets
@@ -243,24 +198,6 @@ nx=length(x)
 ny=length(y)
 
 fig = waterfall_makie(x, y, z)
-
-# Create the figure and axis
-fig = Figure(resolution = (800, 600))
-ax = Axis(fig[1, 1], xlabel = "X", ylabel = "Density", title = "KDEs of 5 Different Datasets")
-
-# Plot the KDE of each dataset
-lines!(ax, kde1.x, kde1.density, color = :blue, linewidth = 2, label = "Dataset 1")
-lines!(ax, kde2.x, kde2.density, color = :green, linewidth = 2, label = "Dataset 2")
-lines!(ax, kde3.x, kde3.density, color = :red, linewidth = 2, label = "Dataset 3")
-lines!(ax, kde4.x, kde4.density, color = :purple, linewidth = 2, label = "Dataset 4")
-lines!(ax, kde5.x, kde5.density, color = :orange, linewidth = 2, label = "Dataset 5")
-
-
-
-
-
-
-
 
 
 
