@@ -8,26 +8,28 @@ set_theme!(fontsize_theme)
 
 high_kdam = true
 if high_kdam
-    @load "/Users/s2257179/Desktop/saved_variables/0210/high_kdam.jld2" indices switch_rates fracs species_mean thresholds_bs
+    @load "/Users/s2257179/Desktop/saved_variables/1410/high_kdam.jld2" indices switch_rates fracs species_mean thresholds_bs
 else
-    @load "/Users/s2257179/Desktop/saved_variables/0210/low_kdam.jld2" indices switch_rates fracs species_mean thresholds_bs
+    @load "/Users/s2257179/Desktop/saved_variables/1410/low_kdam.jld2" indices switch_rates fracs species_mean thresholds_bs
 end
 
 # kdam data
 kdams = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
 mean_switch_frac, std_switch_frac = calc_mean_std_vars(switch_rates, fracs, kdams)
 
-f_switch2 = plot_mean_std(mean_switch_frac, std_switch_frac, "2", "switch", tosave=true)
-f_frac2 = plot_mean_std(mean_switch_frac, std_switch_frac, "2", "frac", tosave=true)
+tosave = false
 
-f_switch5 = plot_mean_std(mean_switch_frac, std_switch_frac, "5", "switch", tosave=true)
-f_frac5 = plot_mean_std(mean_switch_frac, std_switch_frac, "5", "frac", tosave=true)
+f_switch2 = plot_mean_std(mean_switch_frac, std_switch_frac, "2", "switch", tosave=tosave)
+f_frac2 = plot_mean_std(mean_switch_frac, std_switch_frac, "2", "frac", tosave=tosave)
 
-f_switch10 = plot_mean_std(mean_switch_frac, std_switch_frac, "10", "switch", tosave=true)
-f_frac10 = plot_mean_std(mean_switch_frac, std_switch_frac, "10", "frac", tosave=true)
+f_switch5 = plot_mean_std(mean_switch_frac, std_switch_frac, "5", "switch", tosave=tosave)
+f_frac5 = plot_mean_std(mean_switch_frac, std_switch_frac, "5", "frac", tosave=tosave)
 
-f_switch_bs = plot_mean_std(mean_switch_frac, std_switch_frac, "bs", "switch", tosave=true)
-f_frac_bs = plot_mean_std(mean_switch_frac, std_switch_frac, "bs", "frac", tosave=true)
+f_switch10 = plot_mean_std(mean_switch_frac, std_switch_frac, "10", "switch", tosave=tosave)
+f_frac10 = plot_mean_std(mean_switch_frac, std_switch_frac, "10", "frac", tosave=tosave)
+
+f_switch_bs = plot_mean_std(mean_switch_frac, std_switch_frac, "bs", "switch", tosave=tosave)
+f_frac_bs = plot_mean_std(mean_switch_frac, std_switch_frac, "bs", "frac", tosave=tosave)
 
 switch_all = plot_mean_std(mean_switch_frac, std_switch_frac, ["2", "5", "10", "bs"], "switch")
 fracs_all = plot_mean_std(mean_switch_frac, std_switch_frac, ["2", "5", "10", "bs"], "frac")
@@ -50,7 +52,7 @@ display(GLMakie.Screen(), f_frac)
 # plotting dots of average concentrations with fraction of time in state as colour
 logz = true
 includeoff = true
-tosave = true
+tosave = false
 
 f2_rtca = plot_conc_frac(species_mean, fracs, kdams, 1, "2", logz=logz, includeoff=includeoff, tosave=tosave)
 f5_rtca = plot_conc_frac(species_mean, fracs, kdams, 1, "5", logz=logz, includeoff=includeoff, tosave=tosave)
