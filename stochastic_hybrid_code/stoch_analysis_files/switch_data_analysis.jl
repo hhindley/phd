@@ -173,11 +173,14 @@ function waterfall_makie(x, y, z; zmin = minimum(z), lw = 1., colmap = :linear_b
     fig = Figure()
     ax = Axis3(fig[1,1], xlabel = xlab, ylabel = ylab, zlabel = zlab)
     for (j, yv) in enumerate(y)
+        
         zj = z[j, :]
-        lower = Point3f.(x, yv, zmin)
+        println(length(zj))
+        println(length(yv))
+        # lower = Point3f.(x, yv, zmin)
         upper = Point3f.(x, yv, zj)
-        edge_start = [Point3f(x[1], yv, zmin), Point3f(x[1], yv, zj[1])]
-        edge_end = [Point3f(x[end], yv, zmin), Point3f(x[end], yv, zj[end])]
+        # edge_start = [Point3f(x[1], yv, zmin), Point3f(x[1], yv, zj[1])]
+        # edge_end = [Point3f(x[end], yv, zmin), Point3f(x[end], yv, zj[end])]
 
         # # Surface
         # band!(ax, lower, upper, color = colorband)
@@ -235,8 +238,12 @@ kdes = [kde(data) for data in datasets]
 x = kdes[1].x
 y=1:length(datasets)
 z = hcat([kde.density for kde in kdes]...)
+z = permutedims(z, (2, 1)) 
 nx=length(x)
 ny=length(y)
+
+fig = waterfall_makie(x, y, z)
+
 # Create the figure and axis
 fig = Figure(resolution = (800, 600))
 ax = Axis(fig[1, 1], xlabel = "X", ylabel = "Density", title = "KDEs of 5 Different Datasets")
