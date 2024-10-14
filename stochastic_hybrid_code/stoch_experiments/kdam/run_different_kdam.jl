@@ -8,7 +8,7 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/stoch_model.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/stoch_analysis_files/histograms/make_hists.jl"))
 
-high_kdam = true
+high_kdam = false
 
 n= 10000 # number of cell cycles
 options = Dict(

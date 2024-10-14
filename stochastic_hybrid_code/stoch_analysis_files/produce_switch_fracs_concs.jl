@@ -18,36 +18,8 @@ include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
 # mount_path, folders, folders_dict = load_file_structure("hysteresis/low", server=true)
 mount_path, folders, folders_dict = load_file_structure("kdam_testing/high_kdam", server=true)
 folders_dict
-# folders
-
-# mount_path = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/high_kdam"
-# all_items = readdir("/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/high_kdam")
-# folders = [item for item in all_items if !occursin("DS", item)]
-# data_folders = [readdir(joinpath("/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/high_kdam", folders[i])) for i in eachindex(folders)]
-# all_folders = [joinpath(folders[folder], readdir(joinpath("/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/high_kdam", folders[folder]))[i]) for folder in eachindex(folders) for i in eachindex(data_folders[folder])]
-# folders_dict = Dict(i => folder for (i, folder) in enumerate(all_folders))
-
-# folder = folders_dict[1]
-# filepath = joinpath(mount_path, folder)
-# times_file = (replace(folder, "final_files" => "") * "times.csv")[8:end]
-# if isfile(joinpath(filepath, times_file))
-#     df_times = CSV.File(joinpath(filepath, times_file)) |> DataFrame
-# else
-#     df_times = []#CSV.File(timefilepath) |> DataFrame
-# end
-# joinpath(filepath, times_file)
-
-
-
-# LoadDataVars(folders_dict[1])
-
-# joinpath("/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/high_kdam", folders_dict[1][1])
-
-
 
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = load_data(mount_path, folders, folders_dict, reacts=false, props=false, hists=false)
-
-# @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/keyvals2_raw_data.jld2" folders_dict dict_times dict_kdamvals dict_titles dict_results dict_reacts dict_props dict_counts dict_hists
 
 thresholds_rtca, thresholds_rtcb = get_unstab_threshold_array(collect(keys(folders_dict))[1]) # argument just has to be any folder number to get kdam vals
 
