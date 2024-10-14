@@ -15,7 +15,8 @@ include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
 
 
 # mount_path, folders, folders_dict = load_file_structure("kdam_testing/keyvals2_low_kdam", server=true)
-mount_path, folders, folders_dict = load_file_structure("hysteresis/low", server=true)
+# mount_path, folders, folders_dict = load_file_structure("hysteresis/low", server=true)
+mount_path, folders, folders_dict = load_file_structure("kdam_testing/low_kdam/091024", server=true)
 folders_dict
 # folders_dict = Dict(filter(pair -> pair.first in [1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17,18,19,20], folders_dict))
 # folders_dict = Dict(filter(pair -> pair.first in [16,7,20,8,17,19,6,10,9,18], folders_dict))
@@ -26,6 +27,10 @@ dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, d
 # @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/keyvals2_raw_data.jld2" folders_dict dict_times dict_kdamvals dict_titles dict_results dict_reacts dict_props dict_counts dict_hists
 
 thresholds_rtca, thresholds_rtcb = get_unstab_threshold_array(collect(keys(folders_dict))[1]) # argument just has to be any folder number to get kdam vals
+
+# check threshold for using unstable region of bistable curve 
+# using PlotlyJS
+# plot(scatter(x=dict_kdamvals[1][:kdam], y=thresholds_rtca))
 
 # all folders in folders_dict
 all_start_indices2, all_stop_indices2 = all_indices(folders_dict, 2) # single threshold 
@@ -44,11 +49,6 @@ all_start_indices_bs, all_stop_indices_bs = all_indices(folders_dict, thresholds
 all_switch_rates_on_bs, all_switch_rates_off_bs, all_fracs_on_bs, all_fracs_off_bs = all_switchrates_fracs(folders_dict, all_start_indices_bs, all_stop_indices_bs)
 all_species_mean_on_bs, all_species_mean_off_bs = all_concs(folders_dict, [:rtca, :rm_a, :rh], all_start_indices_bs, all_stop_indices_bs)
 
-# @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_2.jld2" all_start_indices2 all_stop_indices2 all_switch_rates_on2 all_switch_rates_off2 all_fracs_on2 all_fracs_off2 all_species_mean_on2 all_species_mean_off2
-# @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_5.jld2" all_start_indices5 all_stop_indices5 all_switch_rates_on5 all_switch_rates_off5 all_fracs_on5 all_fracs_off5 all_species_mean_on5 all_species_mean_off5
-# @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_10.jld2" all_start_indices10 all_stop_indices10 all_switch_rates_on10 all_switch_rates_off10 all_fracs_on10 all_fracs_off10 all_species_mean_on10 all_species_mean_off10
-# @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/data_thresh_bs.jld2" all_start_indices_bs all_stop_indices_bs all_switch_rates_on_bs all_switch_rates_off_bs all_fracs_on_bs all_fracs_off_bs all_species_mean_on_bs all_species_mean_off_bs thresholds_rtca thresholds_rtcb
-
 indices = Dict("start"=>Dict("2"=>all_start_indices2, "5"=>all_start_indices5, "10"=>all_start_indices10, "bs"=>all_start_indices_bs),
                     "stop"=>Dict("2"=>all_stop_indices2, "5"=>all_stop_indices5, "10"=>all_stop_indices10, "bs"=>all_stop_indices_bs))
 
@@ -63,5 +63,5 @@ species_mean = Dict("on"=>Dict("2"=>all_species_mean_on2, "5"=>all_species_mean_
 
 thresholds_bs = Dict("rtca"=>thresholds_rtca, "rtcb"=>thresholds_rtcb)
 
-@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/hysteresis_low_0210.jld2" indices switch_rates fracs species_mean thresholds_bs
+@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/low_kdam.jld2" indices switch_rates fracs species_mean thresholds_bs
 # @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/low_kdam.jld2" indices switch_rates fracs species_mean thresholds_bs

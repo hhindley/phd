@@ -31,10 +31,13 @@ function get_unstab_threshold_array(folder)
     end
 
     start_vals_rtca = fill(thresholds_rtca[1], length(dict_kdamvals[folder][:kdam][1:min_kdam_ind-1]))
-    end_vals_rtca = fill(thresholds_rtca[end], length(dict_kdamvals[folder][:kdam][max_kdam_ind+1:end]))
+    # either fill the values after the unstable curve with the first threshold or the last (but the last is a lot higher than the first, and this means that sometimes RtcA or RtcB don't cross this threshold, so will go with the first)
+    end_vals_rtca = fill(thresholds_rtca[1], length(dict_kdamvals[folder][:kdam][max_kdam_ind+1:end]))
+    # end_vals_rtca = fill(thresholds_rtca[end], length(dict_kdamvals[folder][:kdam][max_kdam_ind+1:end]))
 
     start_vals_rtcb = fill(thresholds_rtcb[1], length(dict_kdamvals[folder][:kdam][1:min_kdam_ind-1]))
-    end_vals_rtcb = fill(thresholds_rtcb[end], length(dict_kdamvals[folder][:kdam][max_kdam_ind+1:end]))
+    end_vals_rtcb = fill(thresholds_rtcb[1], length(dict_kdamvals[folder][:kdam][max_kdam_ind+1:end]))
+    # end_vals_rtcb = fill(thresholds_rtcb[end], length(dict_kdamvals[folder][:kdam][max_kdam_ind+1:end]))
 
     pushfirst!(thresholds_rtca, start_vals_rtca...)
     push!(thresholds_rtca, end_vals_rtca...)
