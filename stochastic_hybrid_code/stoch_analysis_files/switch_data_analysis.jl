@@ -137,13 +137,13 @@ function waterfall_makie(x, y, z; zmin = minimum(z), lw = 1., colmap = :linear_b
         zj = z[j, :]
         println(length(zj))
         println(length(yv))
-        # lower = Point3f.(x, yv, zmin)
+        lower = Point3f.(x, yv, zmin)
         upper = Point3f.(x, yv, zj)
         # edge_start = [Point3f(x[1], yv, zmin), Point3f(x[1], yv, zj[1])]
         # edge_end = [Point3f(x[end], yv, zmin), Point3f(x[end], yv, zj[end])]
 
         # # Surface
-        # band!(ax, lower, upper, color = colorband)
+        band!(ax, lower, upper, color = colorband)
 
         # Line
         lines!(ax, upper, color = zj, colormap = colmap, linewidth = lw)
@@ -197,7 +197,7 @@ z = permutedims(z, (2, 1))
 nx=length(x)
 ny=length(y)
 
-fig = waterfall_makie(x, y, z)
+fig = waterfall_makie(x, y, z, xlab="conc", ylab="freq", zlab="dam")
 
 
 
