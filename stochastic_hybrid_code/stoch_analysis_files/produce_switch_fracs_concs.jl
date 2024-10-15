@@ -16,10 +16,12 @@ include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
 
 # mount_path, folders, folders_dict = load_file_structure("kdam_testing/keyvals2_low_kdam", server=true)
 # mount_path, folders, folders_dict = load_file_structure("hysteresis/low", server=true)
-mount_path, folders, folders_dict = load_file_structure("kdam_testing/low_kdam", server=true)
+mount_path, folders, folders_dict = load_file_structure("kdam_testing/high_kdam", server=true)
 folders_dict
 
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = load_data(mount_path, folders, folders_dict, reacts=false, props=false, hists=false)
+
+dict_results[1][1]
 
 kdam_res = Dict{String, Any}()
 kdam_range = [0.0,0.02,0.04,0.06,0.08,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5]
@@ -37,7 +39,7 @@ end
 kdam_res
 df = DataFrame(kdam_res)
 
-@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/low_kdam_rtca.jld2" df
+@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/low_kdam_rd.jld2" df
 
 
 
