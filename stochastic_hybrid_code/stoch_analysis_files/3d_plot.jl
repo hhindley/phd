@@ -75,6 +75,7 @@ fig = waterfall_makie(x, y, z, xlab="conc", ylab="freq", zlab="dam")
 
 
 kdes_res = [kde(res[i]) for i in eachindex(res)]
+kdes_res = [kde(log.(res[i] .+ 1)) for i in eachindex(res)]  # Apply log transformation
 
 x = kdes_res[1].x
 y=1:length(res)
@@ -87,4 +88,4 @@ fig = waterfall_makie(x, y, z, xlab="conc", ylab="dam", zlab="freq")
 
 
 hist(res[1], bins=20)
-lines(kdes_res[1].x, kdes_res[1].density, color=:red)
+[lines!(kdes_res[i].x, kdes_res[i].density) for i in eachindex(kdes_res)]
