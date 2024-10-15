@@ -80,7 +80,11 @@ collect(skipmissing(df_times[1:df_stops[1,"0.0"],"0.0"]))==dict_results[1][1].ti
 i = 20
 collect(skipmissing(df_times[df_stops[i-1,"0.0"]+1:df_stops[i,"0.0"],"0.0"]))==dict_results[i][1].time
 
-@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam_rtca.jld2" df_rtca df_times df_lengths df_stops
+# @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam_rtca.jld2" df_rtca df_times df_lengths df_stops
+@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam_rtca.jld2" df_rtca 
+@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam_times.jld2" df_times 
+@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam_stops.jld2" df_lengths df_stops
+
 
 
 
