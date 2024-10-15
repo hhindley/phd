@@ -21,33 +21,87 @@ folders_dict
 
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = load_data(mount_path, folders, folders_dict, reacts=false, props=false, hists=false)
 
-dict_results[1][1]
 
-kdam_res = Dict{String, Any}()
 kdam_range = [0.0,0.02,0.04,0.06,0.08,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5]
-# saving only RtcA results for use on laptop out of server and vpn 
-for ind in 1:20
-    kdam_res["$(kdam_range[ind])"] = vcat([dict_results[i][ind].rtca for i in eachindex(dict_results)]...)
+
+# saving each rtca and times from every simulation all in one dataframe but also saving the stop indices so they can be separated again
+lengths = Dict("$(kdam_range[i])"=>[] for i in 1:20)
+for j in 1:20
+    lengths["$(kdam_range[j])"] = [length(dict_results[i][j].time) for i in 1:20]
 end
-max_length = maximum(length.(values(kdam_res)))
-for key in keys(kdam_res)
-    col_length = length(kdam_res[key])
-    if col_length < max_length
-        kdam_res[key] = vcat(kdam_res[key], fill(missing, max_length - col_length))
+# lengths["0.0"] == lengths1
+stops=Dict("$(kdam_range[i])"=>fill(0,20) for i in 1:20)
+for i in 1:20
+    stops["$(kdam_range[i])"][1] = lengths["$(kdam_range[i])"][1]
+    for j in 2:length(lengths["$(kdam_range[i])"])
+        stops["$(kdam_range[i])"][j] = sum(lengths["$(kdam_range[i])"][1:j])
     end
 end
-kdam_res
-df = DataFrame(kdam_res)
 
-@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/low_kdam_rd.jld2" df
+kdam_res_times = Dict("$(kdam_range[i])"=>[] for i in 1:20)
+kdam_res_rtca = Dict("$(kdam_range[i])"=>[] for i in 1:20)
+for i in 1:20
+    kdam_res_times["$(kdam_range[i])"] = vcat([dict_results[j][i].time for j in 1:20]...)
+    kdam_res_rtca["$(kdam_range[i])"] = vcat([dict_results[j][i].rtca for j in 1:20]...)
+end
+
+# dict_results[1][1].time
+# kdam_res_times["0.0"]
+# sum(lengths["0.0"])
+
+# kdam_res_times["0.0"][1:stops["0.0"][1]]==dict_results[1][1].time
+# i = 20
+# kdam_res_times["0.0"][stops["0.0"][i-1]+1:stops["0.0"][i]]==dict_results[i][1].time
+
+max_length = maximum(length.(values(kdam_res_times)))
+for key in keys(kdam_res_times)
+    col_length = length(kdam_res_times[key])
+    if col_length < max_length
+        kdam_res_times[key] = vcat(kdam_res_times[key], fill(missing, max_length - col_length))
+        kdam_res_rtca[key] = vcat(kdam_res_rtca[key], fill(missing, max_length - col_length))
+    end
+end
+# max_length = maximum(length.(values(kdam_res_rtca)))
+# for key in keys(kdam_res_rtca)
+#     col_length = length(kdam_res_rtca[key])
+#     if col_length < max_length
+#         kdam_res_rtca[key] = vcat(kdam_res_rtca[key], fill(missing, max_length - col_length))
+#     end
+# end
+df_times = DataFrame(kdam_res_times)
+df_rtca = DataFrame(kdam_res_rtca)
+
+df_lengths = DataFrame(lengths) 
+stops
+df_stops = DataFrame(stops)
+
+
+collect(skipmissing(df_times[1:df_stops[1,"0.0"],"0.0"]))==dict_results[1][1].time
+i = 20
+collect(skipmissing(df_times[df_stops[i-1,"0.0"]+1:df_stops[i,"0.0"],"0.0"]))==dict_results[i][1].time
+
+@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam_rtca.jld2" df_rtca df_times df_lengths df_stops
 
 
 
-size_in_bytes = Base.summarysize(df)
 
-# Convert the size to gigabytes
-size_in_gb = size_in_bytes / (1024^3)
+# this works 
+# lengths1 = []
+# for i in 1:20
+#     push!(lengths1, length(dict_results[i][1].time))
+# end
+# stops1=Dict([i=>0 for i in 1:20])
+# stops1[1] = lengths1[1]
+# for i in 2:length(lengths1)
+#     stops1[i] = sum(lengths1[1:i]) #+ (i-1)
+# end
 
+# res = vcat([dict_results[i][1].time for i in 1:20]...)
+# res[1:stops1[1]] == dict_results[1][1].time
+# i=19
+# res[stops1[i]+1:stops1[i+1]] == dict_results[i+1][1].time
+
+# kdam_res["1.5"]==res
 
 thresholds_rtca, thresholds_rtcb = get_unstab_threshold_array(collect(keys(folders_dict))[1]) # argument just has to be any folder number to get kdam vals
 
