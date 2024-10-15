@@ -1,5 +1,5 @@
 using Parameters, CSV, DataFrames, DifferentialEquations, LabelledArrays, BenchmarkTools
-using Revise, LinearAlgebra, Printf, ModelingToolkit, OrderedCollections, Colors, JLD2, Statistics
+using Revise, LinearAlgebra, Printf, ModelingToolkit, OrderedCollections, Colors, JLD2, Statistics, DuckDB
 
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_funcs.jl"))
@@ -16,10 +16,36 @@ include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
 
 # mount_path, folders, folders_dict = load_file_structure("kdam_testing/keyvals2_low_kdam", server=true)
 # mount_path, folders, folders_dict = load_file_structure("hysteresis/low", server=true)
-mount_path, folders, folders_dict = load_file_structure("kdam_testing/high_kdam", server=true)
+mount_path, folders, folders_dict = load_file_structure("kdam_testing/low_kdam", server=true)
 folders_dict
 
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = load_data(mount_path, folders, folders_dict, reacts=false, props=false, hists=false)
+
+kdam_res = Dict{String, Any}()
+kdam_range = [0.0,0.02,0.04,0.06,0.08,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5]
+# saving only RtcA results for use on laptop out of server and vpn 
+for ind in 1:20
+    kdam_res["$(kdam_range[ind])"] = vcat([dict_results[i][ind].rtca for i in eachindex(dict_results)]...)
+end
+max_length = maximum(length.(values(kdam_res)))
+for key in keys(kdam_res)
+    col_length = length(kdam_res[key])
+    if col_length < max_length
+        kdam_res[key] = vcat(kdam_res[key], fill(missing, max_length - col_length))
+    end
+end
+kdam_res
+df = DataFrame(kdam_res)
+
+@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/low_kdam_rtca.jld2" df
+
+
+
+size_in_bytes = Base.summarysize(df)
+
+# Convert the size to gigabytes
+size_in_gb = size_in_bytes / (1024^3)
+
 
 thresholds_rtca, thresholds_rtcb = get_unstab_threshold_array(collect(keys(folders_dict))[1]) # argument just has to be any folder number to get kdam vals
 
