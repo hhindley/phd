@@ -6,19 +6,41 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/switching_funcs.jl
 fontsize_theme = Theme(fontsize = 25)
 set_theme!(fontsize_theme)
 
-
-@load "/Users/s2257179/Desktop/saved_variables/high_kdam_rtca.jld2" df_rtca
-@load "/Users/s2257179/Desktop/saved_variables/high_kdam_times.jld2" df_times
 @load "/Users/s2257179/Desktop/saved_variables/high_kdam_stops.jld2" df_lengths df_stops 
 
 df_rtca = DataFrame(Arrow.Table("/Users/s2257179/Desktop/saved_variables/high_kdam_rtca.arrow"))
+df_times = DataFrame(Arrow.Table("/Users/s2257179/Desktop/saved_variables/high_kdam_times.arrow"))
+
 kdams = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
 
 res = Dict()
+times_res = Dict()
 for i in eachindex(names(df_rtca))
-    res[i] = collect(skipmissing(df_rtca[!,names(df_rtca)[i]]))
+    res[names(df_rtca)[i]] = collect(skipmissing(df_rtca[!,names(df_rtca)[i]]))
+    times_res[names(df_times)[i]] = collect(skipmissing(df_times[!,names(df_times)[i]]))
 end
 res
+
+# split into original simulations
+sims = Dict(i=>Dict(kdam=>[] for kdam in kdams) for i in 1:20)
+times = Dict(i=>Dict(kdam=>[] for kdam in kdams) for i in 1:20)
+for kdam in eachindex(kdams)
+    sims[1][kdams[kdam]] = res["$(kdams[kdam])"][1:df_stops[1,"$(kdams[kdam])"]]
+    times[1][kdams[kdam]] = times_res["$(kdams[kdam])"][1:df_stops[1,"$(kdams[kdam])"]]
+    for j in eachindex(kdams)
+        if j < 20
+            ind = j+1
+        else 
+            continue
+        end
+        sims[ind][kdams[kdam]] = res["$(kdams[kdam])"][df_stops[ind-1,"$(kdams[kdam])"]+1:df_stops[ind,"$(kdams[kdam])"]]
+        times[ind][kdams[kdam]] = times_res["$(kdams[kdam])"][df_stops[ind-1,"$(kdams[kdam])"]+1:df_stops[ind,"$(kdams[kdam])"]]
+    end
+end
+sims[9]
+
+lines(times[1][0.0], sims[1][0.0])
+lines(times[2][0.0], sims[2][0.0])
 
 f = Figure()
 ax = Axis(f[1,1], yscale=log10)
