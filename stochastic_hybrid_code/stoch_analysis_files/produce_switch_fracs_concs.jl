@@ -1,5 +1,5 @@
-using Parameters, CSV, DataFrames, DifferentialEquations, LabelledArrays, BenchmarkTools
-using Revise, LinearAlgebra, Printf, ModelingToolkit, OrderedCollections, Colors, JLD2, Statistics, DuckDB
+using Parameters, CSV, DataFrames, DifferentialEquations, LabelledArrays, BenchmarkTools, Arrow
+using Revise, LinearAlgebra, Printf, ModelingToolkit, OrderedCollections, Colors, JLD2, Statistics
 
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_funcs.jl"))
@@ -10,8 +10,8 @@ include(joinpath(homedir(), "phd/general_funcs/solving.jl"))
 include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params.jl"))
 include(joinpath(homedir(), "phd/rtc_model/parameters/rtc_params_molecs.jl"))
 
-include(joinpath(homedir(), "phd/rtc_model/models/rtc_orig.jl"))
-include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
+# include(joinpath(homedir(), "phd/rtc_model/models/rtc_orig.jl"))
+# include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
 
 
 # mount_path, folders, folders_dict = load_file_structure("kdam_testing/keyvals2_low_kdam", server=true)
@@ -44,14 +44,7 @@ for i in 1:20
     kdam_res_times["$(kdam_range[i])"] = vcat([dict_results[j][i].time for j in 1:20]...)
     kdam_res_rtca["$(kdam_range[i])"] = vcat([dict_results[j][i].rtca for j in 1:20]...)
 end
-
-# dict_results[1][1].time
-# kdam_res_times["0.0"]
-# sum(lengths["0.0"])
-
-# kdam_res_times["0.0"][1:stops["0.0"][1]]==dict_results[1][1].time
-# i = 20
-# kdam_res_times["0.0"][stops["0.0"][i-1]+1:stops["0.0"][i]]==dict_results[i][1].time
+kdam_res_rtca
 
 max_length = maximum(length.(values(kdam_res_times)))
 for key in keys(kdam_res_times)
@@ -70,6 +63,16 @@ end
 # end
 df_times = DataFrame(kdam_res_times)
 df_rtca = DataFrame(kdam_res_rtca)
+
+Arrow.write("/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam_rtca.arrow", df_rtca)
+
+
+dict_size_in_bytes = Base.summarysize(kdam_res_rtca)
+df_size_in_bytes = Base.summarysize(df_rtca)
+
+# Convert the sizes to gigabytes
+dict_size_in_gb = dict_size_in_bytes / (1024^3)
+df_size_in_gb = df_size_in_bytes / (1024^3)
 
 df_lengths = DataFrame(lengths) 
 stops
