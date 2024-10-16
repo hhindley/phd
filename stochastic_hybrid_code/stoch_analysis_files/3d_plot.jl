@@ -1,4 +1,4 @@
-using JLD2, InteractiveViz, GLMakie, Statistics, DataFrames, ColorSchemes, KernelDensity
+using JLD2, InteractiveViz, GLMakie, Statistics, DataFrames, ColorSchemes, KernelDensity, Arrow
 
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_switch_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/switching_funcs.jl"))
@@ -11,12 +11,12 @@ set_theme!(fontsize_theme)
 @load "/Users/s2257179/Desktop/saved_variables/high_kdam_times.jld2" df_times
 @load "/Users/s2257179/Desktop/saved_variables/high_kdam_stops.jld2" df_lengths df_stops 
 
-df
+df_rtca = DataFrame(Arrow.Table("/Users/s2257179/Desktop/saved_variables/high_kdam_rtca.arrow"))
 kdams = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
 
 res = Dict()
-for i in eachindex(names(df))
-    res[i] = collect(skipmissing(df[!,names(df)[i]]))
+for i in eachindex(names(df_rtca))
+    res[i] = collect(skipmissing(df_rtca[!,names(df_rtca)[i]]))
 end
 res
 
