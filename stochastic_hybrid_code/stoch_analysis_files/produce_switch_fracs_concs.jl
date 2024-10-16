@@ -44,7 +44,6 @@ for i in 1:20
     kdam_res_times["$(kdam_range[i])"] = vcat([dict_results[j][i].time for j in 1:20]...)
     kdam_res_rtca["$(kdam_range[i])"] = vcat([dict_results[j][i].rtca for j in 1:20]...)
 end
-kdam_res_rtca
 
 max_length = maximum(length.(values(kdam_res_times)))
 for key in keys(kdam_res_times)
@@ -54,40 +53,21 @@ for key in keys(kdam_res_times)
         kdam_res_rtca[key] = vcat(kdam_res_rtca[key], fill(missing, max_length - col_length))
     end
 end
-# max_length = maximum(length.(values(kdam_res_rtca)))
-# for key in keys(kdam_res_rtca)
-#     col_length = length(kdam_res_rtca[key])
-#     if col_length < max_length
-#         kdam_res_rtca[key] = vcat(kdam_res_rtca[key], fill(missing, max_length - col_length))
-#     end
-# end
+
+df_lengths = DataFrame(lengths)
+df_stops = DataFrame(stops)
 df_times = DataFrame(kdam_res_times)
 df_rtca = DataFrame(kdam_res_rtca)
-
-Arrow.write("/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam_rtca.arrow", df_rtca)
-
-
-dict_size_in_bytes = Base.summarysize(kdam_res_rtca)
-df_size_in_bytes = Base.summarysize(df_rtca)
-
-# Convert the sizes to gigabytes
-dict_size_in_gb = dict_size_in_bytes / (1024^3)
-df_size_in_gb = df_size_in_bytes / (1024^3)
-
-df_lengths = DataFrame(lengths) 
-stops
-df_stops = DataFrame(stops)
-
 
 collect(skipmissing(df_times[1:df_stops[1,"0.0"],"0.0"]))==dict_results[1][1].time
 i = 20
 collect(skipmissing(df_times[df_stops[i-1,"0.0"]+1:df_stops[i,"0.0"],"0.0"]))==dict_results[i][1].time
 
-# @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam_rtca.jld2" df_rtca df_times df_lengths df_stops
-@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam_rtca.jld2" df_rtca 
-@save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam_times.jld2" df_times 
+
 @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam_stops.jld2" df_lengths df_stops
 
+Arrow.write("/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam_rtca.arrow", df_rtca)
+Arrow.write("/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam_times.arrow", df_times)
 
 
 
