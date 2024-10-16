@@ -7,7 +7,9 @@ fontsize_theme = Theme(fontsize = 25)
 set_theme!(fontsize_theme)
 
 
-@load "/Users/s2257179/Desktop/saved_variables/high_kdam_rtca.jld2" df
+@load "/Users/s2257179/Desktop/saved_variables/high_kdam_rtca.jld2" df_rtca
+@load "/Users/s2257179/Desktop/saved_variables/high_kdam_times.jld2" df_times
+@load "/Users/s2257179/Desktop/saved_variables/high_kdam_stops.jld2" df_lengths df_stops 
 
 df
 kdams = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
