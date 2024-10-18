@@ -14,7 +14,7 @@ include(joinpath(homedir(), "phd/rtc_model/models/rtc_orig.jl"))
 include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
 
 
-type_kdam = "high_kdam"
+type_kdam = "zero_kdam"
 mount_path, folders, folders_dict = load_file_structure("kdam_testing/$type_kdam", server=true)
 
 folders_dict
@@ -28,22 +28,22 @@ lengths = Dict("$(kdam_range[i])"=>[] for i in eachindex(kdam_range))
 for j in eachindex(kdam_range)
     lengths["$(kdam_range[j])"] = [length(dict_results[i][j].time) for i in 1:length(folders_dict)]
 end
-# lengths["0.0"] == lengths1
-stops=Dict("$(kdam_range[i])"=>fill(0,length(kdam_range)) for i in eachindex(kdam_range))
+
+stops=Dict("$(kdam_range[i])"=>fill(0,length(folders_dict)) for i in eachindex(kdam_range))
 for i in eachindex(kdam_range)
     stops["$(kdam_range[i])"][1] = lengths["$(kdam_range[i])"][1]
     # println(length(lengths["$(kdam_range[i])"]))
     # for j in 2:length(lengths["$(kdam_range[i])"])
-    for j in 2:length(kdam_range)
+    for j in 2:length(folders_dict)
         stops["$(kdam_range[i])"][j] = sum(lengths["$(kdam_range[i])"][1:j])
     end
 end
 
 kdam_res_times = Dict("$(kdam_range[i])"=>[] for i in eachindex(kdam_range))
 kdam_res_rtca = Dict("$(kdam_range[i])"=>[] for i in eachindex(kdam_range))
-for i in 1:length(folders_dict)
-    kdam_res_times["$(kdam_range[i])"] = vcat([dict_results[j][i].time for j in eachindex(kdam_range)]...)
-    kdam_res_rtca["$(kdam_range[i])"] = vcat([dict_results[j][i].rtca for j in eachindex(kdam_range)]...)
+for i in eachindex(kdam_range)
+    kdam_res_times["$(kdam_range[i])"] = vcat([dict_results[j][i].time for j in eachindex(dict_results)]...)
+    kdam_res_rtca["$(kdam_range[i])"] = vcat([dict_results[j][i].rtca for j in eachindex(dict_results)]...)
 end
 
 max_length = maximum(length.(values(kdam_res_times)))
