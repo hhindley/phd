@@ -6,10 +6,11 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/switching_funcs.jl
 fontsize_theme = Theme(fontsize = 25)
 set_theme!(fontsize_theme)
 
-@load "/Users/s2257179/Desktop/saved_variables/high_kdam_stops.jld2" df_lengths df_stops 
+type_kdam = "high_kdam"
+@load "/Users/s2257179/Desktop/saved_variables/$type_kdam/$(type_kdam)_stops.jld2" df_lengths df_stops 
 
-df_rtca = DataFrame(Arrow.Table("/Users/s2257179/Desktop/saved_variables/high_kdam_rtca.arrow"))
-df_times = DataFrame(Arrow.Table("/Users/s2257179/Desktop/saved_variables/high_kdam_times.arrow"))
+df_rtca = DataFrame(Arrow.Table("/Users/s2257179/Desktop/saved_variables/$type_kdam/$(type_kdam)_rtca.arrow"))
+df_times = DataFrame(Arrow.Table("/Users/s2257179/Desktop/saved_variables/$type_kdam/$(type_kdam)_times.arrow"))
 
 kdams = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
 
@@ -46,7 +47,6 @@ end
 tot_lengths = [sum(df_lengths[!,"$kdam"]) for kdam in kdams]
 
 groups = [fill(i, tot_lengths[i]) for i in eachindex(kdams)]
-groups[1]
 
 df_res = DataFrame(rtca=vcat(all_res...), group=vcat(groups...))
 
@@ -74,7 +74,6 @@ end
 
 lines(times[1][0.08], sims[1][0.08])
 
-times[1][0.0]
 on_times = [getindex(times[1][0.0][i]) for i in eachindex(sims[1][0.0]) if sims[1][0.0][i] >= 2]
 off_times = [getindex(times[1][0.0][i]) for i in eachindex(sims[1][0.0]) if sims[1][0.0][i] < 2]
 
@@ -86,9 +85,7 @@ for i in sims[1][0.0]
         push!(states, 0)
     end
 end
-states = states[1:10000]
 heatmap_data = reshape(states, 1, length(states))
-heatmap_data
 
 test = round.(rand(50000))
 heatmap_data = reshape(test, 1, length(test))
@@ -99,9 +96,16 @@ img = image(f[1,1], heatmap_data';
 )
 
 
+function determine_common_bin_edges(res_log, nbins)
+    all_data = vcat(values(res_log)...)
+    min_val = minimum(all_data)
+    max_val = maximum(all_data)
+    return range(min_val, max_val, length=nbins+1)
+end
 
 function prod_hist_data(res_log, logdensity::Bool)
-    hist_data = fit(Histogram, res_log, nbins = 20)
+    bin_edges = determine_common_bin_edges(res_log, 20)
+    hist_data = fit(Histogram, res_log, bin_edges)
     x = hist_data.edges[1][1:end-1] .+ diff(hist_data.edges[1]) ./ 2 #bar edges 
     if logdensity 
         y = log.(hist_data.weights.+1)
@@ -112,11 +116,12 @@ function prod_hist_data(res_log, logdensity::Bool)
 end
 
 function produce_hist_data(res_log, logdensity::Bool)
+    bin_edges = determine_common_bin_edges(res_log, 20)
     x_all = Dict(); y_all = Dict(); barlines = Dict();
     for kdam in kdams
         # println(kdam)
         x, y, hist_data = prod_hist_data(res_log[kdam], logdensity)
-        barline = create_barline(hist_data, y)
+        barline = create_barline(hist_data, y, bin_edges)
         x_all[kdam] = x
         y_all[kdam] = y
         barlines[kdam] = barline
@@ -124,7 +129,7 @@ function produce_hist_data(res_log, logdensity::Bool)
     return x_all, y_all, barlines
 end
 
-function create_barline(hist_data, y)
+function create_barline(hist_data, y, bin_edges)
     barline=Float64[]
     ys = Float64[]
     for i in 1:length(hist_data.edges[1][1:end-1])
@@ -132,6 +137,13 @@ function create_barline(hist_data, y)
         push!(barline, hist_data.edges[1][1:end-1][i] .+ diff(hist_data.edges[1])[i])
         push!(ys, y[i])
         push!(ys, y[i])
+    end
+    if maximum(barline) < maximum(bin_edges)
+        max_barline = maximum(barline)
+        push!(barline, max_barline)
+        push!(ys, 0)
+        push!(barline, maximum(bin_edges))
+        push!(ys, 0)
     end
     return (barline, ys)
 end
@@ -191,38 +203,38 @@ lines(kde_on[0.08].x, kde_on[0.08].density)
 
 
 
-function plot3d(x, y, z; zmin = minimum(z), lw = 1., colmap = :linear_bgy_10_95_c74_n256, colorband = (:white, 1.), xlab = "x", ylab = "y", zlab = "z")
-    # Initialisation
-    fig = Figure()
-    ax = Axis3(fig[1,1], xlabel = xlab, ylabel = ylab, zlabel = zlab)
-    for (j, yv) in enumerate(y)
+# function plot3d(x, y, z; zmin = minimum(z), lw = 1., colmap = :linear_bgy_10_95_c74_n256, colorband = (:lightblue, 1.), xlab = "x", ylab = "y", zlab = "z")
+#     # Initialisation
+#     fig = Figure()
+#     ax = Axis3(fig[1,1], xlabel = xlab, ylabel = ylab, zlabel = zlab)
+#     for (j, yv) in enumerate(y)
         
-        zj = z[j, :]
-        println(length(zj))
-        println(length(yv))
-        lower = Point3f.(x, yv, zmin)
-        upper = Point3f.(x, yv, zj)
-        # edge_start = [Point3f(x[1], yv, zmin), Point3f(x[1], yv, zj[1])]
-        # edge_end = [Point3f(x[end], yv, zmin), Point3f(x[end], yv, zj[end])]
+#         zj = z[j, :]
+#         println(length(zj))
+#         println(length(yv))
+#         lower = Point3f.(x, yv, zmin)
+#         upper = Point3f.(x, yv, zj)
+#         # edge_start = [Point3f(x[1], yv, zmin), Point3f(x[1], yv, zj[1])]
+#         # edge_end = [Point3f(x[end], yv, zmin), Point3f(x[end], yv, zj[end])]
 
-        # # Surface
-        # band!(ax, lower, upper, color = colorband)
+#         # # Surface
+#         band!(ax, lower, upper, color = colorband)
 
-        # Line
-        lines!(ax, upper, color = zj, colormap = colmap, linewidth = lw)
+#         # Line
+#         lines!(ax, upper, color = zj)#, colormap = colmap, linewidth = lw)
         
-        # Edges
-        # lines!(ax, edge_start, color = zj[1]*ones(2), colormap = colmap, linewidth = lw)
-        # lines!(ax, edge_end, color = zj[end]*ones(2), colormap = colmap, linewidth = lw)
-    end
+#         # Edges
+#         # lines!(ax, edge_start, color = zj[1]*ones(2), colormap = colmap, linewidth = lw)
+#         # lines!(ax, edge_end, color = zj[end]*ones(2), colormap = colmap, linewidth = lw)
+#     end
 
-    # Set axes limits
-    # xlims!(ax, minimum(x), maximum(x))
-    # ylims!(ax, minimum(y), maximum(y))
-    # zlims!(ax, zmin, maximum(z))
+#     # Set axes limits
+#     # xlims!(ax, minimum(x), maximum(x))
+#     # ylims!(ax, minimum(y), maximum(y))
+#     # zlims!(ax, zmin, maximum(z))
 
-    fig
-end
+#     fig
+# end
 
 
 # kdes_res = [kde(res[i]) for i in eachindex(res)]
@@ -236,29 +248,166 @@ end
 # ny = length(y)
 
 
-x = kde_all[0.0].x
-length(x)
-y = 1:length(res)
-length(y)
-z = hcat([kde_all[kdam].density for kdam in kdams]...)
-z = permutedims(z, (2, 1))
+# x = kde_all[0.0].x
+# length(x)
+# y = 1:length(res)
+# length(y)
+# z = hcat([kde_all[kdam].density for kdam in kdams]...)
+# z = permutedims(z, (2, 1))
 
-fig = plot3d(x, y, z, xlab="conc", ylab="dam", zlab="freq")
+# fig = plot3d(x, y, z, xlab="conc", ylab="dam", zlab="freq")
 
-# y should be 20 (each kdam value)
-# x should be concentration but this data is different for each kdam in the barlines so need to work this out 
-# z should be x by y but should contain y data? 
 
-lines(barlines_all[0.08][1], barlines_all[0.08][2])
+# td = lines(barlines_all[0.0][1], barlines_all[0.0][2])
+# display(GLMakie.Screen(), td)   
 
-x = range(minimum(barlines_all[0.08][1]),maximum(barlines_all[0.08][1]), length=40)
-length(x)
-y = 1:length(res)
-z = hcat([barlines_all[kdam][2] for kdam in fill(0.08, 20)]...)
-z = permutedims(z, (2, 1))
+# x = range(minimum(barlines_all[0.08][1]),maximum(barlines_all[0.08][1]), length=40)
+# length(x)
+# y = 1:length(res)
+# barlines_all
+# z = hcat([barlines_all[kdam][2] for kdam in kdams]...)
+# z = permutedims(z, (2, 1))
 
-fig = plot3d(x, y, z, xlab="conc", ylab="dam", zlab="freq")
-display(GLMakie.Screen(), fig)
+# fig = plot3d(x, y, z, xlab="conc", ylab="dam", zlab="freq")
+# display(GLMakie.Screen(), fig)
 
-barlines_all[0.0][1]
-barlines_all[0.4][1]
+
+Makie.wong_colors()[1]
+
+
+function hist3d_data(barlines_all, kdam)
+    x = barlines_all[kdam][1]
+    y = barlines_all[kdam][2]
+    lower = Point3f.(x, kdam, 0)
+    upper = Point3f.(x, kdam, y)
+    return x, y, lower, upper 
+end
+function plot3d(barlines_all; title="", xlab="Molecules", ylab="Damage rate", zlab="Frequency", tosave=false)
+    fig = Figure()
+    ax = Axis3(fig[1, 1], title="$title", xlabel = "$xlab", ylabel = "$ylab", zlabel = "$zlab")
+    c = Makie.wong_colors()[1]
+    for (i, kdam) in enumerate(kdams)
+        x, y, lower, upper = hist3d_data(barlines_all, kdam)
+        lines!(ax, x, fill(kdam, length(x)), y, linewidth = 2, color=c)
+        band!(ax, lower, upper, transparency = true, color=c, alpha=0.2)
+    end
+    if tosave
+        mainpath = "/Users/s2257179/Library/CloudStorage/OneDrive-UniversityofEdinburgh/Documents/rtc/stochastic/plots/analysis/histograms/"
+        if type_kdam == "high_kdam"
+            save(joinpath(mainpath, "high_kdam_histogram.png"), fig)
+        else
+            folder = "init_vals_low_kdam/thresh$thresh"
+        end
+    end
+    return fig
+end
+
+plot3d(barlines_all, xlab="Log molecules", zlab="Log frequency", title="whole dataset")
+
+plot3d(barlines_on, xlab="Log molecules", title="on state frequencies")
+
+
+
+# work out time in each bin (not sure it was worth it to do this)
+
+include("/Users/s2257179/phd/stochastic_hybrid_code/stoch_analysis_files/histograms/make_hists.jl")
+
+bin_edges = determine_common_bin_edges(res_log, 20)
+
+function segment_simulations(df)
+    # Identify the start of new simulations
+    df = dropmissing(df, :t)
+    new_sim_starts = findall(diff([0; df.t]) .< 0)
+    new_sim_starts = [1; new_sim_starts; nrow(df) + 1]  # Add the first and last indices
+
+    # Segment the DataFrame by each simulation
+    segments = [df[new_sim_starts[i]:(new_sim_starts[i+1]-1), :] for i in 1:(length(new_sim_starts)-1)]
+    return segments
+end
+
+function total_time_in_state_multiple_simulations(df)
+    segments = segment_simulations(df)
+    total_time = 0.0
+    for segment in segments
+        total_time += vec_time_in_state(segment)
+    end
+    return total_time
+end
+
+
+function group_dataframe(res_log, kdam)
+    df = DataFrame(s=res_log[kdam],t=times_res["$kdam"])
+
+    df.bin = cut(df.s, bin_edges, extend=true)
+
+    df.bin_index = levelcode.(df.bin)
+
+    df.actual_index = 1:length(df.s)
+
+    all_bins_df = DataFrame(bin_index = 1:20)
+
+    full_df = leftjoin(all_bins_df, df, on = :bin_index)
+
+    grouped_df = groupby(full_df, :bin_index)
+    return grouped_df
+end
+
+function calc_time_in_bin(res_log)
+    state_times = Dict(kdam=>Dict() for kdam in kdams)
+    for kdam in kdams
+        grouped_df = group_dataframe(res_log, kdam)
+        for i in 1:length(grouped_df)
+            # println(i)
+            df = grouped_df[i]
+            tot_time_in_state = total_time_in_state_multiple_simulations(df)
+            state_times[kdam]["bin$i"] = tot_time_in_state
+        end
+    end
+    return state_times
+end
+
+state_times_log = calc_time_in_bin(res_log)
+
+state_times_log[0.0]    
+for kdam in kdams
+    println(sum([state_times_log[kdam]["bin$i"] for i in 1:length(state_times)]))
+end
+
+norm_states = Dict(kdam=>[] for kdam in kdams)
+for kdam in kdams
+    max_t = maximum(collect(values(state_times_log[kdam])))
+    min_t = minimum(collect(values(state_times_log[kdam])))
+    # norm_states[kdam] = ((collect(values(state_times_log[kdam]))) .- min_t) ./(max_t-min_t)
+    norm_states[kdam] = ([state_times_log[0.0]["bin$i"] for i in 1:length(state_times_log[0.0])] .- min_t) ./(max_t-min_t)
+
+end
+norm_states
+[state_times_log[0.0]["bin$i"] for i in 1:length(state_times_log[0.0])]
+maximum(collect(values(state_times_log[0.0])))
+minimum(collect(values(state_times_log[0.0])))
+
+norm_states[0.0]
+lines(kdams,norm_states[0.0])
+t=lines(x,y)
+display(GLMakie.Screen(), t)
+
+color_vals = Dict()
+for kdam in kdams
+    color_vals[kdam] = [get(ColorSchemes.rainbow_bgyr_35_85_c72_n256, log10(frac+1)) for frac in collect(values(norm_states[kdam]))]
+end
+color_vals[0.0]
+color_vals[0.08]
+
+lines(barlines_on[0.08][1], barlines_on[0.08][2], color = color_vals[0.08])
+
+
+x = barlines_all[0.08][1]
+y = barlines_all[0.08][2]    
+color_vals[0.08]
+# Create points for segments, each pair of points defines a segment
+points = Point2f[(x[i], y[i]) for i in 1:length(x)-1 for j in [i, i+1]]
+
+# Plot with LineSegments and assign colors
+f = Figure()
+ax = Axis(f[1, 1])
+linesegments!(ax, points, color=color_vals[0.08], linewidth=2)
