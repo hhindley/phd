@@ -224,7 +224,9 @@ function load_file_structure(main_folder; server=false)
     all_items = readdir(mount_path)
     folders = [item for item in all_items if !occursin("DS", item)]
     data_folders = [readdir(joinpath(mount_path, folders[i])) for i in eachindex(folders)]
-    all_folders = [joinpath(folders[folder], readdir(joinpath(mount_path, folders[folder]))[i]) for folder in eachindex(folders) for i in eachindex(data_folders[folder])]
+    # all_folders = [joinpath(folders[folder], readdir(joinpath(mount_path, folders[folder]))[i]) for folder in eachindex(folders) for i in eachindex(data_folders[folder])]
+    all_folders = [joinpath(folders[folder], readdir(joinpath(mount_path, folders[folder]))[i]) for folder in eachindex(folders) for i in eachindex(data_folders[folder]) if !occursin("DS", readdir(joinpath(mount_path, folders[folder]))[i])]
+
     folders_dict = Dict(i => folder for (i, folder) in enumerate(all_folders))
 
     # return mount_path, folders, folders_dict
