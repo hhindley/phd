@@ -30,9 +30,11 @@ for j in eachindex(kdam_range)
 end
 # lengths["0.0"] == lengths1
 stops=Dict("$(kdam_range[i])"=>fill(0,length(kdam_range)) for i in eachindex(kdam_range))
-for i in 1:length(folders_dict)
+for i in eachindex(kdam_range)
     stops["$(kdam_range[i])"][1] = lengths["$(kdam_range[i])"][1]
-    for j in 2:length(lengths["$(kdam_range[i])"])
+    # println(length(lengths["$(kdam_range[i])"]))
+    # for j in 2:length(lengths["$(kdam_range[i])"])
+    for j in 2:length(kdam_range)
         stops["$(kdam_range[i])"][j] = sum(lengths["$(kdam_range[i])"][1:j])
     end
 end
