@@ -206,7 +206,7 @@ function plot3d(x, y, z; zmin = minimum(z), lw = 1., colmap = :linear_bgy_10_95_
         # edge_end = [Point3f(x[end], yv, zmin), Point3f(x[end], yv, zj[end])]
 
         # # Surface
-        band!(ax, lower, upper, color = colorband)
+        # band!(ax, lower, upper, color = colorband)
 
         # Line
         lines!(ax, upper, color = zj, colormap = colmap, linewidth = lw)
@@ -239,6 +239,7 @@ end
 x = kde_all[0.0].x
 length(x)
 y = 1:length(res)
+length(y)
 z = hcat([kde_all[kdam].density for kdam in kdams]...)
 z = permutedims(z, (2, 1))
 
@@ -248,13 +249,16 @@ fig = plot3d(x, y, z, xlab="conc", ylab="dam", zlab="freq")
 # x should be concentration but this data is different for each kdam in the barlines so need to work this out 
 # z should be x by y but should contain y data? 
 
-# work out how to plot barlines on the 3dplot! 
-x = barlines_all[0.08][1]
+lines(barlines_all[0.08][1], barlines_all[0.08][2])
+
+x = range(minimum(barlines_all[0.08][1]),maximum(barlines_all[0.08][1]), length=40)
+length(x)
 y = 1:length(res)
-z = hcat([barlines_all[kdam][1] for kdam in fill(0.08, 20)]...)
+z = hcat([barlines_all[kdam][2] for kdam in fill(0.08, 20)]...)
+z = permutedims(z, (2, 1))
 
 fig = plot3d(x, y, z, xlab="conc", ylab="dam", zlab="freq")
-
+display(GLMakie.Screen(), fig)
 
 barlines_all[0.0][1]
 barlines_all[0.4][1]
