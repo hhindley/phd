@@ -14,7 +14,7 @@ include(joinpath(homedir(), "phd/rtc_model/models/rtc_orig.jl"))
 include(joinpath(homedir(), "phd/rtc_model/functions/bf_funcs/bf_funcs.jl"))
 
 
-type_kdam = "low_kdam"
+type_kdam = "high_kdam"
 mount_path, folders, folders_dict = load_file_structure("kdam_testing/$type_kdam", server=true)
 
 folders_dict
@@ -107,3 +107,5 @@ species_mean = Dict("on"=>Dict("2"=>all_species_mean_on2, "5"=>all_species_mean_
 thresholds_bs = Dict("rtca"=>thresholds_rtca, "rtcb"=>thresholds_rtcb)
 
 @save "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/$(type_kdam)/$(type_kdam)_means.jld2" indices switch_rates fracs species_mean thresholds_bs
+
+println("FINISHED")
