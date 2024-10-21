@@ -1,7 +1,7 @@
 using JLD2, InteractiveViz, Statistics, DataFrames, KernelDensity, Arrow, StatsBase
 
 using GLMakie
-fontsize_theme = Theme(fontsize = 25)
+fontsize_theme = Theme(fontsize = 10)
 set_theme!(fontsize_theme)
 
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_switch_funcs.jl"))
@@ -12,7 +12,7 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/stoch_analysis_files/dat
 
 kdams = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
 
-server = true
+server = false
 if server
     mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/"
 else
@@ -20,97 +20,46 @@ else
 end
 
 type_kdam = "low_kdam"
-@load "$mainpath/$type_kdam/$(type_kdam)_stops.jld2" df_lengths df_stops 
-df_lengths_low = df_lengths; df_stops_low = df_stops
-df_rtca_low = DataFrame(Arrow.Table("$mainpath/$type_kdam/$(type_kdam)_rtca.arrow"))
-df_times_low = DataFrame(Arrow.Table("$mainpath/$type_kdam/$(type_kdam)_times.arrow"))
+@load "$mainpath/$type_kdam/hist_data.jld2" x_all_low y_all_low barlines_all_low x_on_low y_on_low barlines_on_low x_off_low y_off_low barlines_off_low
+df_res_low = DataFrame(Arrow.Table("$mainpath/$type_kdam/all_results_grouped.arrow"))
 
 type_kdam = "high_kdam"
-@load "$mainpath/$type_kdam/$(type_kdam)_stops.jld2" df_lengths df_stops 
-df_lengths_high = df_lengths; df_stops_high = df_stops
-df_rtca_high = DataFrame(Arrow.Table("$mainpath/$type_kdam/$(type_kdam)_rtca.arrow"))
-df_times_high = DataFrame(Arrow.Table("$mainpath/$type_kdam/$(type_kdam)_times.arrow"))
+@load "$mainpath/$type_kdam/hist_data.jld2" x_all_high y_all_high barlines_all_high x_on_high y_on_high barlines_on_high x_off_high y_off_high barlines_off_high
+df_res_high = DataFrame(Arrow.Table("$mainpath/$type_kdam/all_results_grouped.arrow"))
 
-res_high, times_res_high = remove_missing(df_rtca_high, df_times_high)
-res_log_high = log_results(res_high)
-res_on_high, res_off_high = determine_state(res_high, threshold=2)
-res_on_log_high = log_results(res_on_high)
-res_off_log_high = log_results(res_off_high)
-
-res_low, times_res_low = remove_missing(df_rtca_low, df_times_low)
-res_log_low = log_results(res_low)
-res_on_low, res_off_low = determine_state(res_low, threshold=2)
-res_on_log_low = log_results(res_on_low)
-res_off_log_low = log_results(res_off_low)
-
+# violin plot 
 f = Figure()
 ax = Axis(f[1,1], xlabel="Damage rate (min⁻¹)", ylabel="RtcA in on state (μM)", title="Hysteresis experiement")
-violin!(ax, df_res.group, df_res.rtca, side=:left)
+violin!(ax, df_res_high.group, df_res_high.rtca, side=:left)
 
-# all data 
-x_all_high, y_all_high, barlines_all_high = produce_hist_data(res_log_high, true)
-x_all_low, y_all_low, barlines_all_low = produce_hist_data(res_log_low, true)
 
 f = Figure()
 ax = Axis(f[1,1], xlabel="Log Molecules", ylabel = "Log frequency")
-barplot!(ax, x_all[0.08], y_all[0.08], gap=0)
+barplot!(ax, x_all_high[0.08], y_all_high[0.08], gap=0)
 # lines!(ax, x_all[0.08], y_all[0.08], color = :red)
-lines!(ax, barlines_all[0.08][1], barlines_all[0.08][2], color=:red)
+lines!(ax, barlines_all_high[0.08][1], barlines_all_high[0.08][2], color=:red)
 display(GLMakie.Screen(), f)
 
 # work out how to do loglog kde calculation 
-kde_all = Dict{Float64, KernelDensity.UnivariateKDE}()
-for kdam in kdams
-    kde_all[kdam] = kde(res_log[kdam])
-end
+# kde_all = Dict{Float64, KernelDensity.UnivariateKDE}()
+# for kdam in kdams
+#     kde_all[kdam] = kde(res_log[kdam])
+# end
 
-lines(kde_all[0.08].x, kde_all[0.08].density)
-
-
-# on data 
-x_on_high, y_on_high, barlines_on_high = produce_hist_data(res_on_log_high, false)
-x_on_low, y_on_low, barlines_on_low = produce_hist_data(res_on_log_low, false)
-
-f = Figure()
-ax = Axis(f[1,1], xlabel="Log Molecules", ylabel = "Frequency", title="on state frequencies")
-barplot!(ax, x_on[0.08], y_on[0.08], gap=0)
-lines!(ax, x_on[0.08], y_on[0.08], color = :red)
-display(GLMakie.Screen(), f)
-
-kde_on = Dict{Float64, KernelDensity.UnivariateKDE}()
-for kdam in kdams
-    kde_on[kdam] = kde(res_on_log[kdam])
-end
-
-lines(kde_on[0.08].x, kde_on[0.08].density)
-
-# off data - not really relevant using a threshold of 2 as most of these are just 0?
-x_off_high, y_off_high, barlines_off_high = produce_hist_data(res_off_high, false)
-x_off_low, y_off_low, barlines_off_low = produce_hist_data(res_off_low, false)
-
-f = Figure()
-ax = Axis(f[1,1], xlabel="Log Molecules", ylabel = "Frequency", title="off state frequencies")
-barplot!(ax, x_off[0.08], y_off, gap=0)
-lines!(ax, x_off[0.08], y_off[0.08], color = :red)
-display(GLMakie.Screen(), f)
-
-kde_off = Dict{Float64, KernelDensity.UnivariateKDE}()
-for kdam in kdams
-    kde_off[kdam] = kde(res_off_log[kdam])
-end
-
-lines(kde_on[0.08].x, kde_on[0.08].density)
+# lines(kde_all[0.08].x, kde_all[0.08].density)
 
 
+plot3d(barlines_all_high, xlab="Log molecules", zlab="Log frequency", title="whole dataset - high", tosave=true)
+plot3d(barlines_on_high, xlab="Log molecules", title="on state frequencies - high", tosave=true)
+plot3d(barlines_off_high, title="off state frequencies - high", tosave=true)
 
-plot3d(barlines_all, xlab="Log molecules", zlab="Log frequency", title="whole dataset", tosave=true)
+plot3d(barlines_all_low, xlab="Log molecules", zlab="Log frequency", title="whole dataset - low", tosave=true)
+plot3d(barlines_on_low, xlab="Log molecules", title="on state frequencies - low", tosave=true)
+plot3d(barlines_off_low, title="off state frequencies - low", tosave=true)
 
-plot3d(barlines_all_high, second_dataset=barlines_all_low, xlab="Log molecules", zlab="Log frequency", title="whole dataset", tosave=false)
-
-
-plot3d(barlines_on, xlab="Log molecules", title="on state frequencies", tosave=true)
-
-
+plot3d(barlines_all_high, second_dataset=barlines_all_low, xlab="Log molecules", zlab="Log frequency", title="whole dataset", tosave=true)
+plot3d(barlines_on_high, second_dataset=barlines_on_low, xlab="Log molecules", title="on state frequencies", tosave=true)
+plot3d(barlines_off_high, second_dataset=barlines_off_low, title="off state frequencies", tosave=true)
 
 
 
