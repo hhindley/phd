@@ -27,14 +27,12 @@ res_log_high = log_results(res_high)
 res_on_high, res_off_high = determine_state(res_high, threshold=2)
 res_on_log_high = log_results(res_on_high)
 res_off_log_high = log_results(res_off_high)
-df_res_high = all_results_concat(res_high, df_lengths_high)
 
 res_low, times_res_low = remove_missing(df_rtca_low, df_times_low)
 res_log_low = log_results(res_low)
 res_on_low, res_off_low = determine_state(res_low, threshold=2)
 res_on_log_low = log_results(res_on_low)
 res_off_log_low = log_results(res_off_low)
-df_res_low = all_results_concat(res_low, df_lengths_low)
 
 f = Figure()
 ax = Axis(f[1,1], xlabel="Damage rate (min⁻¹)", ylabel="RtcA in on state (μM)", title="Hysteresis experiement")
@@ -98,7 +96,7 @@ lines(kde_on[0.08].x, kde_on[0.08].density)
 
 plot3d(barlines_all, xlab="Log molecules", zlab="Log frequency", title="whole dataset", tosave=true)
 
-plot3d(barlines_all_high, barlines_all_low, xlab="Log molecules", zlab="Log frequency", title="whole dataset", tosave=false)
+plot3d(barlines_all_high, second_dataset=barlines_all_low, xlab="Log molecules", zlab="Log frequency", title="whole dataset", tosave=false)
 
 
 plot3d(barlines_on, xlab="Log molecules", title="on state frequencies", tosave=true)

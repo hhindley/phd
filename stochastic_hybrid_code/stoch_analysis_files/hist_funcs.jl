@@ -72,7 +72,7 @@ function plot3d(barlines_all; second_dataset=[], title="", xlab="Molecules", yla
         if second_dataset != []
             x2, y2, lower2, upper2 = hist3d_data(second_dataset, kdam)
             lines!(ax, x2, fill(kdam, length(x2)), y2, linewidth = 2, color=c2)
-            band!(ax, lower2, upper2, transparency = true, color=c2, alpha=0.2)
+            band!(ax, lower2, upper2, transparency = true, color=c2, alpha=0.5)
         end
     end
     if tosave

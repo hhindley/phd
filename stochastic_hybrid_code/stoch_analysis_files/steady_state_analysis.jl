@@ -1,7 +1,11 @@
 using InteractiveViz, WGLMakie, StatsBase, Distributions, Random, DataFrames, CSV, DifferentialEquations, OrderedCollections, ProgressBars, BenchmarkTools, Statistics, Arrow, FilePathsBase, Distributed, TableOperations, JSON, Query, FindFirstFunctions, CategoricalArrays, Colors
+using JLD2, InteractiveViz, GLMakie, Statistics, DataFrames, ColorSchemes, KernelDensity, Arrow, StatsBase
 
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/plotting_funcs.jl"))
+include(joinpath(homedir(), "phd/stochastic_hybrid_code/stoch_analysis_files/data_processing_funcs.jl"))
+kdams = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
+
 
 # loading data (works best on server when in uni)
 mount_path, folders, folders_dict = load_file_structure("kdam_testing")
@@ -46,12 +50,12 @@ sims, times = split_into_simulations(res_low, times_res_low)
 
 # testing if at steady state
 # set range for sample size for histogram comparisons
-tests = collect(range(1, length(sims[1][0.0]), step=75000))
+tests = collect(range(1, length(sims[1][0.0]), step=10000))
 fig = Figure()
 ax=Axis(fig[1,1])
 for i in 1:length(tests)-1
     println(i)
-    h = hist!(ax, dict_results[1][1].rh[tests[end-i]:tests[end-(i-1)]], bins=20)
+    h = hist!(ax, sims[1][0.0][tests[end-i]:tests[end-(i-1)]], bins=20)
     text!(ax, "$i", position = Point2f(1e4, 1800), align = (:center, :center), fontsize = 24, color = :red)
     sleep(1)
 end # stop loop at point where histogram looks different 
@@ -61,3 +65,4 @@ tests[end]-tests[end-(n-1)] # will be the length of the ss sample size
 ss_sample = dict_results[11][1].rh[tests[end-6]:end] # the steady state sample
 mean(ss_sample) # mean of the steady state sample
 # in this example the steady state region was 15% of the total simulation, so for now will take 10% as the steady state sample in hysteresis analysis
+
