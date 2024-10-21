@@ -1,9 +1,9 @@
-function remove_missing(df_rtca, df_times, burnin=10000)
+function remove_missing(df_rtca, df_times)
     res = Dict()
     times_res = Dict()
     for i in eachindex(names(df_rtca))
-        res[parse(Float64, names(df_rtca)[i])] = collect(skipmissing(df_rtca[!,names(df_rtca)[i]]))[burnin:end]
-        times_res[parse(Float64, names(df_rtca)[i])] = collect(skipmissing(df_times[!,names(df_times)[i]]))[burnin:end]
+        res[parse(Float64, names(df_rtca)[i])] = collect(skipmissing(df_rtca[!,names(df_rtca)[i]]))
+        times_res[parse(Float64, names(df_rtca)[i])] = collect(skipmissing(df_times[!,names(df_times)[i]]))
     end
     return res, times_res 
 end
