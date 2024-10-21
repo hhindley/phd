@@ -8,7 +8,7 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/stoch_model.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/setup/file_funcs.jl"))
 include(joinpath(homedir(), "phd/stochastic_hybrid_code/stoch_analysis_files/histograms/make_hists.jl"))
 
-high_kdam = false
+high_kdam = true
 
 n= 10000 # number of cell cycles
 options = Dict(
@@ -29,21 +29,21 @@ println("finished X0 calc")
 
 date = Dates.format(Dates.now(), "ddmmyy")
 
-# println("starting getting init conditions for low or high damage")
+println("starting getting init conditions for low or high damage")
 if high_kdam
     kdam_init_val = 1.5
-    # X0_high = run_stoch(X0, options["threshold"], 1.5, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
-    # X0_high[vidx(:V)] = 1
-    # X0 = X0_high
-    # mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/high_kdam/$date"
+    X0_high = run_stoch(X0, options["threshold"], kdam_init_val, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
+    X0_high[vidx(:V)] = 1
+    X0 = X0_high
+    mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/high_kdam/$date"
 else
     kdam_init_val = 0.01
-    # X0_low = run_stoch(X0, options["threshold"], 0.01, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
-    # X0_low[vidx(:V)] = 1
-    # X0 = X0_low
-    # mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/low_kdam/$date"
+    X0_low = run_stoch(X0, options["threshold"], kdam_init_val, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
+    X0_low[vidx(:V)] = 1
+    X0 = X0_low
+    mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/low_kdam/$date"
 end
-# println("finished getting init conditions for low or high damage")
+println("finished X0 high kdam = $high_kdam: $X0 ")
 
 if !isdir(mainpath)
     mkdir(mainpath)
@@ -63,9 +63,10 @@ kdam_vals = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 
 
 df = DataFrame(kdam=kdam_vals, time=zeros(length(kdam_vals)))
 for i in eachindex(kdam_vals)
-    println("starting init state $i, $(Dates.now())")
-    global X0 = run_stoch(X0, options["threshold"], kdam_init_val, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
-    println("finished init state $i, $(Dates.now())")
+    # println("starting init state $i, $(Dates.now())")
+    # global X0 = run_stoch(X0, options["threshold"], kdam_init_val, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
+    # println("finished init state $i, $(Dates.now())")
+    println("X0: $X0")
     println("starting $i, $(Dates.now())")
     time_taken = @elapsed run_stoch(X0, options["threshold"], kdam_vals[i], joinpath(folderpath,"kdam_$(kdam_vals[i]).dat"))
     df.time[i] = time_taken
