@@ -24,41 +24,32 @@ par = collect(get_par(indP)')
 println("starting X0 calc")
 X0 = run_stoch(X0_init, options["threshold"], 0, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
 X0[vidx(:V)] = 1
-# getssX0 = true
-# if getssX0
-#     fout=open("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat","w")
-#     propen, S, propList = defineStochModel(par, indV)
-#     nx = indV.nrOfItems-1
-#     prop(X) = propen(X[1:nx])
-#     X0 = hybrid_algo(X0, options, prop, S, out=fout)
-#     X0[vidx(:V)] = 1 #1e-15
-#     CSV.write("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", DataFrame(X0,:auto), header=false)
-# else
-#     X0 = CSV.read("/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat", Tables.matrix, header=false)
-# end
+
 println("finished X0 calc")
 
 date = Dates.format(Dates.now(), "ddmmyy")
 
-println("starting getting init conditions for low or high damage")
+# println("starting getting init conditions for low or high damage")
 if high_kdam
-    X0_high = run_stoch(X0, options["threshold"], 1.5, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
-    X0_high[vidx(:V)] = 1
-    X0 = X0_high
-    mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/high_kdam/$date"
+    kdam_init_val = 1.5
+    # X0_high = run_stoch(X0, options["threshold"], 1.5, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
+    # X0_high[vidx(:V)] = 1
+    # X0 = X0_high
+    # mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/high_kdam/$date"
 else
-    X0_low = run_stoch(X0, options["threshold"], 0.01, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
-    X0_low[vidx(:V)] = 1
-    X0 = X0_low
-    mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/low_kdam/$date"
+    kdam_init_val = 0.01
+    # X0_low = run_stoch(X0, options["threshold"], 0.01, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
+    # X0_low[vidx(:V)] = 1
+    # X0 = X0_low
+    # mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/low_kdam/$date"
 end
-println("finished getting init conditions for low or high damage")
+# println("finished getting init conditions for low or high damage")
 
 if !isdir(mainpath)
     mkdir(mainpath)
 end
 
-dir_num = 9 # change this! 
+dir_num = 1 # change this! 
 dir = "run_$dir_num" 
 
 folderpath = joinpath(mainpath, dir)
@@ -72,6 +63,9 @@ kdam_vals = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 
 
 df = DataFrame(kdam=kdam_vals, time=zeros(length(kdam_vals)))
 for i in eachindex(kdam_vals)
+    println("starting init state $i, $(Dates.now())")
+    global X0 = run_stoch(X0, options["threshold"], kdam_init_val, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
+    println("finished init state $i, $(Dates.now())")
     println("starting $i, $(Dates.now())")
     time_taken = @elapsed run_stoch(X0, options["threshold"], kdam_vals[i], joinpath(folderpath,"kdam_$(kdam_vals[i]).dat"))
     df.time[i] = time_taken
@@ -95,38 +89,38 @@ create_histogram_files(mainpath, final_path)
 println("finished making histograms for $dir")
 
 
-dir = "run_$(dir_num+1)" 
+# dir = "run_$(dir_num+1)" 
 
-folderpath = joinpath(mainpath, dir)
-if !isdir(folderpath)
-    mkdir(folderpath)
-end
-time_file = dir * "_times.csv"
-final_path = dir * "_final_files"
+# folderpath = joinpath(mainpath, dir)
+# if !isdir(folderpath)
+#     mkdir(folderpath)
+# end
+# time_file = dir * "_times.csv"
+# final_path = dir * "_final_files"
 
-df = DataFrame(kdam=kdam_vals, time=zeros(length(kdam_vals)))
-for i in eachindex(kdam_vals)
-    println("starting $i, $(Dates.now())")
-    time_taken = @elapsed run_stoch(X0, 150, kdam_vals[i], joinpath(folderpath,"kdam_$(kdam_vals[i]).dat"))
-    df.time[i] = time_taken
-    println("finished $i, $(Dates.now())")
-end
+# df = DataFrame(kdam=kdam_vals, time=zeros(length(kdam_vals)))
+# for i in eachindex(kdam_vals)
+#     println("starting $i, $(Dates.now())")
+#     time_taken = @elapsed run_stoch(X0, 150, kdam_vals[i], joinpath(folderpath,"kdam_$(kdam_vals[i]).dat"))
+#     df.time[i] = time_taken
+#     println("finished $i, $(Dates.now())")
+# end
 
-CSV.write(joinpath(mainpath, "$time_file"), df)
+# CSV.write(joinpath(mainpath, "$time_file"), df)
 
-println("total time = $(sum(df.time)/60/60) hours")
+# println("total time = $(sum(df.time)/60/60) hours")
 
-println("starting file conversion for $dir")
+# println("starting file conversion for $dir")
 
-arrow_conv(joinpath(mainpath, dir), joinpath(mainpath, final_path))
+# arrow_conv(joinpath(mainpath, dir), joinpath(mainpath, final_path))
 
-println("finished file conversion for $dir")
+# println("finished file conversion for $dir")
 
-println("making histograms for $dir")
+# println("making histograms for $dir")
 
-create_histogram_files(mainpath, final_path)
+# create_histogram_files(mainpath, final_path)
 
-println("finished making histograms for $dir")
+# println("finished making histograms for $dir")
 
 # moving time files to final_files folders
 entries = readdir(mainpath)
