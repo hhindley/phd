@@ -33,13 +33,23 @@ lines(times[1][0.08], sims[1][0.08])
 
 sims[1][0.08][1:10:end]
 
-heatmap_data = produce_heatmap_data(sims[1][0.08][1:29:end], threshold=2)
+heatmap_data = produce_heatmap_data(sims[1][0.02][1:50:end], threshold=2)
+heatmap_data2 = produce_heatmap_data(sims[1][1.5][1:50:end], threshold=2)
 
 # test = round.(rand(10000))
 # heatmap_data = reshape(test, 1, length(test))
 f = Figure()
-img = image(f[1,1], heatmap_data';
+ax = Axis(f[1,1])
+img = image!(ax, heatmap_data';
+    colormap = [:red, :green], 
+    colorrange = (0, 1), alpha=0.5     # Set the range of values between 0 and 1
+)
+ax2 = Axis(f[1,2])
+img = image!(ax2, heatmap_data2';
     colormap = [:red, :green], 
     colorrange = (0, 1), alpha=0.5      # Set the range of values between 0 and 1
 )
-
+hideydecorations!(ax)
+hideydecorations!(ax2)
+hidexdecorations!(ax, ticks=false, ticklabels=false)
+hidexdecorations!(ax2, ticks=false, ticklabels=false)
