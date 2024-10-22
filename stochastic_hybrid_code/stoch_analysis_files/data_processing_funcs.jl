@@ -16,19 +16,23 @@ function log_results(res)
     return res_log 
 end
 
-function determine_state(res; threshold=2)
+function determine_state(res, times; threshold=2)
     res_on = Dict([kdam=>Float64[] for kdam in kdams])
     res_off = Dict([kdam=>Float64[] for kdam in kdams])
+    res_on_times = Dict([kdam=>Float64[] for kdam in kdams])
+    res_off_times = Dict([kdam=>Float64[] for kdam in kdams])
     for kdam in kdams
-        for i in res[kdam]
-            if i >= threshold
-                push!(res_on[kdam], i)
+        for i in eachindex(res[kdam])
+            if res[kdam][i] >= threshold
+                push!(res_on[kdam], res[kdam][i])
+                push!(res_on_times[kdam], times[kdam][i])
             else
-                push!(res_off[kdam], i)
+                push!(res_off[kdam], res[kdam][i])
+                push!(res_off_times[kdam], times[kdam][i])
             end
         end
     end
-    return res_on, res_off
+    return res_on, res_off, res_on_times, res_off_times
 end
 
 function all_results_concat(res, df_lengths)

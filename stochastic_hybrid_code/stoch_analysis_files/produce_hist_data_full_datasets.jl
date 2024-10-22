@@ -12,6 +12,8 @@ include(joinpath(homedir(), "phd/stochastic_hybrid_code/stoch_analysis_files/dat
 
 kdams = [0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5]
 
+specie ="rtca"
+
 server = true
 if server
     mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/"
@@ -22,21 +24,22 @@ end
 type_kdam = "low_kdam"
 @load "$mainpath/$type_kdam/$(type_kdam)_stops.jld2" df_lengths df_stops 
 df_lengths_low = df_lengths; df_stops_low = df_stops
-df_rtca_low = DataFrame(Arrow.Table("$mainpath/$type_kdam/$(type_kdam)_rtca.arrow"))
+df_rtca_low = DataFrame(Arrow.Table("$mainpath/$type_kdam/$(type_kdam)_$specie.arrow"))
 df_times_low = DataFrame(Arrow.Table("$mainpath/$type_kdam/$(type_kdam)_times.arrow"))
 df_volume_low = DataFrame(Arrow.Table("$mainpath/$type_kdam/$(type_kdam)_volume.arrow"))
 
 type_kdam = "high_kdam"
 @load "$mainpath/$type_kdam/$(type_kdam)_stops.jld2" df_lengths df_stops 
 df_lengths_high = df_lengths; df_stops_high = df_stops
-df_rtca_high = DataFrame(Arrow.Table("$mainpath/$type_kdam/$(type_kdam)_rtca.arrow"))
+df_rtca_high = DataFrame(Arrow.Table("$mainpath/$type_kdam/$(type_kdam)_$specie.arrow"))
 df_times_high = DataFrame(Arrow.Table("$mainpath/$type_kdam/$(type_kdam)_times.arrow"))
 df_volume_high = DataFrame(Arrow.Table("$mainpath/$type_kdam/$(type_kdam)_volume.arrow"))
 
 df_rtca_conc_low = DataFrame(sf*(df_rtca_low./df_volume_low))
 df_rtca_conc_high = DataFrame(sf*(df_rtca_high./df_volume_high))
 
-conc=true
+
+conc=false
 
 if conc 
     res_high, times_res_high = remove_missing(df_rtca_conc_high, df_times_high)
@@ -47,20 +50,20 @@ else
 end
 
 res_log_high = log_results(res_high)
-res_on_high, res_off_high = determine_state(res_high, threshold=2)
+res_on_high, res_off_high, res_on_times_high, res_off_times_high = determine_state(res_high, times_res_high, threshold=2)
 res_on_log_high = log_results(res_on_high)
 res_off_log_high = log_results(res_off_high)
 df_res_high = all_results_concat(res_high, df_lengths_high)
 
 res_log_low = log_results(res_low)
-res_on_low, res_off_low = determine_state(res_low, threshold=2)
+res_on_low, res_off_low, res_on_times_low, res_off_times_low = determine_state(res_low, times_res_low, threshold=2)
 res_on_log_low = log_results(res_on_low)
 res_off_log_low = log_results(res_off_low)
 df_res_low = all_results_concat(res_low, df_lengths_low)
 
 # all data 
-x_all_high, y_all_high, barlines_all_high = produce_hist_data(res_log_high, true)
-x_all_low, y_all_low, barlines_all_low = produce_hist_data(res_log_low, true)
+x_all_high, y_all_high, barlines_all_high = produce_hist_data(res_log_high, times_res_high, true)
+x_all_low, y_all_low, barlines_all_low = produce_hist_data(res_log_low, times_res_low, true)
 
 # on data 
 x_on_high, y_on_high, barlines_on_high = produce_hist_data(res_on_log_high, false)
@@ -70,11 +73,17 @@ x_on_low, y_on_low, barlines_on_low = produce_hist_data(res_on_log_low, false)
 x_off_high, y_off_high, barlines_off_high = produce_hist_data(res_off_high, false)
 x_off_low, y_off_low, barlines_off_low = produce_hist_data(res_off_low, false)
 
-@save "$mainpath/high_kdam/hist_data.jld2" x_all_high y_all_high barlines_all_high x_on_high y_on_high barlines_on_high x_off_high y_off_high barlines_off_high
-@save "$mainpath/low_kdam/hist_data.jld2" x_all_low y_all_low barlines_all_low x_on_low y_on_low barlines_on_low x_off_low y_off_low barlines_off_low
-Arrow.write("/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam/all_results_grouped.arrow", df_res_high)
-Arrow.write("/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/low_kdam/all_results_grouped.arrow", df_res_low)
-
+if conc 
+    @save "$mainpath/high_kdam/hist_data_conc_$specie.jld2" x_all_high y_all_high barlines_all_high x_on_high y_on_high barlines_on_high x_off_high y_off_high barlines_off_high
+    @save "$mainpath/low_kdam/hist_data_conc_$specie.jld2" x_all_low y_all_low barlines_all_low x_on_low y_on_low barlines_on_low x_off_low y_off_low barlines_off_low
+    Arrow.write("/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam/all_results_grouped_conc_$specie.arrow", df_res_high)
+    Arrow.write("/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/low_kdam/all_results_grouped_conc_$specie.arrow", df_res_low)
+else
+    @save "$mainpath/high_kdam/hist_data_$specie.jld2" x_all_high y_all_high barlines_all_high x_on_high y_on_high barlines_on_high x_off_high y_off_high barlines_off_high
+    @save "$mainpath/low_kdam/hist_data_$specie.jld2" x_all_low y_all_low barlines_all_low x_on_low y_on_low barlines_on_low x_off_low y_off_low barlines_off_low
+    Arrow.write("/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam/all_results_grouped_$specie.arrow", df_res_high)
+    Arrow.write("/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/low_kdam/all_results_grouped_$specie.arrow", df_res_low)
+end
 
 "scp hollie_hindley@resistance.bio.ed.ac.uk:/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/high_kdam/hist_data.jld2 /Users/s2257179/Desktop/saved_variables/high_kdam/hist_data.jld2"
 "scp hollie_hindley@resistance.bio.ed.ac.uk:/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/low_kdam/hist_data.jld2 /Users/s2257179/Desktop/saved_variables/low_kdam/hist_data.jld2"

@@ -6,9 +6,11 @@ function determine_common_bin_edges(res_log, nbins)
     return range(min_val, max_val, length=nbins+1)
 end
 
-function prod_hist_data(res_log, logdensity::Bool)
+function prod_hist_data(res_log, time_data, logdensity::Bool)
     bin_edges = determine_common_bin_edges(res_log, 20)
-    hist_data = fit(Histogram, res_log, bin_edges)
+    time_weights = diff(time_data)
+    push!(time_weights, time_weights[end])
+    hist_data = fit(Histogram, res_log, weights(time_weights), bin_edges)
     x = hist_data.edges[1][1:end-1] .+ diff(hist_data.edges[1]) ./ 2 #bar edges 
     if logdensity 
         y = log.(hist_data.weights.+1)
@@ -18,12 +20,12 @@ function prod_hist_data(res_log, logdensity::Bool)
     return x, y, hist_data
 end
 
-function produce_hist_data(res_log, logdensity::Bool)
+function produce_hist_data(res_log, time_data, logdensity::Bool)
     bin_edges = determine_common_bin_edges(res_log, 20)
     x_all = Dict(); y_all = Dict(); barlines = Dict();
     for kdam in kdams
         # println(kdam)
-        x, y, hist_data = prod_hist_data(res_log[kdam], logdensity)
+        x, y, hist_data = prod_hist_data(res_log[kdam], time_data[kdam], logdensity)
         barline = create_barline(hist_data, y, bin_edges)
         x_all[kdam] = x
         y_all[kdam] = y
