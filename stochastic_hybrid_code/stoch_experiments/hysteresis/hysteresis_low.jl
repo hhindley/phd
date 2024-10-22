@@ -25,12 +25,12 @@ X0 = run_stoch(X0_init, options["threshold"], 0, "/home/hollie_hindley/Documents
 X0[vidx(:V)] = 1
 println("finished X0 calc, X0: $X0")
 
-kdam_init_val_high = 1.5
+kdam_init_val_low = 0.01
 kdam_middle = 0.8
 
 date = Dates.format(Dates.now(), "ddmmyy")
 
-mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/hysteresis/new/high_kdam"
+mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/hysteresis/new/low_kdam"
 dir = "$date" 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
@@ -45,11 +45,11 @@ df = DataFrame(kdam=fill(kdam_middle, n), time=zeros(n))
 
 for i in 1:n
     println("starting X0 calc")
-    X0_high = run_stoch(X0, options["threshold"], kdam_init_val_high, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
-    X0_high[vidx(:V)] = 1
-    println("X0_high: $X0_high")
+    X0_low = run_stoch(X0, options["threshold"], kdam_init_val_low, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
+    X0_low[vidx(:V)] = 1
+    println("X0_low: $X0_low")
     println("starting run $i at $(Dates.now())")
-    time_taken = @elapsed run_stoch(X0_high, options["threshold"], kdam_middle, joinpath(folderpath,"run_$i.dat"))    
+    time_taken = @elapsed run_stoch(X0_low, options["threshold"], kdam_middle, joinpath(folderpath,"run_$i.dat"))    
     println("finished run $i at $(Dates.now())")
     df.time[i] = time_taken
 end

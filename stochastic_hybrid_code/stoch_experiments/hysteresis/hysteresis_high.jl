@@ -25,13 +25,24 @@ X0 = run_stoch(X0_init, options["threshold"], 0, "/home/hollie_hindley/Documents
 X0[vidx(:V)] = 1
 println("finished X0 calc, X0: $X0")
 
+
 kdam_init_val_high = 1.5
-kdam_middle = 0.8
+X0_high = run_stoch(X0, options["threshold"], kdam_init_val_high, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
+X0_high[vidx(:V)] = 1
+mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/high_kdam/$date"
 
-date = Dates.format(Dates.now(), "ddmmyy")
+kdam_init_val_low = 0.01
+X0_low = run_stoch(X0, options["threshold"], kdam_init_val_low, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
+X0_low[vidx(:V)] = 1
+mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/low_kdam/$date"
 
-mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/hysteresis/new/high_kdam"
-dir = "$date" 
+
+mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/hysteresis/"
+date = Dates.format(Dates.now(), "ddmm")
+
+
+
+dir = "$(date)_$dir_num" 
 folderpath = joinpath(mainpath, dir)
 if !isdir(folderpath)
     mkdir(folderpath)
@@ -39,20 +50,14 @@ end
 time_file = dir * "_times.csv"
 final_path = dir * "_final_files"
 
-n = 10
-
-df = DataFrame(kdam=fill(kdam_middle, n), time=zeros(n))
-
-for i in 1:n
-    println("starting X0 calc")
-    X0_high = run_stoch(X0, options["threshold"], kdam_init_val_high, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
-    X0_high[vidx(:V)] = 1
-    println("X0_high: $X0_high")
-    println("starting run $i at $(Dates.now())")
-    time_taken = @elapsed run_stoch(X0_high, options["threshold"], kdam_middle, joinpath(folderpath,"run_$i.dat"))    
-    println("finished run $i at $(Dates.now())")
+df = DataFrame(kdam=kdam_range1, time=zeros(length(kdam_range1)))
+for i in eachindex(kdam_range1)
+    println("starting $i, $(Dates.now())")
+    println("high X0: $X0_high")
+    time_taken = @elapsed run_stoch(X0, options["threshold"], kdam_range1[i], joinpath(folderpath,"kdam_$(kdam_range1[i]).dat"))    
     df.time[i] = time_taken
 end
+
 
 CSV.write(joinpath(mainpath, "$time_file"), df)
 
@@ -70,4 +75,4 @@ create_histogram_files(mainpath, final_path)
 
 print("finished making histograms for $dir")
 
-move_time_file(mainpath)
+

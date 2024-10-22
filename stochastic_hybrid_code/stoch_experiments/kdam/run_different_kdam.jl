@@ -32,13 +32,13 @@ date = Dates.format(Dates.now(), "ddmmyy")
 println("starting getting init conditions for low or high damage")
 if high_kdam
     kdam_init_val = 1.5
-    X0_high = run_stoch(X0, options["threshold"], kdam_init_val, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
+    X0_high = run_stoch(X0, options["threshold"], kdam_init_val, "/home/hollie_hindley/Documents/stochastic_hybrid/X0_$date.dat")
     X0_high[vidx(:V)] = 1
     X0 = X0_high
     mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/high_kdam/$date"
 else
     kdam_init_val = 0.01
-    X0_low = run_stoch(X0, options["threshold"], kdam_init_val, "/home/hollie_hindley/Documents/stochastic_hybrid/X0.dat")
+    X0_low = run_stoch(X0, options["threshold"], kdam_init_val, "/home/hollie_hindley/Documents/stochastic_hybrid/X0_$date.dat")
     X0_low[vidx(:V)] = 1
     X0 = X0_low
     mainpath = "/home/hollie_hindley/Documents/stochastic_hybrid/kdam_testing/low_kdam/$date"
@@ -124,18 +124,4 @@ println("finished making histograms for $dir")
 # println("finished making histograms for $dir")
 
 # moving time files to final_files folders
-entries = readdir(mainpath)
-csv_files = filter(x -> endswith(x, "_times.csv"), entries)
-folders = filter(x -> isdir(joinpath(mainpath, x)), entries)
-for csv_file in csv_files
-    base_name = replace(csv_file, "times.csv" => "final_files")
-    corresponding_folder = joinpath(mainpath, base_name)
-    if isdir(corresponding_folder)
-        source_file = joinpath(mainpath, csv_file)
-        destination_file = joinpath(corresponding_folder, csv_file)
-        mv(source_file, destination_file)
-        println("Moved $csv_file to $corresponding_folder")
-    else
-        println("No corresponding folder found for $csv_file")
-    end
-end
+move_time_file(mainpath)
