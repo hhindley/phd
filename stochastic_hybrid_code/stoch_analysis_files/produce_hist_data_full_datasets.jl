@@ -24,21 +24,34 @@ type_kdam = "low_kdam"
 df_lengths_low = df_lengths; df_stops_low = df_stops
 df_rtca_low = DataFrame(Arrow.Table("$mainpath/$type_kdam/$(type_kdam)_rtca.arrow"))
 df_times_low = DataFrame(Arrow.Table("$mainpath/$type_kdam/$(type_kdam)_times.arrow"))
+df_volume_low = DataFrame(Arrow.Table("$mainpath/$type_kdam/$(type_kdam)_volume.arrow"))
 
 type_kdam = "high_kdam"
 @load "$mainpath/$type_kdam/$(type_kdam)_stops.jld2" df_lengths df_stops 
 df_lengths_high = df_lengths; df_stops_high = df_stops
 df_rtca_high = DataFrame(Arrow.Table("$mainpath/$type_kdam/$(type_kdam)_rtca.arrow"))
 df_times_high = DataFrame(Arrow.Table("$mainpath/$type_kdam/$(type_kdam)_times.arrow"))
+df_volume_high = DataFrame(Arrow.Table("$mainpath/$type_kdam/$(type_kdam)_volume.arrow"))
 
-res_high, times_res_high = remove_missing(df_rtca_high, df_times_high)
+df_rtca_conc_low = DataFrame(sf*(df_rtca_low./df_volume_low))
+df_rtca_conc_high = DataFrame(sf*(df_rtca_high./df_volume_high))
+
+conc=true
+
+if conc 
+    res_high, times_res_high = remove_missing(df_rtca_conc_high, df_times_high)
+    res_low, times_res_low = remove_missing(df_rtca_conc_low, df_times_low)
+else
+    res_high, times_res_high = remove_missing(df_rtca_high, df_times_high)
+    res_low, times_res_low = remove_missing(df_rtca_low, df_times_low)
+end
+
 res_log_high = log_results(res_high)
 res_on_high, res_off_high = determine_state(res_high, threshold=2)
 res_on_log_high = log_results(res_on_high)
 res_off_log_high = log_results(res_off_high)
 df_res_high = all_results_concat(res_high, df_lengths_high)
 
-res_low, times_res_low = remove_missing(df_rtca_low, df_times_low)
 res_log_low = log_results(res_low)
 res_on_low, res_off_low = determine_state(res_low, threshold=2)
 res_on_log_low = log_results(res_on_low)

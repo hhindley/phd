@@ -19,6 +19,7 @@ type_kdam = "high_kdam"
 mount_path, folders, folders_dict = load_file_structure("kdam_testing/$type_kdam", server=true)
 
 folders_dict
+delete!(folders_dict, 21)
 
 dict_times, dict_kdamvals, dict_titles, dict_results, dict_reacts, dict_props, dict_counts, dict_hists = load_data(mount_path, folders, folders_dict, reacts=false, props=false, hists=false)
 
@@ -40,9 +41,11 @@ end
 
 kdam_res_times = Dict("$(kdam_range[i])"=>[] for i in eachindex(kdam_range))
 kdam_res_rtca = Dict("$(kdam_range[i])"=>[] for i in eachindex(kdam_range))
+kdam_res_volume = Dict("$(kdam_range[i])"=>[] for i in eachindex(kdam_range))
 for i in 1:length(folders_dict)
     kdam_res_times["$(kdam_range[i])"] = vcat([dict_results[j][i].time for j in eachindex(kdam_range)]...)
     kdam_res_rtca["$(kdam_range[i])"] = vcat([dict_results[j][i].rtca for j in eachindex(kdam_range)]...)
+    kdam_res_volume["$(kdam_range[i])"] = vcat([dict_results[j][i].volume for j in eachindex(kdam_range)]...)
 end
 
 max_length = maximum(length.(values(kdam_res_times)))
@@ -51,6 +54,7 @@ for key in keys(kdam_res_times)
     if col_length < max_length
         kdam_res_times[key] = vcat(kdam_res_times[key], fill(missing, max_length - col_length))
         kdam_res_rtca[key] = vcat(kdam_res_rtca[key], fill(missing, max_length - col_length))
+        kdam_res_volume[key] = vcat(kdam_res_volume[key], fill(missing, max_length - col_length))
     end
 end
 
@@ -58,6 +62,7 @@ df_lengths = DataFrame(lengths)
 df_stops = DataFrame(stops)
 df_times = DataFrame(kdam_res_times)
 df_rtca = DataFrame(kdam_res_rtca)
+df_volume = DataFrame(kdam_res_volume)
 
 collect(skipmissing(df_times[1:df_stops[1,"0.0"],"0.0"]))==dict_results[1][1].time
 i = 20
@@ -68,6 +73,7 @@ collect(skipmissing(df_times[df_stops[i-1,"0.0"]+1:df_stops[i,"0.0"],"0.0"]))==d
 
 Arrow.write("/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/$(type_kdam)/$(type_kdam)_rtca.arrow", df_rtca)
 Arrow.write("/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/$(type_kdam)/$(type_kdam)_times.arrow", df_times)
+Arrow.write("/home/hollie_hindley/Documents/stochastic_hybrid/saved_variables/$(type_kdam)/$(type_kdam)_times.arrow", df_volume)
 
 
 thresholds_rtca, thresholds_rtcb = get_unstab_threshold_array(collect(keys(folders_dict))[1]) # argument just has to be any folder number to get kdam vals
