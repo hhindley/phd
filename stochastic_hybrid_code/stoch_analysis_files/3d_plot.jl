@@ -48,18 +48,19 @@ display(GLMakie.Screen(), f)
 
 # lines(kde_all[0.08].x, kde_all[0.08].density)
 
+tosave = false
 
-plot3d(barlines_all_high, xlab="Log molecules", zlab="Log frequency", title="whole dataset - high", tosave=true)
-plot3d(barlines_on_high, xlab="Log molecules", title="on state frequencies - high", tosave=true)
-plot3d(barlines_off_high, title="off state frequencies - high", tosave=true)
+plot3d(barlines_all_high, xlab="Log molecules", zlab="Log frequency", title="whole dataset - high", tosave=tosave)
+plot3d(barlines_on_high, xlab="Log molecules", title="on state frequencies - high", tosave=tosave)
+plot3d(barlines_off_high, title="off state frequencies - high", tosave=tosave)
 
-plot3d(barlines_all_low, xlab="Log molecules", zlab="Log frequency", title="whole dataset - low", tosave=true)
-plot3d(barlines_on_low, xlab="Log molecules", title="on state frequencies - low", tosave=true)
-plot3d(barlines_off_low, title="off state frequencies - low", tosave=true)
+plot3d(barlines_all_low, xlab="Log molecules", zlab="Log frequency", title="whole dataset - low", tosave=tosave)
+plot3d(barlines_on_low, xlab="Log molecules", title="on state frequencies - low", tosave=tosave)
+plot3d(barlines_off_low, title="off state frequencies - low", tosave=tosave)
 
-plot3d(barlines_all_high, second_dataset=barlines_all_low, xlab="Log molecules", zlab="Log frequency", title="whole dataset", tosave=true)
-plot3d(barlines_on_high, second_dataset=barlines_on_low, xlab="Log molecules", title="on state frequencies", tosave=true)
-plot3d(barlines_off_high, second_dataset=barlines_off_low, title="off state frequencies", tosave=true)
+plot3d(barlines_all_high, second_dataset=barlines_all_low, xlab="Log molecules", zlab="Log frequency", title="whole dataset", tosave=tosave)
+plot3d(barlines_on_high, second_dataset=barlines_on_low, xlab="Log molecules", title="on state frequencies", tosave=tosave)
+plot3d(barlines_off_high, second_dataset=barlines_off_low, title="off state frequencies", tosave=tosave)
 
 
 

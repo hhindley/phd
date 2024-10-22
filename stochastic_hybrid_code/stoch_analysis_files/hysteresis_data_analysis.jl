@@ -6,15 +6,17 @@ fontsize_theme = Theme(fontsize = 25)
 set_theme!(fontsize_theme)
 
 # hysteresis data
-@load "/Users/s2257179/Desktop/saved_variables/0210/hysteresis_high_0210.jld2" indices switch_rates fracs species_mean thresholds_bs
+@load "/Users/s2257179/Desktop/saved_variables/hysteresis_short/hysteresis_high_0210.jld2" indices switch_rates fracs species_mean thresholds_bs
 indices_high = indices; switch_rates_high = switch_rates; fracs_high = fracs; species_mean_high = species_mean; thresholds_bs_high = thresholds_bs;
-@load "/Users/s2257179/Desktop/saved_variables/0210/hysteresis_low_0210.jld2" indices switch_rates fracs species_mean thresholds_bs
+@load "/Users/s2257179/Desktop/saved_variables/hysteresis_short/hysteresis_low_0210.jld2" indices switch_rates fracs species_mean thresholds_bs
 indices_low = indices; switch_rates_low = switch_rates; fracs_low = fracs; species_mean_low = species_mean; thresholds_bs_low = thresholds_bs;
 
 kdams_high = [1.5, 0.8]
 mean_switch_frac_high, std_switch_frac_high = calc_mean_std_vars(switch_rates_high, fracs_high, kdams_high)
 kdams_low = [0.01, 0.8]
 mean_switch_frac_low, std_switch_frac_low = calc_mean_std_vars(switch_rates_low, fracs_low, kdams_low)
+
+species_mean_low["on"]["2"]   
 
 df_concs_on = DataFrame(
     "data" => vcat(
