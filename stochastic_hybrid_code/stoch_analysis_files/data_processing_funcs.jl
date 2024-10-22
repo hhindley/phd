@@ -43,7 +43,7 @@ function all_results_concat(res, df_lengths)
     return df_res
 end
 
-function split_into_simulations(res, times_res)
+function split_into_simulations(res, times_res, df_stops)
     sims = Dict(i=>Dict(kdam=>Float64[] for kdam in kdams) for i in 1:20)
     times = Dict(i=>Dict(kdam=>Float64[] for kdam in kdams) for i in 1:20)
     for kdam in eachindex(kdams)
