@@ -8,9 +8,9 @@ set_theme!(fontsize_theme)
 
 high_kdam = false
 if high_kdam
-    @load "/Users/s2257179/Desktop/saved_variables/1410/high_kdam.jld2" indices switch_rates fracs species_mean thresholds_bs
+    @load "/Users/s2257179/Desktop/saved_variables/high_kdam/high_kdam_means.jld2" indices switch_rates fracs species_mean thresholds_bs
 else
-    @load "/Users/s2257179/Desktop/saved_variables/1410/low_kdam.jld2" indices switch_rates fracs species_mean thresholds_bs
+    @load "/Users/s2257179/Desktop/saved_variables/low_kdam/low_kdam_means.jld2" indices switch_rates fracs species_mean thresholds_bs
 end
 
 # kdam data
