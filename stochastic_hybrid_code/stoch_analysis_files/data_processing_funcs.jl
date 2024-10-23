@@ -66,6 +66,37 @@ function split_into_simulations(res, times_res, df_stops)
     return sims, times
 end
 
+function compute_time_diffs(res, times_res, df_stops)
+    sims, times = split_into_simulations(res, times_res, df_stops)
+    # Preallocate space for time differences
+    time_diffs = Dict(kdam => Vector{Float64}(undef, 0) for kdam in kdams)
 
+    # First calculate total size to preallocate arrays
+    total_lengths = Dict(kdam => sum(length(times[i][kdam]) for i in eachindex(sims)) for kdam in kdams)
+
+    # Preallocate space in the final time_diffs dictionary
+    for kdam in kdams
+        time_diffs[kdam] = Vector{Float64}(undef, total_lengths[kdam])
+    end
+
+    # Track positions in preallocated arrays
+    idxs = Dict(kdam => 1 for kdam in kdams)
+
+    # Loop through simulations and compute time intervals
+    for i in eachindex(sims)
+        for kdam in kdams
+            time_ints = diff(times[i][kdam])  # Compute time intervals
+            # Append last time interval (same as last diff value)
+            time_ints = vcat(time_ints, time_ints[end])
+
+            # Insert time intervals directly into preallocated array
+            len_ints = length(time_ints)
+            time_diffs[kdam][idxs[kdam]:idxs[kdam] + len_ints - 1] = time_ints
+            idxs[kdam] += len_ints  # Update position tracker
+        end
+    end
+
+    return time_diffs
+end
 
 

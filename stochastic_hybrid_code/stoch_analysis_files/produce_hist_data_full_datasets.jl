@@ -61,6 +61,20 @@ res_on_log_low = log_results(res_on_low)
 res_off_log_low = log_results(res_off_low)
 df_res_low = all_results_concat(res_low, df_lengths_low)
 
+sims
+times
+
+time_diffs[0.0]
+diff(times_res_high[0.0])[1:10]
+time_diffs[0.0][1:10]
+
+df_times
+df_times_low
+collect(skipmissing(df_times_low[1:df_stops_low[1,"0.0"],"0.0"]))==dict_results[1][1].time
+collect(skipmissing(df_times[1:df_stops[1,"0.0"],"0.0"]))==dict_results[1][1].time
+
+time_diffs_high = compute_time_diffs(res_log_high, times_res_high, df_stops_high)
+
 # all data 
 x_all_high, y_all_high, barlines_all_high = produce_hist_data(res_log_high, times_res_high, true)
 x_all_low, y_all_low, barlines_all_low = produce_hist_data(res_log_low, times_res_low, true)
