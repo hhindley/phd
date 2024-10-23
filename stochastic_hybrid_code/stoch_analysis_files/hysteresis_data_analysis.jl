@@ -16,7 +16,7 @@ mean_switch_frac_high, std_switch_frac_high = calc_mean_std_vars(switch_rates_hi
 kdams_low = [0.01, 0.8]
 mean_switch_frac_low, std_switch_frac_low = calc_mean_std_vars(switch_rates_low, fracs_low, kdams_low)
 
-species_mean_low["on"]["2"]   
+species_mean_low["on"]["2"]  
 
 df_concs_on = DataFrame(
     "data" => vcat(
