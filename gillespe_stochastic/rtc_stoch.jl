@@ -116,19 +116,19 @@ function affect13!(integrator)
     nothing
 end
 
-react1 = ConstantRateJump(rate1, affect1!)
-react2 = ConstantRateJump(rate2, affect2!)
-react3 = ConstantRateJump(rate3, affect3!)
-react4 = ConstantRateJump(rate4, affect4!)
-react5 = ConstantRateJump(rate5, affect5!)
-react6 = ConstantRateJump(rate6, affect6!)
-react7 = ConstantRateJump(rate7, affect7!)
-react8 = ConstantRateJump(rate8, affect8!)
-react9 = ConstantRateJump(rate9, affect9!)
-react10 = ConstantRateJump(rate10, affect10!)
-react11 = ConstantRateJump(rate11, affect11!)
-react12 = ConstantRateJump(rate12, affect12!)
-react13 = ConstantRateJump(rate13, affect13!)
+react1 = VariableRateJump(rate1, affect1!)
+react2 = VariableRateJump(rate2, affect2!)
+react3 = VariableRateJump(rate3, affect3!)
+react4 = VariableRateJump(rate4, affect4!)
+react5 = VariableRateJump(rate5, affect5!)
+react6 = VariableRateJump(rate6, affect6!)
+react7 = VariableRateJump(rate7, affect7!)
+react8 = VariableRateJump(rate8, affect8!)
+react9 = VariableRateJump(rate9, affect9!)
+react10 = VariableRateJump(rate10, affect10!)
+react11 = VariableRateJump(rate11, affect11!)
+react12 = VariableRateJump(rate12, affect12!)
+react13 = VariableRateJump(rate13, affect13!)
 
 jumpset = JumpSet(react1, react2, react3, react4, react5, react6, react7, react8, react9, react10, react11, react12, react13)
 
@@ -151,7 +151,7 @@ end
 
 p = collect(get_par(indP))
 u0 = collect(get_X0(indV, init_molec))
-tspan = (0.0,1000.0)
+tspan = (0.0,500.0)
 
 function volume_ode(du, u, p, t)
     du[vidx(:V)] = u[vidx(:V)] * p[pidx(:lam)]
@@ -178,7 +178,10 @@ jump_prob = JumpProblem(prob_vol, Direct(), jumpset)
 
 solu = solve(jump_prob, Tsit5(), callback=division_cb, tstops=div_times)
 
-df = create_solu_df(solu, [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :V])
+df = DataFrame(solu)
+lines(df.timestamp, df.value7)
 
+
+df = create_solu_df(solu, [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :V])
 
 lines(df.time, df.rtca)

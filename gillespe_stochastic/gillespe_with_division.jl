@@ -1,12 +1,10 @@
-using DifferentialEquations
-using JumpProcesses
-using Random, Catalyst
+using DifferentialEquations, JumpProcesses, Random, Catalyst, DataFrames, GLMakie
 
 β = 0.1 / 1000.0
 ν = 0.01;
 lam = 0.014
 p = (β=β, ν=ν, lam=lam)
-rate1(u, p, t) = p.β * u[1] * u[2]  # β*S*I
+rate1(u, p, t) = β * u[1] * u[2]  # β*S*I
 function affect1!(integrator)
     integrator.u[1] -= 1         # S -> S - 1
     integrator.u[2] += 1         # I -> I + 1
@@ -22,24 +20,7 @@ function affect2!(integrator)
 end
 jump2 = ConstantRateJump(rate2, affect2!)
 
-
-u0 = [999, 10, 0]
 tspan = (0.0,250.0)
-
-prob = DiscreteProblem(u0, tspan, p)
-
-jump_prob = JumpProblem(prob, Direct(), jump, jump2)
-
-solu = solve(jump_prob, SSAStepper())
-
-using DataFrames, GLMakie
-df = DataFrame(solu)
-
-lines(df.timestamp, df.value1)
-lines!(df.timestamp, df.value2)
-lines!(df.timestamp, df.value3)
-
-
 
 
 function f(du, u, p, t)
@@ -62,11 +43,11 @@ u₀ = [990.0, 10.0, 0.0, 1.0]
 prob = ODEProblem(f, u₀, tspan, p)
 
 jump_prob = JumpProblem(prob, Direct(), jump, jump2)
-sol = solve(jump_prob, Tsit5(), callback=division_cb, tstops=div_times)
+solu = solve(jump_prob, Tsit5(), callback=division_cb, tstops=div_times)
 
-df1 = DataFrame(sol)
+df1 = DataFrame(solu)
 p1=lines(df1.timestamp, df1.value4)
-DataInspector(p1)
+# DataInspector(p1)
 lines(df1.timestamp, df1.value1)
 lines!(df1.timestamp, df1.value2)
 lines!(df1.timestamp, df1.value3)
