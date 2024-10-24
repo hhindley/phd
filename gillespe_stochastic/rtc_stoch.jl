@@ -166,7 +166,7 @@ function affect_division!(integrator)
         n = integrator.u[i]
         integrator.u[i] = n > 0 ? float(rand(Binomial(round(Int, n), pDiv))) : 0
     end
-    integrator.u[vidx(:V)] /= 2
+    integrator.u[vidx(:V)] = 1 #integrator.u[vidx(:V)]/2
     nothing
 end
 division_cb = DiscreteCallback(condition_div, affect_division!) # is called at every time step during integration, if t is greater than division time then make division = true and terminate integration
@@ -176,10 +176,10 @@ p[pidx(:kdam)] = 0.0
 prob_vol = ODEProblem(volume_ode, u0, tspan, p)
 jump_prob = JumpProblem(prob_vol, Direct(), jumpset)
 
-solu = solve(jump_prob, Tsit5(), callback=division_cb, tstops=div_times)
+solu = solve(jump_prob, Tsit5(), callback=division_cb, tstops=div_times, abstol=1e-15, reltol=1e-12)
 
 df = DataFrame(solu)
-lines(df.timestamp, df.value7)
+lines(df.timestamp, sf*(df.value7./df.value10))
 
 
 df = create_solu_df(solu, [:rm_a, :rtca, :rm_b, :rtcb, :rm_r, :rtcr, :rh, :rd, :rt, :V])

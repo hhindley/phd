@@ -488,7 +488,7 @@ end
 function calc_eigenvalues(i, param_dict_dam, kdam_val, res)
     param_dict_dam[kdam] = kdam_val
 
-    var_dict = Dict(rm_a(t)=>res[i,:rm_a], rtca(t)=>res[i,:rtca], rm_b(t)=>res[i,:rm_b], rtcb(t)=>res[i,:rtcb], rm_r(t)=>res1[i,:rm_r], rtcr(t)=>res[i,:rtcr],
+    var_dict = Dict(rm_a(t)=>res[i,:rm_a], rtca(t)=>res[i,:rtca], rm_b(t)=>res[i,:rm_b], rtcb(t)=>res[i,:rtcb], rm_r(t)=>res[i,:rm_r], rtcr(t)=>res[i,:rtcr],
     rh(t)=>res[i,:rh], rd(t)=>res[i,:rd], rt(t)=>res[i,:rt])
 
     all_vals = merge(var_dict, param_dict_dam)
